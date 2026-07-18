@@ -25,23 +25,24 @@ These five directives are the acceptance lens for all future phases and are dupl
 
 Six systems (A–F) sit on a pure **kernel** and communicate exclusively through a typed event bus. A dedicated **Simulation Kernel** orchestrates System A. Projections mirror state read-only for consumers.
 
-| Layer | Folder | Single responsibility | May import |
-|---|---|---|---|
-| Kernel primitives | `core/` | EventBus type, DI container, `Result`, branded IDs, RNG + Clock **contracts**, base interfaces | nothing (pure) |
-| **Simulation Kernel** | `kernel/` | deterministic time, fixed-timestep scheduler, seeded RNG impl, lifecycle, event orchestration, **system registry**, **simulation FSM** | `core`, `utils`, `constants`, `types` |
-| **A · Simulation** | `engine/` | topology, powerflow, cascade, protection, restoration, weather, generation, loads, director | `core`, `kernel`, `ethics`, `utils`, `constants`, `types` |
-| Crisis scenarios (plugin) | `scenarios/` | `ICrisisScenario` contract + registry + scenario plugins | `core`, `engine`, `kernel`, `types` |
-| **B · Learning** | `learning/` | Learner Twin, knowledge tracing, concept graph, reference policy, decision scoring, analytics | `core`, `ethics`, `utils`, `types` |
-| Ethics (domain) | `ethics/` | EIA snapshot, calibration, equity — pure data | `core`, `utils`, `types` |
-| **Replay** (first-class) | `replay/` | recording, playback, serialization, verification, timeline, snapshots | `core`, `kernel`, `types` |
-| **C · Presentation** | `rendering/scene-graph/` · `rendering/visual-effects/` | scene graph (camera/lighting/world structure) vs. effects (particles/postFX/animation) | `core`, `state`, `types` — **never** `engine`/`kernel` |
-| **D · UI** | `ui/` | HUD, panels, decision wheel, timeline, replay controls, settings, accessibility | `core`, `state`, `types` |
-| **E · Audio** | `audio/` | adaptive music, ambient, SFX, voice, mixing | `core`, `state`, `types` |
-| **F · Infrastructure** | `infrastructure/` | composition root, config loading, serialization, logging, bootstrap | everything (wiring only) |
-| Projections | `state/` | Zustand read-models updated **by events only** | `core`, `types` |
-| Support | `debug/` `config/` `workers/` `utils/` `constants/` `types/` `assets/` | as named | `core` (+ `types`) |
+| Layer                     | Folder                                                                 | Single responsibility                                                                                                                  | May import                                                |
+| ------------------------- | ---------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------- |
+| Kernel primitives         | `core/`                                                                | EventBus type, DI container, `Result`, branded IDs, RNG + Clock **contracts**, base interfaces                                         | nothing (pure)                                            |
+| **Simulation Kernel**     | `kernel/`                                                              | deterministic time, fixed-timestep scheduler, seeded RNG impl, lifecycle, event orchestration, **system registry**, **simulation FSM** | `core`, `utils`, `constants`, `types`                     |
+| **A · Simulation**        | `engine/`                                                              | topology, powerflow, cascade, protection, restoration, weather, generation, loads, director                                            | `core`, `kernel`, `ethics`, `utils`, `constants`, `types` |
+| Crisis scenarios (plugin) | `scenarios/`                                                           | `ICrisisScenario` contract + registry + scenario plugins                                                                               | `core`, `engine`, `kernel`, `types`                       |
+| **B · Learning**          | `learning/`                                                            | Learner Twin, knowledge tracing, concept graph, reference policy, decision scoring, analytics                                          | `core`, `ethics`, `utils`, `types`                        |
+| Ethics (domain)           | `ethics/`                                                              | EIA snapshot, calibration, equity — pure data                                                                                          | `core`, `utils`, `types`                                  |
+| **Replay** (first-class)  | `replay/`                                                              | recording, playback, serialization, verification, timeline, snapshots                                                                  | `core`, `kernel`, `types`                                 |
+| **C · Presentation**      | `rendering/scene-graph/` · `rendering/visual-effects/`                 | scene graph (camera/lighting/world structure) vs. effects (particles/postFX/animation)                                                 | `core`, `state`, `types` — **never** `engine`/`kernel`    |
+| **D · UI**                | `ui/`                                                                  | HUD, panels, decision wheel, timeline, replay controls, settings, accessibility                                                        | `core`, `state`, `types`                                  |
+| **E · Audio**             | `audio/`                                                               | adaptive music, ambient, SFX, voice, mixing                                                                                            | `core`, `state`, `types`                                  |
+| **F · Infrastructure**    | `infrastructure/`                                                      | composition root, config loading, serialization, logging, bootstrap                                                                    | everything (wiring only)                                  |
+| Projections               | `state/`                                                               | Zustand read-models updated **by events only**                                                                                         | `core`, `types`                                           |
+| Support                   | `debug/` `config/` `workers/` `utils/` `constants/` `types/` `assets/` | as named                                                                                                                               | `core` (+ `types`)                                        |
 
 **Enforcement of "simulation compiles if React/Three/UI are deleted":**
+
 1. **ESLint import-boundary rules** — `core`, `kernel`, `engine`, `scenarios`, `learning`, `ethics`, `replay` are forbidden from importing `react`, `three`, `@react-three/*`, or any `rendering`/`ui`/`audio`/`state` path. Violations fail CI.
 2. **`tsconfig.engine.json`** — typechecks only the pure layers with no DOM/React libs; `pnpm typecheck:engine` proves standalone compilation.
 
@@ -103,14 +104,14 @@ Boot → Loading → Calibration → Idle → Pre-Crisis → Crisis → Cascade 
 
 ## 7. Confirmed decisions
 
-| # | Decision | Choice |
-|---|---|---|
-| A | Package layout | Single package at repo root + lint boundaries + `tsconfig.engine.json` |
-| B | Dependency injection | Hand-rolled tiny typed container (deterministic, testable) |
-| C | Web Worker for sim | Worker **contract stubbed** now; sim runs main-thread in Phase 1 |
-| D | LLM Advisor + EIA | Advisor = deferred infra adapter; Ethics/EIA = domain module |
-| — | Package manager | pnpm |
-| — | Project root | repo root (`IEEEMETAVERSE/`) |
+| #   | Decision             | Choice                                                                 |
+| --- | -------------------- | ---------------------------------------------------------------------- |
+| A   | Package layout       | Single package at repo root + lint boundaries + `tsconfig.engine.json` |
+| B   | Dependency injection | Hand-rolled tiny typed container (deterministic, testable)             |
+| C   | Web Worker for sim   | Worker **contract stubbed** now; sim runs main-thread in Phase 1       |
+| D   | LLM Advisor + EIA    | Advisor = deferred infra adapter; Ethics/EIA = domain module           |
+| —   | Package manager      | pnpm                                                                   |
+| —   | Project root         | repo root (`IEEEMETAVERSE/`)                                           |
 
 ---
 

@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "//": "Proof that the pure simulation layers compile with ZERO DOM / React / Three types in scope. If deleting the renderer, UI, or React would break the engine, `pnpm typecheck:engine` fails here. lib excludes DOM; types is empty (no node, no vite/client).",
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "lib": ["ES2022"],
+    "types": []
+  },
+  "include": [
+    "src/core",
+    "src/kernel",
+    "src/engine",
+    "src/scenarios",
+    "src/learning",
+    "src/ethics",
+    "src/replay",
+    "src/utils",
+    "src/constants",
+    "src/types"
+  ],
+  "exclude": ["**/*.test.ts", "**/*.spec.ts", "**/*.test.tsx", "**/*.spec.tsx"]
+}

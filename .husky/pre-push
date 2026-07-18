@@ -1,0 +1,1 @@
+pnpm typecheck && pnpm typecheck:engine && pnpm test

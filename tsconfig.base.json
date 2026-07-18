@@ -1,0 +1,77 @@
+{
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "compilerOptions": {
+    /* Language & module system */
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "moduleDetection": "force",
+    "useDefineForClassFields": true,
+    "resolveJsonModule": true,
+    "verbatimModuleSyntax": true,
+    "isolatedModules": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "noEmit": true,
+
+    /* Strictness — no escape hatches */
+    "strict": true,
+    "noImplicitAny": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
+    "noUncheckedIndexedAccess": true,
+    "exactOptionalPropertyTypes": true,
+    "noImplicitOverride": true,
+    "noPropertyAccessFromIndexSignature": true,
+    "allowUnreachableCode": false,
+    "allowUnusedLabels": false,
+
+    "skipLibCheck": true,
+
+    /* Absolute imports — one alias per module (mirrored in vite via
+       vite-tsconfig-paths). Both the barrel form (@core) and the deep
+       form (@core/events/EventBus) resolve. */
+    "baseUrl": ".",
+    "paths": {
+      "@core": ["src/core/index.ts"],
+      "@core/*": ["src/core/*"],
+      "@kernel": ["src/kernel/index.ts"],
+      "@kernel/*": ["src/kernel/*"],
+      "@engine": ["src/engine/index.ts"],
+      "@engine/*": ["src/engine/*"],
+      "@scenarios": ["src/scenarios/index.ts"],
+      "@scenarios/*": ["src/scenarios/*"],
+      "@learning": ["src/learning/index.ts"],
+      "@learning/*": ["src/learning/*"],
+      "@ethics": ["src/ethics/index.ts"],
+      "@ethics/*": ["src/ethics/*"],
+      "@replay": ["src/replay/index.ts"],
+      "@replay/*": ["src/replay/*"],
+      "@rendering": ["src/rendering/index.ts"],
+      "@rendering/*": ["src/rendering/*"],
+      "@ui": ["src/ui/index.ts"],
+      "@ui/*": ["src/ui/*"],
+      "@audio": ["src/audio/index.ts"],
+      "@audio/*": ["src/audio/*"],
+      "@infra": ["src/infrastructure/index.ts"],
+      "@infra/*": ["src/infrastructure/*"],
+      "@state": ["src/state/index.ts"],
+      "@state/*": ["src/state/*"],
+      "@debug": ["src/debug/index.ts"],
+      "@debug/*": ["src/debug/*"],
+      "@config": ["src/config/index.ts"],
+      "@config/*": ["src/config/*"],
+      "@workers": ["src/workers/index.ts"],
+      "@workers/*": ["src/workers/*"],
+      "@utils": ["src/utils/index.ts"],
+      "@utils/*": ["src/utils/*"],
+      "@constants": ["src/constants/index.ts"],
+      "@constants/*": ["src/constants/*"],
+      "@app-types": ["src/types/index.ts"],
+      "@app-types/*": ["src/types/*"],
+      "@assets/*": ["src/assets/*"]
+    }
+  }
+}
