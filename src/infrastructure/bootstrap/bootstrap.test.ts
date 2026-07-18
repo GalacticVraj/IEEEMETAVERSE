@@ -8,6 +8,18 @@ import { describe, expect, it } from 'vitest';
 import { SIMULATION_KERNEL } from '../di/composition-root';
 import { bootstrap } from './bootstrap';
 
+/** Expected scenario IDs — one for each concrete scenario class. */
+const EXPECTED_SCENARIO_IDS = [
+  'heatwave',
+  'storm',
+  'equipment-failure',
+  'cyber-attack',
+  'generator-loss',
+  'substation-failure',
+  'demand-surge',
+  'transformer-failure',
+] as const;
+
 /**
  * Integration smoke test: exercises the ENTIRE composition root and bootstrap
  * sequence at runtime. If any token is misregistered or any wiring is broken,
@@ -27,11 +39,30 @@ describe('bootstrap', () => {
     runtime.shutdown();
   });
 
-  it('registers the heatwave scenario in the registry', () => {
+  it('registers all 8 scenarios in the registry', () => {
     const runtime = bootstrap(PROFILES.development);
     const registry = runtime.container.resolve(SCENARIO_REGISTRY);
-    expect(registry.has(asScenarioId('heatwave'))).toBe(true);
-    expect(registry.all()).toHaveLength(1);
+
+    expect(registry.all()).toHaveLength(EXPECTED_SCENARIO_IDS.length);
+
+    for (const id of EXPECTED_SCENARIO_IDS) {
+      expect(registry.has(asScenarioId(id)), `scenario "${id}" should be registered`).toBe(true);
+    }
+
+    runtime.shutdown();
+  });
+
+  it('each registered scenario has valid metadata', () => {
+    const runtime = bootstrap(PROFILES.development);
+    const registry = runtime.container.resolve(SCENARIO_REGISTRY);
+
+    for (const scenario of registry.all()) {
+      expect(scenario.metadata.id).toBeTruthy();
+      expect(scenario.metadata.name).toBeTruthy();
+      expect(scenario.metadata.summary).toBeTruthy();
+      expect(scenario.metadata.difficulty).toBeTruthy();
+    }
+
     runtime.shutdown();
   });
 

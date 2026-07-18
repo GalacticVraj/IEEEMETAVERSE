@@ -29,3 +29,4 @@ export * from './cascade/cascade';
 export * from './restoration/restoration';
 export * from './director/director';
 export * from './simulation-engine';
+export * from './scenario-context-factory';

@@ -21,14 +21,14 @@ import {
   GENERATION_MODEL,
   LOAD_MODEL,
   PROTECTION_ENGINE,
-  PlaceholderCascadeEngine,
-  PlaceholderDirector,
-  PlaceholderGenerationModel,
-  PlaceholderLoadModel,
-  PlaceholderRestorationController,
-  PlaceholderSimulationEngine,
-  PlaceholderTopologyService,
-  PlaceholderWeatherModel,
+  DeterministicCascadeEngine,
+  GridDirector,
+  MeridianBayGenerationModel,
+  MeridianBayLoadModel,
+  DeterministicRestorationController,
+  GridSimulationEngine,
+  MeridianBayTopologyService,
+  DeterministicWeatherModel,
   RESTORATION_CONTROLLER,
   SIMULATION_ENGINE,
   TOPOLOGY_SERVICE,
@@ -36,7 +36,18 @@ import {
   createElectricalGraph,
   createProtectionEngine,
 } from '@engine';
-import { SCENARIO_REGISTRY, createScenarioRegistry, HeatwaveScenario } from '@scenarios';
+import { SCENARIO_REGISTRY, createScenarioRegistry,
+  HeatwaveScenario,
+  StormScenario,
+  EquipmentFailureScenario,
+  CyberAttackScenario,
+  GeneratorLossScenario,
+  SubstationFailureScenario,
+  DemandSurgeScenario,
+  TransformerFailureScenario,
+} from '@scenarios';
+import { buildScenarioFaultApi } from '@engine';
+
 import {
   ANALYTICS_COLLECTOR,
   CONCEPT_GRAPH,
@@ -127,25 +138,89 @@ export function createCompositionRoot(config: AppConfig): Container {
   container.register(ELECTRICAL_GRAPH, (c) =>
     createElectricalGraph({ now: () => c.resolve(SIMULATION_KERNEL).clock.tick }),
   );
-  // Placeholders (Phase 4+):
-  container.register(TOPOLOGY_SERVICE, () => new PlaceholderTopologyService());
-  container.register(WEATHER_MODEL, () => new PlaceholderWeatherModel());
-  container.register(GENERATION_MODEL, () => new PlaceholderGenerationModel());
-  container.register(LOAD_MODEL, () => new PlaceholderLoadModel());
+  // Concrete simulation engine subsystems
+  container.register(TOPOLOGY_SERVICE, () => new MeridianBayTopologyService());
+  container.register(WEATHER_MODEL, () => new DeterministicWeatherModel());
+  container.register(GENERATION_MODEL, () => new MeridianBayGenerationModel());
+  container.register(LOAD_MODEL, () => new MeridianBayLoadModel());
   // Power flow is now the real Phase-4 DC solver (`solveDcPowerFlow`), a pure
   // function invoked on the ELECTRICAL_GRAPH — no placeholder to register.
   // Real Phase-5 protection engine (relays + breakers + thermal). Unwired from
   // the domain bus in Phase 5; it changes topology only via graph transactions.
   container.register(PROTECTION_ENGINE, () => createProtectionEngine());
-  container.register(CASCADE_ENGINE, () => new PlaceholderCascadeEngine());
-  container.register(RESTORATION_CONTROLLER, () => new PlaceholderRestorationController());
-  container.register(DIRECTOR, () => new PlaceholderDirector());
-  container.register(SIMULATION_ENGINE, () => new PlaceholderSimulationEngine());
+  container.register(CASCADE_ENGINE, () => new DeterministicCascadeEngine());
+  container.register(RESTORATION_CONTROLLER, (c) => new DeterministicRestorationController(
+    c.resolve(TOPOLOGY_SERVICE),
+    c.resolve(ELECTRICAL_GRAPH),
+    c.resolve(PROTECTION_ENGINE),
+    c.resolve(GENERATION_MODEL),
+  ));
+  container.register(DIRECTOR, () => new GridDirector());
+  container.register(SIMULATION_ENGINE, (c) => new GridSimulationEngine(
+    c.resolve(ELECTRICAL_GRAPH),
+    c.resolve(TOPOLOGY_SERVICE),
+    c.resolve(WEATHER_MODEL),
+    c.resolve(GENERATION_MODEL),
+    c.resolve(LOAD_MODEL),
+    c.resolve(PROTECTION_ENGINE),
+    c.resolve(CASCADE_ENGINE),
+    c.resolve(RESTORATION_CONTROLLER),
+    c.resolve(DIRECTOR),
+  ));
+
 
   // ---- Scenarios (real registry, plugin instances) ----
-  container.register(SCENARIO_REGISTRY, () => {
+  container.register(SCENARIO_REGISTRY, (c) => {
     const registry = createScenarioRegistry();
-    registry.register(new HeatwaveScenario());
+    const engine = c.resolve(SIMULATION_ENGINE);
+    const generation = c.resolve(GENERATION_MODEL);
+    const loads = c.resolve(LOAD_MODEL);
+    const protection = c.resolve(PROTECTION_ENGINE);
+
+    const faults = buildScenarioFaultApi({ engine, generation, loads, protection });
+
+    const scenarioContext = {
+      engine,
+      faults,
+      generation: {
+        isTripped: (id: Parameters<typeof generation.isTripped>[0]) => generation.isTripped(id),
+        totalOutput: () => generation.totalOutput(),
+        getGeneratorOutput: (id: Parameters<typeof generation.getGeneratorOutput>[0]) =>
+          generation.getGeneratorOutput(id),
+      },
+      loads: {
+        getShedFraction: (id: Parameters<typeof loads.getShedFraction>[0]) =>
+          loads.getShedFraction(id),
+        totalDemand: () => loads.totalDemand(),
+        getLoadDemand: (id: Parameters<typeof loads.getLoadDemand>[0]) =>
+          loads.getLoadDemand(id),
+      },
+      protection: {
+        thermalFor: (line: Parameters<typeof protection.thermalFor>[0]) =>
+          protection.thermalFor(line),
+        breakerFor: (line: Parameters<typeof protection.breakerFor>[0]) =>
+          protection.breakerFor(line),
+        relayFor: (line: Parameters<typeof protection.relayFor>[0]) =>
+          protection.relayFor(line),
+      },
+    };
+
+    const scenarios = [
+      new HeatwaveScenario(),
+      new StormScenario(),
+      new EquipmentFailureScenario(),
+      new CyberAttackScenario(),
+      new GeneratorLossScenario(),
+      new SubstationFailureScenario(),
+      new DemandSurgeScenario(),
+      new TransformerFailureScenario(),
+    ];
+
+    for (const scenario of scenarios) {
+      scenario.setup(scenarioContext);
+      registry.register(scenario);
+    }
+
     return registry;
   });
 

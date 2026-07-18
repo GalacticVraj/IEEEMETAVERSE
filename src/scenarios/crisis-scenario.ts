@@ -1,6 +1,6 @@
-import type { ScenarioId, Severity } from '@app-types';
+import type { GeneratorId, LineId, LoadId, ScenarioId, Severity } from '@app-types';
 import type { TickContext } from '@core';
-import type { ISimulationEngine } from '@engine';
+import type { IGenerationModel, ILoadModel, ISimulationEngine, ProtectionEngine } from '@engine';
 
 export interface ScenarioMetadata {
   readonly id: ScenarioId;
@@ -9,9 +9,31 @@ export interface ScenarioMetadata {
   readonly difficulty: Severity;
 }
 
+/**
+ * Subsystem references available to scenarios for fault injection.
+ * Scenarios call these during `setup()` to store references, then use them
+ * from `onTick()`. This keeps all engine mutation through proper subsystem APIs.
+ */
+export interface ScenarioFaultApi {
+  /** Trip/un-trip a generator from the dispatch merit order. */
+  tripGenerator(id: GeneratorId): void;
+  untripGenerator(id: GeneratorId): void;
+  /** Shed a fraction (0..1) of a specific load block. */
+  shedLoad(id: LoadId, fraction: number): void;
+  resetShedding(): void;
+  /** Manually open a breaker on a line (protection engine command trip). */
+  commandOpenLine(line: LineId): void;
+}
+
 /** Services a scenario is allowed to touch during setup/teardown. */
 export interface ScenarioContext {
   readonly engine: ISimulationEngine;
+  /** Direct subsystem fault injection API. */
+  readonly faults: ScenarioFaultApi;
+  /** Exposed subsystem models (read-only queries). */
+  readonly generation: Pick<IGenerationModel, 'isTripped' | 'totalOutput' | 'getGeneratorOutput'>;
+  readonly loads: Pick<ILoadModel, 'getShedFraction' | 'totalDemand' | 'getLoadDemand'>;
+  readonly protection: Pick<ProtectionEngine, 'thermalFor' | 'breakerFor' | 'relayFor'>;
 }
 
 /**

@@ -1,4 +1,4 @@
-import type { LineId } from '@app-types';
+import type { BusId, LineId, LineTripCause, MegaWatts, PerUnit } from '@app-types';
 import { createToken } from '@core';
 import type { Token, TypedEventBus } from '@core';
 
@@ -9,7 +9,7 @@ import { DEFAULT_BREAKER_CONFIG, DEFAULT_RELAY_CONFIG, DEFAULT_THERMAL_CONFIG } 
 import type { BreakerConfig, RelayConfig, ThermalConfig } from './config';
 import { PROTECTION_EVENT } from './protection-events';
 import type { ProtectionEventMap } from './protection-events';
-import { createRelay, stepRelay } from './relay';
+import { RelayPhase, createRelay, stepRelay } from './relay';
 import type { RelayDecision, RelayState } from './relay';
 import { createThermalState, stepThermal } from './thermal';
 import type { ThermalState } from './thermal';
@@ -59,6 +59,10 @@ export interface ProtectionEngine {
   relays(): readonly RelayState[];
   breakers(): readonly ProtectionBreaker[];
   thermals(): readonly ThermalState[];
+  resetRelay(line: LineId): void;
+  /** Initiate breaker open sequence (scenario fault injection / manual trip). */
+  commandOpen(line: LineId, tick: number): void;
+  commandClose(line: LineId, tick: number): void;
 }
 
 /** DI token for the protection engine. */
@@ -79,6 +83,10 @@ export function createProtectionEngine(options: ProtectionEngineOptions = {}): P
   const relays = new Map<LineId, RelayState>();
   const breakers = new Map<LineId, ProtectionBreaker>();
   const thermals = new Map<LineId, ThermalState>();
+  const lineSpecs = new Map<
+    LineId,
+    { from: BusId; to: BusId; capacityMw: MegaWatts; reactancePu: PerUnit }
+  >();
 
   const register = (graph: ElectricalGraph): void => {
     for (const line of graph.lines()) {
@@ -89,6 +97,12 @@ export function createProtectionEngine(options: ProtectionEngineOptions = {}): P
           createProtectionBreaker(`breaker-${String(line.id)}`, line.id, breakerConfig),
         );
         thermals.set(line.id, createThermalState(line.id, thermalConfig));
+        lineSpecs.set(line.id, {
+          from: line.from as BusId,
+          to: line.to as BusId,
+          capacityMw: line.capacityMw,
+          reactancePu: line.reactancePu,
+        });
       }
     }
   };
@@ -102,6 +116,42 @@ export function createProtectionEngine(options: ProtectionEngineOptions = {}): P
     breakers: () => [...breakers.values()],
     thermals: () => [...thermals.values()],
 
+    resetRelay(line: LineId): void {
+      const r = relays.get(line);
+      if (r !== undefined) {
+        relays.set(line, {
+          ...r,
+          phase: RelayPhase.Idle,
+          lastPickupTick: null,
+          lastTripTick: null,
+          timingStartedTick: null,
+          resetStartedTick: null,
+        });
+      }
+    },
+
+    commandOpen(line: LineId, tick: number): void {
+      const b = breakers.get(line);
+      if (b !== undefined && b.phase === BreakerPhase.Closed) {
+        const stepResult = stepBreaker(b, 'open', tick);
+        breakers.set(line, stepResult.breaker);
+        for (const e of stepResult.events) {
+          emit(e.name, e.payload);
+        }
+      }
+    },
+
+    commandClose(line: LineId, tick: number): void {
+      const b = breakers.get(line);
+      if (b !== undefined && b.phase === BreakerPhase.Open) {
+        const stepResult = stepBreaker(b, 'close', tick);
+        breakers.set(line, stepResult.breaker);
+        for (const e of stepResult.events) {
+          emit(e.name, e.payload);
+        }
+      }
+    },
+
     evaluate(context: ProtectionContext): ProtectionCycleResult {
       const { graph, tick, timestepS } = context;
       register(graph);
@@ -111,12 +161,13 @@ export function createProtectionEngine(options: ProtectionEngineOptions = {}): P
 
       const trips: LineId[] = [];
       const opened: LineId[] = [];
+      const closed: LineId[] = [];
       const decisions: (RelayDecision & { line: LineId })[] = [];
       let relaysEvaluated = 0;
 
-      // Iterate lines still present in the graph, in deterministic id order.
-      for (const line of graph.lines()) {
-        const lineId = line.id;
+      // Iterate all registered lines in deterministic order.
+      const lineIds = [...thermals.keys()].sort();
+      for (const lineId of lineIds) {
         const relay = relays.get(lineId);
         const breaker = breakers.get(lineId);
         const thermal = thermals.get(lineId);
@@ -176,13 +227,26 @@ export function createProtectionEngine(options: ProtectionEngineOptions = {}): P
           emit(breakerEvent.name, breakerEvent.payload);
         }
         if (breakerResult.reachedOpen) opened.push(lineId);
+        if (breakerResult.reachedClosed) closed.push(lineId);
       }
 
-      // 4 · The ONLY topology mutation, through one controlled transaction.
-      if (opened.length > 0) {
+      // 4 · The ONLY topology mutations, through one controlled transaction.
+      if (opened.length > 0 || closed.length > 0) {
         graph.mutate((tx) => {
           for (const lineId of opened) {
             if (graph.getLine(lineId) !== undefined) tx.removeLine(lineId);
+          }
+          for (const lineId of closed) {
+            const spec = lineSpecs.get(lineId);
+            if (spec !== undefined && graph.getLine(lineId) === undefined) {
+              tx.addLine({
+                id: lineId,
+                from: spec.from,
+                to: spec.to,
+                capacityMw: spec.capacityMw,
+                reactancePu: spec.reactancePu,
+              });
+            }
           }
         });
       }
@@ -197,4 +261,5 @@ export function createProtectionEngine(options: ProtectionEngineOptions = {}): P
       return { tick, trips, opened, decisions };
     },
   };
+
 }

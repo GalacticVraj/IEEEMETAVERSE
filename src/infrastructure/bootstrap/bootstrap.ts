@@ -2,6 +2,8 @@ import type { AppConfig } from '@config';
 import { EVENT_BUS, LOGGER } from '@core';
 import type { Container } from '@core';
 import { SIMULATION_ENGINE } from '@engine';
+import type { SimulationKernel } from '@kernel';
+import type { GridEventMap } from '@core';
 import { bindStores } from '@state';
 
 import { SIMULATION_KERNEL, createCompositionRoot } from '../di/composition-root';
@@ -10,30 +12,28 @@ import { SIMULATION_KERNEL, createCompositionRoot } from '../di/composition-root
 export interface AppRuntime {
   readonly container: Container;
   readonly config: AppConfig;
+  readonly kernel: SimulationKernel<GridEventMap>;
   /** Detach projections and dispose the kernel. */
   shutdown(): void;
 }
 
 /**
- * The initialization sequence. Builds the container, resolves the shared bus and
- * kernel, validates engine construction, and binds event-driven projections.
- *
- * Phase 1 deliberately does NOT `kernel.boot()`/`tick()`: the engine is a
- * placeholder. The runtime exists to prove the wiring end-to-end; the simulation
- * loop starts in Phase 2. See docs/architecture/14-initialization-sequence.md.
+ * The initialization sequence. Builds the container, resolves the shared bus
+ * and kernel, validates engine construction, binds event-driven projections,
+ * and BOOTS the kernel so the simulation loop can start immediately.
  */
 export function bootstrap(config: AppConfig): AppRuntime {
   const container = createCompositionRoot(config);
   const bus = container.resolve(EVENT_BUS);
   const logger = container.resolve(LOGGER).child('bootstrap');
 
-  // Eagerly construct the kernel and engine to validate DI wiring. Neither is
-  // booted/ticked yet — the engine is a placeholder. The runtime exists to prove
-  // the wiring end-to-end; the simulation loop starts once real systems land.
-  container.resolve(SIMULATION_KERNEL);
-  container.resolve(SIMULATION_ENGINE);
+  const kernel = container.resolve(SIMULATION_KERNEL);
+  const engine = container.resolve(SIMULATION_ENGINE);
 
-  const unbindStores = bindStores(bus);
+  // Boot the kernel: Boot → Loading → Configuration → Idle
+  kernel.boot();
+
+  const unbindStores = bindStores(bus, engine);
 
   logger.info('GridGuard runtime bootstrapped', {
     profile: config.profile,
@@ -43,9 +43,26 @@ export function bootstrap(config: AppConfig): AppRuntime {
   return {
     container,
     config,
+    kernel,
     shutdown(): void {
-      // The kernel was never booted, so there is nothing to dispose; just detach
-      // the event-driven projections and clear the bus.
+      // Gracefully walk the FSM to Disposed from whatever state we're in.
+      const k = kernel;
+      try {
+        // If Running or Paused, move to Idle first.
+        if (k.state === 'Running' || k.state === 'Paused') {
+          k.stop();
+        }
+        // From Idle (or Replay), move to Shutdown.
+        if (k.state === 'Idle' || k.state === 'Replay') {
+          k.shutdown();
+        }
+        // From Shutdown, move to Disposed.
+        if (k.state === 'Shutdown') {
+          k.dispose();
+        }
+      } catch {
+        // If the FSM rejects a transition (e.g. already Disposed), that's fine.
+      }
       unbindStores();
       bus.clear();
       logger.info('GridGuard runtime shut down');

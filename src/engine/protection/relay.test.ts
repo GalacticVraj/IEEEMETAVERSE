@@ -104,4 +104,85 @@ describe('relay', () => {
     const b = createRelay('r1', line, cfg());
     expect(stepRelay(a, obs(1.3), 0, 1)).toEqual(stepRelay(b, obs(1.3), 0, 1));
   });
+
+  // --- Additional coverage for uncovered branches ---------------------------
+
+  it('does not trip while in Timing phase if loading drops below pickup (enters Resetting)', () => {
+    const relay = createRelay(
+      'r1',
+      line,
+      cfg({ curve: ProtectionCurveType.DefiniteTime, instantaneousTrip: false, tripDelayS: 10 }),
+    );
+    // Tick 0: pickup
+    let r = stepRelay(relay, obs(1.2), 0, 1).relay;
+    expect(r.phase).toBe(RelayPhase.Pickup);
+    // Tick 1: still above pickup, enters Timing
+    r = stepRelay(r, obs(1.2), 1, 1).relay;
+    expect(r.phase).toBe(RelayPhase.Timing);
+    // Tick 2: loading drops out → Resetting (no trip)
+    const result = stepRelay(r, obs(0.5), 2, 1);
+    expect(result.relay.phase).toBe(RelayPhase.Resetting);
+    expect(result.decision.trip).toBe(false);
+  });
+
+  it('stays in Resetting while reset delay has not elapsed', () => {
+    const config = cfg({ resetDelayS: 5, instantaneousTrip: false });
+    // Get into Resetting
+    let r = stepRelay(createRelay('r1', line, config), obs(1.2), 0, 1).relay; // Pickup
+    r = stepRelay(r, obs(0.5), 1, 1).relay; // dropout → Resetting
+    expect(r.phase).toBe(RelayPhase.Resetting);
+    // Only 1 tick elapsed (1s), but resetDelayS = 5s → still Resetting
+    const result = stepRelay(r, obs(0.5), 2, 1);
+    expect(result.relay.phase).toBe(RelayPhase.Resetting);
+    expect(result.decision.trip).toBe(false);
+    expect(result.events).toHaveLength(0);
+  });
+
+  it('from Resetting, re-pickup restarts timing and emits RelayTiming', () => {
+    const config = cfg({
+      curve: ProtectionCurveType.DefiniteTime,
+      instantaneousTrip: false,
+      tripDelayS: 10,
+      resetDelayS: 5,
+    });
+    // Get into Resetting state
+    let r = stepRelay(createRelay('r1', line, config), obs(1.2), 0, 1).relay; // Pickup
+    r = stepRelay(r, obs(0.5), 1, 1).relay; // dropout → Resetting
+    expect(r.phase).toBe(RelayPhase.Resetting);
+    // Now loading rises again above pickup → evaluateTiming(tick, resumed=true) emits RelayTiming
+    const result = stepRelay(r, obs(1.2), 2, 1);
+    expect(result.relay.phase).toBe(RelayPhase.Timing);
+    expect(result.events.some((e) => e.name === 'RelayTiming')).toBe(true);
+  });
+
+  it('stays in Monitoring when below pickup (no transition events after first)', () => {
+    // Second tick in Monitoring should produce no events and keep phase
+    const r = stepRelay(createRelay('r1', line, cfg()), obs(0.5), 0, 1).relay;
+    expect(r.phase).toBe(RelayPhase.Monitoring);
+    const result = stepRelay(r, obs(0.5), 1, 1);
+    expect(result.relay.phase).toBe(RelayPhase.Monitoring);
+    expect(result.events).toHaveLength(0);
+    expect(result.decision.trip).toBe(false);
+  });
+
+  it('returns no-trip when breaker is open (open line)', () => {
+    const result = stepRelay(
+      createRelay('r1', line, cfg()),
+      obs(2.0, { breakerClosed: false }),
+      0,
+      1,
+    );
+    // No protection needed for an already open line
+    expect(result.decision.trip).toBe(false);
+    expect(result.relay.phase).toBe(RelayPhase.Monitoring);
+  });
+
+  it('hits default branch for unknown relay phase gracefully', () => {
+    const relay = createRelay('r1', line, cfg());
+    // Inject an unknown phase not in the switch statement
+    const unknown = { ...relay, phase: 'TripPending' as RelayPhase };
+    const result = stepRelay(unknown, obs(1.2), 0, 1);
+    // Should return no-trip (default branch)
+    expect(result.decision.trip).toBe(false);
+  });
 });

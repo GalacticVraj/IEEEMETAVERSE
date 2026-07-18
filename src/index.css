@@ -1,17 +1,12 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
-:root {
-  color-scheme: dark;
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
 }
 
-html,
-body,
-#root {
+html, body, #root {
+  width: 100%;
   height: 100%;
-}
-
-body {
-  @apply bg-surface-void text-ink-primary font-sans antialiased;
+  overflow: hidden;
+  background: #0f172a;
 }
