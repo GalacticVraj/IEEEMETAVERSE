@@ -24,7 +24,7 @@ export * from './weather/weather';
 export * from './generation/generation';
 export * from './loads/loads';
 export * from './powerflow';
-export * from './protection/protection';
+export * from './protection';
 export * from './cascade/cascade';
 export * from './restoration/restoration';
 export * from './director/director';

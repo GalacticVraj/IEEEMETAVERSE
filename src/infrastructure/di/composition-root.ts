@@ -20,12 +20,11 @@ import {
   ELECTRICAL_GRAPH,
   GENERATION_MODEL,
   LOAD_MODEL,
-  PROTECTION_SYSTEM,
+  PROTECTION_ENGINE,
   PlaceholderCascadeEngine,
   PlaceholderDirector,
   PlaceholderGenerationModel,
   PlaceholderLoadModel,
-  PlaceholderProtectionSystem,
   PlaceholderRestorationController,
   PlaceholderSimulationEngine,
   PlaceholderTopologyService,
@@ -35,6 +34,7 @@ import {
   TOPOLOGY_SERVICE,
   WEATHER_MODEL,
   createElectricalGraph,
+  createProtectionEngine,
 } from '@engine';
 import { SCENARIO_REGISTRY, createScenarioRegistry, HeatwaveScenario } from '@scenarios';
 import {
@@ -134,7 +134,9 @@ export function createCompositionRoot(config: AppConfig): Container {
   container.register(LOAD_MODEL, () => new PlaceholderLoadModel());
   // Power flow is now the real Phase-4 DC solver (`solveDcPowerFlow`), a pure
   // function invoked on the ELECTRICAL_GRAPH — no placeholder to register.
-  container.register(PROTECTION_SYSTEM, () => new PlaceholderProtectionSystem());
+  // Real Phase-5 protection engine (relays + breakers + thermal). Unwired from
+  // the domain bus in Phase 5; it changes topology only via graph transactions.
+  container.register(PROTECTION_ENGINE, () => createProtectionEngine());
   container.register(CASCADE_ENGINE, () => new PlaceholderCascadeEngine());
   container.register(RESTORATION_CONTROLLER, () => new PlaceholderRestorationController());
   container.register(DIRECTOR, () => new PlaceholderDirector());
