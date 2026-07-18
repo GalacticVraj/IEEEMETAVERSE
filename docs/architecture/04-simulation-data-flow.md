@@ -74,7 +74,7 @@ The engine references only the `ICrisisScenario` interface, so new scenarios nev
 
 ## Determinism guarantee
 
-Every stochastic decision draws from the kernel's seeded `mulberry32` RNG via `SystemContext.rng`; every time reference comes from `SimClock`. Given the same `seed`, the same registered systems, and the same sequence of `tick()`/`transition()` calls, **the emitted event stream is byte-identical**. This is the property `@replay` verification depends on and the reason `Math.random()` is banned in the engine (see [12](./12-testing-strategy.md), [13](./13-state-ownership.md)).
+Every stochastic decision draws from the kernel's seeded `xoroshiro128+` RNG via `SystemContext.rng`; every time reference comes from `SimClock`. Given the same `seed`, the same registered systems, and the same sequence of `tick()`/`transition()` calls, **the emitted event stream is byte-identical**. This is the property `@replay` verification depends on and the reason `Math.random()` is banned in the engine (see [12](./12-testing-strategy.md), [13](./13-state-ownership.md)).
 
 ## What flows _out_ of this document
 

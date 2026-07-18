@@ -36,7 +36,7 @@ Purity is not left to discipline. Four mechanisms enforce it, and each fails lou
 
 ### 1. Projections are copy-only (`@state`)
 
-Zustand stores are updated **exclusively** by event subscriptions, and each subscription does nothing but copy payload fields. The real `bindSimulationStore` is three `setState` calls of `payload.tick`, `payload.to`, `payload.maxLoading` — no branching, no derivation. There is physically no code path in a projection that computes a simulation fact, so a consumer cannot read one the engine didn't emit. See [13 · State Ownership](./13-state-ownership.md).
+Zustand stores are updated **exclusively** by event subscriptions, and each subscription does nothing but copy payload fields. The real `bindSimulationStore` is three `setState` calls of `payload.tick` (from `SimulationTick`), `payload.to` (from `KernelStateChanged`, a `KernelState`), and `payload.maxLoading` — no branching, no derivation. There is physically no code path in a projection that computes a simulation fact, so a consumer cannot read one the engine didn't emit. See [13 · State Ownership](./13-state-ownership.md).
 
 ### 2. Lint import boundaries (CI-enforced)
 

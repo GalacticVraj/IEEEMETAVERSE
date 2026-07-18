@@ -28,3 +28,6 @@ export const BLACKOUT_VOLTAGE_PU = 0.5;
 
 /** Upper bound applied to device pixel ratio for adaptive rendering cost. */
 export const MAX_DEVICE_PIXEL_RATIO = 2;
+
+/** Default listener-count threshold before the event bus warns about a leak. */
+export const MAX_EVENT_LISTENERS = 100;

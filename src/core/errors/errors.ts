@@ -41,6 +41,30 @@ export class ContainerResolutionError extends GridGuardError {
   }
 }
 
+/** Thrown when registered systems form a dependency cycle (no valid order). */
+export class CircularDependencyError extends GridGuardError {
+  public constructor(public readonly cycle: readonly string[]) {
+    super(`Circular system dependency detected: ${cycle.join(' -> ')}`);
+  }
+}
+
+/** Thrown when a system declares a dependency on an unregistered system. */
+export class MissingDependencyError extends GridGuardError {
+  public constructor(
+    public readonly system: string,
+    public readonly dependency: string,
+  ) {
+    super(`System "${system}" depends on unregistered system "${dependency}"`);
+  }
+}
+
+/** Thrown when the runtime detects a determinism violation (e.g. replay drift). */
+export class DeterminismError extends GridGuardError {
+  public constructor(message: string) {
+    super(message);
+  }
+}
+
 /**
  * Canonical placeholder body. Referencing the caller's arguments via `context`
  * keeps them "used" under `noUnusedParameters`, and documents intent at the call

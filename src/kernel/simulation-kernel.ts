@@ -1,127 +1,268 @@
-import type { Seconds, SimulationState } from '@app-types';
-import { DEFAULT_TIMESTEP, GRID_EVENT } from '@constants';
-import { NoopLogger, createEventBus, createToken } from '@core';
+import { KernelState } from '@app-types';
+import type { Seconds } from '@app-types';
+import { DEFAULT_TIMESTEP, MAX_EVENT_LISTENERS } from '@constants';
+import { GridGuardError, KERNEL_EVENT, NoopLogger, createEventBus } from '@core';
 import type {
   Clock,
-  GridEventBus,
-  GridEventMap,
+  KernelEventMap,
   Logger,
   Rng,
+  RngState,
   SimulationSystem,
   SystemContext,
-  Token,
+  TickContext,
+  TypedEventBus,
 } from '@core';
 
-import { createSimulationStateMachine } from './fsm/simulation-state-machine';
-import type { SimulationStateMachine } from './fsm/simulation-state-machine';
+import { createDiagnostics } from './diagnostics/diagnostics';
+import type { Diagnostics } from './diagnostics/diagnostics';
+import { createKernelLifecycle } from './fsm/kernel-lifecycle';
+import type { KernelLifecycle } from './fsm/kernel-lifecycle';
 import { createLifecycleManager } from './lifecycle/lifecycle-manager';
 import { createSystemRegistry } from './registry/system-registry';
 import type { SystemRegistry } from './registry/system-registry';
-import { createMulberry32 } from './rng/mulberry32';
+import { createXoroshiro128Plus } from './rng/xoroshiro128plus';
 import { createScheduler } from './scheduler/scheduler';
-import { createSimClock } from './time/sim-clock';
+import { createTaskScheduler } from './scheduler/task-scheduler';
+import type { TaskScheduler } from './scheduler/task-scheduler';
+import { captureKernelSnapshot, hashSnapshot, restoreKernelSnapshot } from './snapshot/snapshot';
+import type { KernelSnapshot } from './snapshot/snapshot';
+import { createClockFromFrequency, createSimClock } from './time/sim-clock';
 
-export interface SimulationKernelOptions {
+export interface SimulationKernelOptions<TEvents extends KernelEventMap = KernelEventMap> {
   /** Seed that makes the entire run reproducible. */
   readonly seed: number;
-  /** Fixed timestep; defaults to {@link DEFAULT_TIMESTEP}. */
+  /** Simulation frequency in Hz (e.g. 5, 10, 20, 30, 60). Overrides timestep. */
+  readonly frequencyHz?: number;
+  /** Explicit fixed timestep; defaults to {@link DEFAULT_TIMESTEP}. */
   readonly timestep?: Seconds;
-  /** Inject a shared bus (e.g. for tests); otherwise a fresh one is created. */
-  readonly events?: GridEventBus;
+  /** Inject a shared bus; otherwise the kernel creates a tick-aware one. */
+  readonly events?: TypedEventBus<TEvents>;
   /** Inject a logger; defaults to {@link NoopLogger}. */
   readonly logger?: Logger;
+  /** Injected monotonic wall-clock (ms) for diagnostics. Defaults to 0. */
+  readonly timeProvider?: () => number;
+  /** Freeze event payloads for immutability (used in competition mode). */
+  readonly freezePayloads?: boolean;
+  /** Warn when an event's listener count exceeds this. */
+  readonly leakThreshold?: number;
 }
 
 /**
  * The Simulation Kernel: the deterministic engine core. It owns time (clock),
- * randomness (rng), the lifecycle state machine (fsm), the system registry, and
- * the event bus, and it exposes the tick loop. It is domain-agnostic — it knows
- * nothing about power flow or cascades, only how to drive registered systems.
+ * randomness (rng), the runtime lifecycle (KernelLifecycle), the system
+ * registry, the tick and task schedulers, diagnostics, and the event bus, and
+ * it exposes the tick loop and snapshot API. It is DOMAIN-AGNOSTIC — it knows
+ * nothing about power flow, cascades, or gameplay, only how to drive registered
+ * systems, and it emits only kernel events (SimulationTick, KernelStateChanged).
  *
- * Determinism guarantee: given the same seed, the same registered systems, and
- * the same sequence of `tick()`/`transition()` calls, the emitted event stream
- * is identical. This is what replay verification depends on.
+ * Determinism guarantee: identical seed, systems, and tick/transition sequence
+ * ⇒ identical emitted event stream, snapshots, and hashes.
  */
-export interface SimulationKernel {
-  readonly events: GridEventBus;
+export interface SimulationKernel<TEvents extends KernelEventMap = KernelEventMap> {
+  readonly events: TypedEventBus<TEvents>;
   readonly clock: Clock;
   readonly rng: Rng;
-  readonly fsm: SimulationStateMachine;
-  readonly registry: SystemRegistry;
-  /** Register a system (before `boot`). */
-  register(system: SimulationSystem): void;
-  /** Initialize all registered systems and bridge FSM → event bus. */
+  readonly lifecycle: KernelLifecycle;
+  readonly registry: SystemRegistry<TEvents>;
+  /** Deterministic timed/repeating task scheduler. */
+  readonly scheduler: TaskScheduler;
+  readonly diagnostics: Diagnostics;
+  readonly state: KernelState;
+
+  /** Register a system (only before `boot`). */
+  register(system: SimulationSystem<TEvents>): void;
+
+  /** Boot → Loading → Configuration → RegisterSystems → Calibration → Idle. */
   boot(): void;
-  /** Advance one fixed timestep: step systems, then emit `SimulationTick`. */
-  tick(): void;
-  /** Request a lifecycle state transition (validated by the FSM). */
-  transition(target: SimulationState): void;
-  /** Reset systems, clock, and FSM to their initial state. */
-  reset(): void;
-  /** Dispose systems and tear down the bus. */
+  start(): void;
+  pause(): void;
+  resume(): void;
+  stop(): void;
+  enterReplay(): void;
+  exitReplay(): void;
+  shutdown(): void;
   dispose(): void;
+
+  /** Advance one fixed timestep (only while Running or Replay). */
+  tick(): void;
+  /** Advance `count` ticks. */
+  run(count: number): void;
+
+  /** Low-level validated lifecycle transition. */
+  transition(target: KernelState): void;
+
+  snapshot(): KernelSnapshot;
+  restore(snapshot: KernelSnapshot): void;
+  /** Deterministic hash of the current authoritative state. */
+  hash(): string;
+
+  /** Return clock, rng, and systems to their initial state (keeps lifecycle). */
+  reset(): void;
 }
 
-export const SIMULATION_KERNEL: Token<SimulationKernel> = createToken('SimulationKernel');
+export function createSimulationKernel<TEvents extends KernelEventMap = KernelEventMap>(
+  options: SimulationKernelOptions<TEvents>,
+): SimulationKernel<TEvents> {
+  const clock: Clock =
+    options.frequencyHz !== undefined
+      ? createClockFromFrequency(options.frequencyHz)
+      : createSimClock(options.timestep ?? DEFAULT_TIMESTEP);
 
-export function createSimulationKernel(options: SimulationKernelOptions): SimulationKernel {
-  const events: GridEventBus = options.events ?? createEventBus<GridEventMap>();
+  const rng = createXoroshiro128Plus(options.seed);
+  const initialRngState: RngState = rng.getState();
+
+  const timeProvider = options.timeProvider ?? (() => 0);
   const logger = (options.logger ?? NoopLogger).child('kernel');
-  const timestep = options.timestep ?? DEFAULT_TIMESTEP;
+  const events: TypedEventBus<TEvents> =
+    options.events ??
+    createEventBus<TEvents>({
+      tickProvider: () => clock.tick,
+      timeProvider,
+      freezePayloads: options.freezePayloads ?? false,
+      leakThreshold: options.leakThreshold ?? MAX_EVENT_LISTENERS,
+      onLeak: (event, count) => {
+        logger.warn('Event listener leak', { event: String(event), count });
+      },
+    });
+  const lifecycle = createKernelLifecycle();
+  const registry = createSystemRegistry<TEvents>();
+  const systemRunner = createScheduler<TEvents>();
+  const scheduler = createTaskScheduler(clock);
+  const lifecycleManager = createLifecycleManager<TEvents>();
+  const diagnostics = createDiagnostics(timeProvider);
 
-  const clock = createSimClock(timestep);
-  const rng = createMulberry32(options.seed);
-  const fsm = createSimulationStateMachine();
-  const registry = createSystemRegistry();
-  const scheduler = createScheduler();
-  const lifecycle = createLifecycleManager();
+  const context: SystemContext<TEvents> = { events, rng, clock, logger };
+  let orderedSystems: readonly SimulationSystem<TEvents>[] = [];
 
-  // Bridge every validated FSM change onto the event bus so consumers observe
-  // lifecycle changes exactly like any other simulation event.
-  fsm.onChange(({ from, to }) => {
-    events.emit(GRID_EVENT.SimStateChanged, { from, to, tick: clock.tick });
+  // Bridge validated lifecycle changes onto the event bus.
+  lifecycle.onChange(({ from, to }) => {
+    events.emit(KERNEL_EVENT.KernelStateChanged, { from, to, tick: clock.tick });
   });
 
-  const context: SystemContext = { events, rng, clock, logger };
-  let booted = false;
+  const requireRunning = (): void => {
+    if (lifecycle.state !== KernelState.Running && lifecycle.state !== KernelState.Replay) {
+      throw new GridGuardError(
+        `Cannot tick while in state "${lifecycle.state}" (must be Running or Replay)`,
+      );
+    }
+  };
 
-  return {
+  const doTick = (): void => {
+    requireRunning();
+    diagnostics.beginTick();
+    clock.advance();
+    const tickContext: TickContext = {
+      tick: clock.tick,
+      time: clock.time,
+      timestep: clock.timestep,
+    };
+    for (const system of orderedSystems) {
+      diagnostics.beginSystem(String(system.id));
+      systemRunner.step([system], tickContext);
+      diagnostics.endSystem(String(system.id));
+    }
+    scheduler.runDue();
+    events.emit(KERNEL_EVENT.SimulationTick, {
+      tick: clock.tick,
+      simTime: clock.time,
+      timestep: clock.timestep,
+    });
+    diagnostics.endTick();
+  };
+
+  const kernel: SimulationKernel<TEvents> = {
     events,
     clock,
     rng,
-    fsm,
+    lifecycle,
     registry,
-    register(system: SimulationSystem): void {
+    scheduler,
+    diagnostics,
+
+    get state(): KernelState {
+      return lifecycle.state;
+    },
+
+    register(system: SimulationSystem<TEvents>): void {
+      if (lifecycle.state !== KernelState.Boot) {
+        throw new GridGuardError(
+          `Systems must be registered before boot (current state "${lifecycle.state}")`,
+        );
+      }
       registry.register(system);
     },
+
     boot(): void {
-      if (booted) return;
-      lifecycle.init(registry.all(), context);
-      booted = true;
-      logger.info('Simulation kernel booted', { systemCount: registry.all().length });
+      lifecycle.transition(KernelState.Loading);
+      lifecycle.transition(KernelState.Configuration);
+      lifecycle.transition(KernelState.RegisterSystems);
+      orderedSystems = registry.resolveOrder();
+      lifecycle.transition(KernelState.Calibration);
+      lifecycleManager.init(orderedSystems, context);
+      lifecycle.transition(KernelState.Idle);
+      logger.info('Kernel booted', { systems: orderedSystems.length });
     },
-    tick(): void {
-      clock.advance();
-      const tickContext = { tick: clock.tick, time: clock.time, timestep: clock.timestep };
-      scheduler.step(registry.all(), tickContext);
-      events.emit(GRID_EVENT.SimulationTick, {
-        tick: clock.tick,
-        simTime: clock.time,
-        timestep: clock.timestep,
-      });
+
+    start(): void {
+      lifecycle.transition(KernelState.Running);
     },
-    transition(target: SimulationState): void {
-      fsm.transition(target);
+    pause(): void {
+      lifecycle.transition(KernelState.Paused);
     },
-    reset(): void {
-      lifecycle.reset(registry.all());
-      clock.reset();
-      fsm.reset();
+    resume(): void {
+      lifecycle.transition(KernelState.Running);
+    },
+    stop(): void {
+      lifecycle.transition(KernelState.Idle);
+    },
+    enterReplay(): void {
+      lifecycle.transition(KernelState.Replay);
+    },
+    exitReplay(): void {
+      lifecycle.transition(KernelState.Idle);
+    },
+    shutdown(): void {
+      lifecycle.transition(KernelState.Shutdown);
     },
     dispose(): void {
-      lifecycle.dispose(registry.all());
+      lifecycle.transition(KernelState.Disposed);
+      lifecycleManager.dispose(orderedSystems);
+      scheduler.clear();
       registry.clear();
       events.clear();
     },
+
+    tick: doTick,
+
+    run(count: number): void {
+      for (let i = 0; i < count; i += 1) {
+        doTick();
+      }
+    },
+
+    transition(target: KernelState): void {
+      lifecycle.transition(target);
+    },
+
+    snapshot(): KernelSnapshot {
+      return captureKernelSnapshot(clock, rng, orderedSystems);
+    },
+    restore(snapshot: KernelSnapshot): void {
+      restoreKernelSnapshot(snapshot, clock, rng, orderedSystems);
+    },
+    hash(): string {
+      return hashSnapshot(captureKernelSnapshot(clock, rng, orderedSystems));
+    },
+
+    reset(): void {
+      lifecycleManager.reset(orderedSystems);
+      clock.reset();
+      rng.setState(initialRngState);
+      scheduler.clear();
+      diagnostics.reset();
+    },
   };
+
+  return kernel;
 }

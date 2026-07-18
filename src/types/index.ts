@@ -9,4 +9,4 @@ export type { Brand } from './brand';
 export * from './ids';
 export * from './units';
 export * from './enums';
-export * from './simulation-state';
+export * from './kernel-state';

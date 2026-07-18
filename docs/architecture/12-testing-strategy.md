@@ -1,6 +1,6 @@
 # 12 · Testing Strategy
 
-The simulation is deterministic pure data, which makes it exceptionally testable: no mocks, no DOM, no time — just seed in, event stream out. Phase 1 proves the harness against the real kernel; the `>90%` engine target is enforced as the physics lands.
+The simulation is deterministic pure data, which makes it exceptionally testable: no mocks, no DOM, no time — just seed in, event stream out. Phase 2 proves the harness against the real, domain-agnostic kernel and the real `@replay` module; the `>90%` engine target is enforced as the physics lands.
 
 ## Tooling
 
@@ -14,26 +14,29 @@ The simulation is deterministic pure data, which makes it exceptionally testable
 
 Test include glob: `src/**/*.{test,spec}.{ts,tsx}` and `tests/**/*.{test,spec}.{ts,tsx}`. Coverage excludes barrels (`index.ts`), `*.d.ts`, `main.tsx`, and `App.tsx` (pure composition).
 
-## What is tested in Phase 1
+## What is tested
 
-The foundation ships **8 test files / 41 tests passing**, all covering the real, deterministic kernel and primitives:
+The kernel foundation ships **100 tests passing across 15 files**, all covering the real, deterministic kernel, event bus, and replay:
 
-| #   | Test file                                         | Proves                                                                                                      |
-| --- | ------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
-| 1   | `src/core/events/event-bus.test.ts`               | `createEventBus` typing + behavior: on/once/off/emit ordering, snapshot dispatch, `listenerCount`, `clear`. |
-| 2   | `src/core/di/container.test.ts`                   | DI container: singleton caching, `registerValue`, `createScope` isolation, `ContainerResolutionError`.      |
-| 3   | `src/kernel/rng/mulberry32.test.ts`               | RNG determinism: identical seed ⇒ identical stream; `nextInt`/`nextRange`/`chance`/`fork` behavior.         |
-| 4   | `src/kernel/time/sim-clock.test.ts`               | `SimClock`: fixed-timestep advance, tick/time accounting, reset.                                            |
-| 5   | `src/kernel/fsm/simulation-state-machine.test.ts` | FSM: legal transitions, illegal transitions throw `InvalidStateTransitionError`, `onChange`, reset.         |
-| 6   | `src/kernel/simulation-kernel.test.ts`            | `createSimulationKernel`: tick loop, FSM→`SimStateChanged` bridging, register/boot/dispose.                 |
-| 7   | `src/config/config-service.test.ts`               | `resolveProfile` mapping + defaulting; `createConfigService`.                                               |
-| 8   | `src/utils/math.test.ts`                          | Pure math helpers (e.g. `clamp`).                                                                           |
+| #     | Test file                                          | Tests | Proves                                                                                                                                                                             |
+| ----- | -------------------------------------------------- | ----- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1     | `src/kernel/rng/xoroshiro128plus.test.ts`          | 13    | RNG determinism: identical seed ⇒ identical stream; `randomInt`/`randomFloat`/`randomBoolean`/`randomNormal`/`shuffle`/`pick`/`weightedPick`/`fork`/`clone`/`getState`/`setState`. |
+| 2     | `src/kernel/time/sim-clock.test.ts`                | 7     | `SimClock`: fixed-timestep advance, tick/time accounting, `frequencyHz`, reset, get/set state.                                                                                     |
+| 3     | `src/kernel/fsm/kernel-lifecycle.test.ts`          | 7     | `KernelState` FSM: legal transitions, illegal throw `InvalidStateTransitionError`, `can`, `onChange`.                                                                              |
+| 4     | `src/kernel/registry/system-registry.test.ts`      | 7     | Registry: register/get/has/all/clear, deterministic `resolveOrder`, `CircularDependencyError`/`MissingDependencyError`.                                                            |
+| 5     | `src/kernel/scheduler/task-scheduler.test.ts`      | 9     | Task scheduler: `atTick`/`afterTicks`/`atNextTick`/`everyTicks`/`atSimTime`, deterministic ordering, `cancel`, no timers.                                                          |
+| 6     | `src/kernel/diagnostics/diagnostics.test.ts`       | 4     | Diagnostics: per-tick/per-system timing via injected wall-clock, `report`, `reset`.                                                                                                |
+| 7     | `src/kernel/snapshot/snapshot.test.ts`             | 5     | Snapshots: `captureKernelSnapshot`/`restoreKernelSnapshot`, `canonicalize`, FNV `hashString`, `compareSnapshots`.                                                                  |
+| 8     | `src/kernel/simulation-kernel.test.ts`             | 10    | `createSimulationKernel`: tick pipeline, lifecycle→`KernelStateChanged` bridging, register/boot/run/dispose/reset.                                                                 |
+| 9     | `src/core/events/event-bus.test.ts`                | 14    | `createEventBus`: on/once/off/emit ordering, priority, `onAny` envelope, snapshot dispatch, stats, freeze, leak.                                                                   |
+| 10    | `src/replay/replay.test.ts`                        | 5     | Replay: record via `onAny`, serialize/deserialize (JSON backend), playback re-emit, verifier determinism + divergence.                                                             |
+| 11–15 | config, DI, math, App smoke, bootstrap integration | —     | `resolveProfile` mapping + defaulting, DI container behavior, pure math helpers, App composition, end-to-end bootstrap wiring.                                                     |
 
 These are the pieces the whole simulation's determinism depends on — if they hold, `seed + events` reproduces any run.
 
 ## Coverage policy
 
-`vitest.config.ts` currently sets coverage **thresholds to 0** deliberately: Phase 1 proves the harness against the kernel, and failing CI on line coverage of unimplemented placeholders would be noise. As real physics lands, thresholds ramp:
+`vitest.config.ts` currently sets coverage **thresholds to 0** deliberately: Phases 1–2 prove the harness against the kernel, event bus, and replay, and failing CI on line coverage of unimplemented placeholders would be noise. As real physics lands, thresholds ramp:
 
 ```mermaid
 flowchart LR
@@ -57,7 +60,7 @@ Rationale: coverage gates should apply to code that has real behavior. Gating pl
 1. **Unit** (now) — kernel primitives, pure functions, FSM, DI, RNG, clock.
 2. **System** (Phase 2+) — each engine subsystem in isolation against `SystemContext` fixtures.
 3. **Integration** (Phase 3+) — full engine tick pipeline producing an expected event sequence for a scenario/seed.
-4. **Replay/determinism** (Phase 10) — record → replay → verify identical streams; the backbone of the `@replay` module.
+4. **Replay/determinism** (real since Phase 2) — record → replay → verify identical streams via `createReplayVerifier`; the backbone of the `@replay` module. Broadens into golden-stream scenario tests as physics lands.
 5. **Consumer** (as needed) — jsdom tests for projections (`bindStores` copies event fields correctly) and key UI behaviors.
 
 ## Running

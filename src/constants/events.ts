@@ -11,8 +11,8 @@
 export const GRID_EVENT = {
   /** One fixed-timestep advance of simulation time completed. */
   SimulationTick: 'SimulationTick',
-  /** Simulation lifecycle state machine changed state. */
-  SimStateChanged: 'SimStateChanged',
+  /** The kernel runtime lifecycle changed state. */
+  KernelStateChanged: 'KernelStateChanged',
 
   /** Environmental regime changed (temperature, irradiance, wind). */
   WeatherChanged: 'WeatherChanged',

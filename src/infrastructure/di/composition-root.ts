@@ -1,8 +1,18 @@
 import type { AppConfig } from '@config';
 import { CONFIG_SERVICE, createConfigService } from '@config';
-import { EVENT_BUS, LOGGER, SERIALIZER, createContainer, createEventBus } from '@core';
-import type { Container, GridEventMap } from '@core';
-import { SIMULATION_KERNEL, createSimulationKernel } from '@kernel';
+import { EVENT_BUS, LOGGER, SERIALIZER, createContainer, createToken } from '@core';
+import type { Container, GridEventMap, Token } from '@core';
+import { createSimulationKernel } from '@kernel';
+import type { SimulationKernel } from '@kernel';
+
+/**
+ * DI token for the application's concrete kernel, typed to the domain event map
+ * (`GridEventMap`). It lives here in infrastructure — the only layer that may
+ * know both the kernel and the domain — so the kernel itself stays
+ * domain-agnostic.
+ */
+export const SIMULATION_KERNEL: Token<SimulationKernel<GridEventMap>> =
+  createToken('SimulationKernel');
 
 import {
   CASCADE_ENGINE,
@@ -50,11 +60,6 @@ import {
   PlaceholderEquityAnalyzer,
 } from '@ethics';
 import {
-  PlaceholderReplayPlayer,
-  PlaceholderReplayRecorder,
-  PlaceholderReplaySerializer,
-  PlaceholderReplayVerifier,
-  PlaceholderSnapshotStore,
   PlaceholderTimeline,
   REPLAY_PLAYER,
   REPLAY_RECORDER,
@@ -62,6 +67,11 @@ import {
   REPLAY_VERIFIER,
   SNAPSHOT_STORE,
   TIMELINE,
+  createReplayPlayer,
+  createReplayRecorder,
+  createReplaySerializer,
+  createReplayVerifier,
+  createSnapshotStore,
 } from '@replay';
 import {
   ADAPTIVE_MUSIC,
@@ -94,17 +104,21 @@ export function createCompositionRoot(config: AppConfig): Container {
   container.registerValue(CONFIG_SERVICE, createConfigService(config.profile));
   container.registerValue(LOGGER, createConsoleLogger(config.debug.logLevel));
   container.registerValue(SERIALIZER, createJsonSerializer());
-  container.registerValue(EVENT_BUS, createEventBus<GridEventMap>());
 
-  // ---- Simulation Kernel (real) ----
+  // ---- Simulation Kernel (real; it OWNS the tick-aware event bus) ----
   container.register(SIMULATION_KERNEL, (c) =>
-    createSimulationKernel({
+    createSimulationKernel<GridEventMap>({
       seed: config.simulation.seed,
-      timestep: config.simulation.timestep,
-      events: c.resolve(EVENT_BUS),
+      frequencyHz: config.simulation.tickRateHz,
       logger: c.resolve(LOGGER),
+      timeProvider: () => performance.now(),
+      freezePayloads: config.kernel.freezePayloads,
+      leakThreshold: config.kernel.leakThreshold,
     }),
   );
+  // The shared bus IS the kernel's bus, so every event is tagged with the
+  // current tick — essential for faithful replay recording.
+  container.register(EVENT_BUS, (c) => c.resolve(SIMULATION_KERNEL).events);
 
   // ---- System A: Simulation Engine (placeholders) ----
   container.register(TOPOLOGY_SERVICE, () => new PlaceholderTopologyService());
@@ -138,16 +152,13 @@ export function createCompositionRoot(config: AppConfig): Container {
   container.register(CALIBRATION_SERVICE, () => new PlaceholderCalibrationService());
   container.register(EQUITY_ANALYZER, () => new PlaceholderEquityAnalyzer());
 
-  // ---- Replay (placeholders) ----
-  container.register(REPLAY_RECORDER, () => new PlaceholderReplayRecorder());
-  container.register(REPLAY_PLAYER, () => new PlaceholderReplayPlayer());
-  container.register(
-    REPLAY_SERIALIZER,
-    (c) => new PlaceholderReplaySerializer(c.resolve(SERIALIZER)),
-  );
-  container.register(REPLAY_VERIFIER, () => new PlaceholderReplayVerifier());
+  // ---- Replay (real; timeline still placeholder) ----
+  container.register(REPLAY_RECORDER, () => createReplayRecorder());
+  container.register(REPLAY_PLAYER, () => createReplayPlayer());
+  container.register(REPLAY_SERIALIZER, (c) => createReplaySerializer(c.resolve(SERIALIZER)));
+  container.register(REPLAY_VERIFIER, () => createReplayVerifier());
   container.register(TIMELINE, () => new PlaceholderTimeline());
-  container.register(SNAPSHOT_STORE, () => new PlaceholderSnapshotStore());
+  container.register(SNAPSHOT_STORE, () => createSnapshotStore());
 
   // ---- System E: Audio (placeholders) ----
   container.register(AUDIO_ENGINE, () => new PlaceholderAudioEngine());

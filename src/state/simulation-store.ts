@@ -1,4 +1,4 @@
-import { SimulationState } from '@app-types';
+import { KernelState } from '@app-types';
 import { GRID_EVENT } from '@constants';
 import type { GridEventBus, Unsubscribe } from '@core';
 import { create } from 'zustand';
@@ -13,14 +13,15 @@ import { create } from 'zustand';
 export interface SimulationProjection {
   readonly tick: number;
   readonly simTime: number;
-  readonly lifecycle: SimulationState;
+  /** The kernel runtime lifecycle state. */
+  readonly lifecycle: KernelState;
   readonly maxLineLoading: number;
 }
 
 export const useSimulationStore = create<SimulationProjection>()(() => ({
   tick: 0,
   simTime: 0,
-  lifecycle: SimulationState.Boot,
+  lifecycle: KernelState.Boot,
   maxLineLoading: 0,
 }));
 
@@ -33,7 +34,7 @@ export function bindSimulationStore(bus: GridEventBus): Unsubscribe {
     bus.on(GRID_EVENT.SimulationTick, (payload) => {
       useSimulationStore.setState({ tick: payload.tick, simTime: payload.simTime });
     }),
-    bus.on(GRID_EVENT.SimStateChanged, (payload) => {
+    bus.on(GRID_EVENT.KernelStateChanged, (payload) => {
       useSimulationStore.setState({ lifecycle: payload.to });
     }),
     bus.on(GRID_EVENT.PowerFlowSolved, (payload) => {

@@ -4,24 +4,48 @@ The event bus is the spine of the whole system. The simulation emits; consumers 
 
 ## The typed `EventBus`
 
-`createEventBus<TEventMap>()` in `@core` returns a `TypedEventBus<TEventMap>` — an in-memory, synchronous, ordered publish/subscribe bus generic over an event map (name → payload type).
+`createEventBus<TEventMap>(options?)` in `@core` returns a `TypedEventBus<TEventMap>` — an in-memory, synchronous, ordered publish/subscribe bus generic over an event map (name → payload type). As of Phase 2 it is a production-grade bus: priority ordering, `once` listeners, wildcard tracing (`onAny`), emit/delivery statistics, optional payload freezing, payload validation, listener-leak detection, and a profiling hook.
 
-| Method                | Signature (inferred)                | Purpose                                             |
-| --------------------- | ----------------------------------- | --------------------------------------------------- |
-| `on(name, handler)`   | payload inferred from `name`        | Subscribe; returns an `Unsubscribe`.                |
-| `once(name, handler)` | payload inferred                    | Subscribe for one dispatch, then auto-remove.       |
-| `off(name, handler)`  | payload inferred                    | Remove a specific handler.                          |
-| `emit(name, payload)` | payload type-checked against `name` | Synchronously dispatch to all handlers.             |
-| `clear()`             | —                                   | Remove every subscription (used on shutdown/reset). |
-| `listenerCount(name)` | —                                   | Introspection for debug.                            |
+| Method                                    | Signature (inferred)                | Purpose                                                                          |
+| ----------------------------------------- | ----------------------------------- | -------------------------------------------------------------------------------- |
+| `on(name, handler, { priority?, once? })` | payload inferred from `name`        | Subscribe; returns an `Unsubscribe`. Higher `priority` runs first.               |
+| `once(name, handler)`                     | payload inferred                    | Subscribe for one dispatch, then auto-remove.                                    |
+| `off(name, handler)`                      | payload inferred                    | Remove a specific handler.                                                       |
+| `emit(name, payload)`                     | payload type-checked against `name` | Synchronously dispatch to all handlers.                                          |
+| `onAny(handler)`                          | traced `EventEnvelope`              | Subscribe to **every** event (debug/replay). The seam `@replay` records through. |
+| `clear()`                                 | —                                   | Remove every subscription and `onAny` listener (shutdown/reset).                 |
+| `listenerCount(name)`                     | —                                   | Handlers for one event.                                                          |
+| `totalListenerCount()`                    | —                                   | Handlers across all events.                                                      |
+| `stats()` / `resetStats()`                | `{ emitted, delivered, perEvent }`  | Emit/delivery introspection for the debug overlay.                               |
 
 Key properties:
 
 - **Type inference:** `on('LineTripped', h)` infers `h`'s parameter as `LineTrippedPayload`. A wrong payload shape is a compile error; there are no untyped event strings.
+- **Priority + subscription order:** within an event, handlers run `(priority desc, subscription order)`.
 - **Snapshot dispatch:** `emit` iterates a copy (`[...handlers]`), so a handler may subscribe/unsubscribe during dispatch without corrupting the current fan-out.
-- **Single instance:** the kernel owns the one `GridEventBus` (`TypedEventBus<GridEventMap>`) and exposes it to consumers via the `EVENT_BUS` token. No layer creates its own.
+- **`onAny` trace + `EventEnvelope`:** every emit can be observed as `{ name, payload, tick, timestamp, seq }`, where `seq` is a monotonic emit sequence — the deterministic ordering key `@replay` records.
+- **Construction options:** `tickProvider`, `timeProvider`, `freezePayloads` (immutability), `leakThreshold` + `onLeak` (leak detection), `validate` (payload validation), `onProfile`.
+- **Single instance:** the kernel owns the one `GridEventBus` (`TypedEventBus<GridEventMap>`) and exposes it to consumers via the `EVENT_BUS` token — which in Phase 2 resolves to `kernel.events`, so events are tick-tagged. No layer creates its own.
 
-`GridEventBus = TypedEventBus<GridEventMap>`. The bus is registered as a real value at the composition root (`registerValue(EVENT_BUS, createEventBus<GridEventMap>())`) and injected into the kernel, `@state`, and every consumer.
+`GridEventBus = TypedEventBus<GridEventMap>`. The kernel creates the tick-aware bus and it is injected via `EVENT_BUS` into `@state` and every consumer.
+
+## Kernel events vs. domain events
+
+The kernel is **domain-agnostic**: it is generic over `TEvents extends KernelEventMap` and owns only two events. A domain map **extends** it, so kernel events flow on the same bus while the kernel never references a domain event name.
+
+```ts
+export interface KernelEventMap {
+  SimulationTick: SimulationTickPayload; // { tick, simTime, timestep }
+  KernelStateChanged: KernelStateChangedPayload; // { from, to, tick } — from/to are KernelState
+}
+
+export interface GridEventMap extends KernelEventMap {
+  WeatherChanged: WeatherChangedPayload;
+  /* … all electrical/gameplay events … */
+}
+```
+
+`KernelStateChanged` (formerly `SimStateChanged`) reports the kernel's **runtime lifecycle** (`KernelState`), not a gameplay arc. See [docs/kernel](../kernel/README.md) for the full kernel documentation.
 
 ## The `GRID_EVENT` registry
 
@@ -31,30 +55,30 @@ Event names are never string literals in code. `constants/events.ts` exports `GR
 
 Payloads carry only **ids, scalars, and enums** — never engine model objects — which is what keeps `@core` independent of `@engine`.
 
-| Event               | Payload summary                         | Typical emitter           | Typical subscribers                           |
-| ------------------- | --------------------------------------- | ------------------------- | --------------------------------------------- |
-| `SimulationTick`    | `{ tick, simTime, timestep }`           | kernel                    | `@state`, `@replay`, `@debug`                 |
-| `SimStateChanged`   | `{ from, to, tick }` (FSM)              | kernel (bridged from FSM) | `@state`, `@ui`, `@audio`, `@replay`          |
-| `WeatherChanged`    | `{ kind, temperature }`                 | engine · weather          | `@rendering`, `@audio`, `@state`              |
-| `LoadChanged`       | `{ zone, demand }`                      | engine · loads            | `@state`, `@ui`                               |
-| `GenerationChanged` | `{ generator, output }`                 | engine · generation       | `@state`, `@ui`                               |
-| `PowerFlowSolved`   | `{ converged, iterations, maxLoading }` | engine · powerflow        | `@state`, `@rendering`, `@ui`                 |
-| `LineOverloaded`    | `{ line, loading }`                     | engine · protection       | `@rendering`, `@audio`, `@ui`                 |
-| `LineTripStarted`   | `{ line, delay }`                       | engine · protection       | `@rendering`, `@audio`                        |
-| `LineTripped`       | `{ line, cause }`                       | engine · protection       | `@rendering`, `@audio`, `@state`, `@learning` |
-| `LineCooling`       | `{ line }`                              | engine · restoration      | `@rendering`                                  |
-| `LineRecovered`     | `{ line }`                              | engine · restoration      | `@rendering`, `@audio`                        |
-| `CascadeStarted`    | `{ cascadeId, originLine }`             | engine · cascade          | `@rendering`, `@audio`, `@ui`, `@learning`    |
-| `CascadeStep`       | `{ cascadeId, step, trippedLine }`      | engine · cascade          | `@rendering`, `@audio`                        |
-| `CascadeEnded`      | `{ cascadeId, totalSteps, contained }`  | engine · cascade          | `@ui`, `@learning`, `@state`                  |
-| `ZonePowered`       | `{ zone }`                              | engine · restoration      | `@rendering`, `@audio`                        |
-| `ZoneBlackout`      | `{ zone, unservedLoad }`                | engine · restoration      | `@rendering`, `@audio`, `@ui`, `@learning`    |
-| `DecisionRequested` | `{ decisionId, prompt, options }`       | engine · director         | `@ui` (decision wheel)                        |
-| `DecisionCommitted` | `{ decisionId, optionIndex, simTime }`  | `@ui` → engine            | engine · director, `@learning`, `@replay`     |
-| `LearningUpdated`   | `{ conceptId, mastery }`                | `@learning`               | `@state` (learning store), `@ui`              |
-| `ReplayStarted`     | `{ recordingId }`                       | `@replay`                 | `@ui`, `@rendering`, `@audio`                 |
-| `ReplayFinished`    | `{ recordingId, verified }`             | `@replay`                 | `@ui`                                         |
-| `GameEnded`         | `{ outcome, score }`                    | engine · director         | `@ui`, `@audio`, `@learning`, `@replay`       |
+| Event                | Payload summary                         | Typical emitter                     | Typical subscribers                           |
+| -------------------- | --------------------------------------- | ----------------------------------- | --------------------------------------------- |
+| `SimulationTick`     | `{ tick, simTime, timestep }`           | kernel (`KernelEventMap`)           | `@state`, `@replay`, `@debug`                 |
+| `KernelStateChanged` | `{ from, to, tick }` (`KernelState`)    | kernel (bridged from lifecycle FSM) | `@state`, `@ui`, `@audio`, `@replay`          |
+| `WeatherChanged`     | `{ kind, temperature }`                 | engine · weather                    | `@rendering`, `@audio`, `@state`              |
+| `LoadChanged`        | `{ zone, demand }`                      | engine · loads                      | `@state`, `@ui`                               |
+| `GenerationChanged`  | `{ generator, output }`                 | engine · generation                 | `@state`, `@ui`                               |
+| `PowerFlowSolved`    | `{ converged, iterations, maxLoading }` | engine · powerflow                  | `@state`, `@rendering`, `@ui`                 |
+| `LineOverloaded`     | `{ line, loading }`                     | engine · protection                 | `@rendering`, `@audio`, `@ui`                 |
+| `LineTripStarted`    | `{ line, delay }`                       | engine · protection                 | `@rendering`, `@audio`                        |
+| `LineTripped`        | `{ line, cause }`                       | engine · protection                 | `@rendering`, `@audio`, `@state`, `@learning` |
+| `LineCooling`        | `{ line }`                              | engine · restoration                | `@rendering`                                  |
+| `LineRecovered`      | `{ line }`                              | engine · restoration                | `@rendering`, `@audio`                        |
+| `CascadeStarted`     | `{ cascadeId, originLine }`             | engine · cascade                    | `@rendering`, `@audio`, `@ui`, `@learning`    |
+| `CascadeStep`        | `{ cascadeId, step, trippedLine }`      | engine · cascade                    | `@rendering`, `@audio`                        |
+| `CascadeEnded`       | `{ cascadeId, totalSteps, contained }`  | engine · cascade                    | `@ui`, `@learning`, `@state`                  |
+| `ZonePowered`        | `{ zone }`                              | engine · restoration                | `@rendering`, `@audio`                        |
+| `ZoneBlackout`       | `{ zone, unservedLoad }`                | engine · restoration                | `@rendering`, `@audio`, `@ui`, `@learning`    |
+| `DecisionRequested`  | `{ decisionId, prompt, options }`       | engine · director                   | `@ui` (decision wheel)                        |
+| `DecisionCommitted`  | `{ decisionId, optionIndex, simTime }`  | `@ui` → engine                      | engine · director, `@learning`, `@replay`     |
+| `LearningUpdated`    | `{ conceptId, mastery }`                | `@learning`                         | `@state` (learning store), `@ui`              |
+| `ReplayStarted`      | `{ recordingId }`                       | `@replay`                           | `@ui`, `@rendering`, `@audio`                 |
+| `ReplayFinished`     | `{ recordingId, verified }`             | `@replay`                           | `@ui`                                         |
+| `GameEnded`          | `{ outcome, score }`                    | engine · director                   | `@ui`, `@audio`, `@learning`, `@replay`       |
 
 > `DecisionCommitted` is the one event a consumer emits — user intent travelling _forward_ to the engine (see [05](./05-rendering-data-flow.md)). Everything else flows simulation → consumers.
 

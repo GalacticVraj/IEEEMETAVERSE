@@ -11,8 +11,8 @@ flowchart TB
     subgraph Kernel["@kernel"]
         K["SimulationKernel"]
         CLOCK["SimClock"]
-        RNG["mulberry32 RNG"]
-        FSM["SimulationStateMachine"]
+        RNG["xoroshiro128+ RNG"]
+        FSM["KernelLifecycle FSM"]
         REG["SystemRegistry"]
         SCHED["Scheduler"]
     end
@@ -48,7 +48,7 @@ flowchart TB
     K --> REG
     K --> SCHED
     K -->|owns/exposes| BUS
-    FSM -->|bridged as SimStateChanged| BUS
+    FSM -->|bridged as KernelStateChanged| BUS
 
     REG --> ENG
     SCHED -->|step each tick| ENG
@@ -75,7 +75,7 @@ flowchart TB
 | ------------- | --------------------------------- | -------------------------------- | -------------------------------------------------------------------------------- |
 | `@infra`      | all layers                        | direct import + DI token binding | The only layer allowed to import everything; wiring only, no logic.              |
 | `@kernel`     | `@engine` (as `SimulationSystem`) | `registry` + `scheduler.step`    | Kernel drives systems by interface; knows no physics.                            |
-| `@kernel` FSM | consumers                         | `SimStateChanged` on the bus     | Kernel bridges every validated FSM change onto the bus.                          |
+| `@kernel` FSM | consumers                         | `KernelStateChanged` on the bus  | Kernel bridges every validated FSM change onto the bus.                          |
 | `@scenarios`  | `@engine`                         | `ICrisisScenario.setup/onTick`   | Scenario scripts the engine via its facade; engine core never imports scenarios. |
 | `@engine`     | `@ethics`                         | direct import (upstream)         | Ethics is pure data consumed by the engine; never the reverse.                   |
 | `@engine`     | everyone                          | events on the bus                | The only way authoritative state leaves the engine.                              |

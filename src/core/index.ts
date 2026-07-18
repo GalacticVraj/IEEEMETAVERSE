@@ -12,6 +12,7 @@
 export * from './errors/errors';
 export * from './result/result';
 export * from './events/event-bus';
+export * from './events/kernel-events';
 export * from './events/grid-events';
 export * from './di/container';
 export * from './tokens';

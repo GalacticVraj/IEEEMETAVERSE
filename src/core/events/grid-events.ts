@@ -10,34 +10,24 @@ import type {
   PerUnit,
   Ratio,
   Seconds,
-  SimulationState,
   WeatherKind,
   ZoneId,
 } from '@app-types';
 
 import type { TypedEventBus } from './event-bus';
+import type { KernelEventMap } from './kernel-events';
 
 /*
  * ---------------------------------------------------------------------------
- * Event payloads.
+ * Domain event payloads. `GridEventMap` EXTENDS the kernel's `KernelEventMap`,
+ * so kernel events (SimulationTick, KernelStateChanged) flow on the same bus
+ * while the kernel never references these domain events.
  *
  * Payloads carry only ids, scalars, and enums — never engine model objects.
  * This keeps `core` independent of `engine`: consumers receive lightweight
  * facts and read richer detail from state projections if they need it.
  * ---------------------------------------------------------------------------
  */
-
-export interface SimulationTickPayload {
-  readonly tick: number;
-  readonly simTime: Seconds;
-  readonly timestep: Seconds;
-}
-
-export interface SimStateChangedPayload {
-  readonly from: SimulationState;
-  readonly to: SimulationState;
-  readonly tick: number;
-}
 
 export interface WeatherChangedPayload {
   readonly kind: WeatherKind;
@@ -145,9 +135,7 @@ export interface GameEndedPayload {
  * `GRID_EVENT` registry exactly; the `EventMapIntegrity` check below fails to
  * compile if the two ever drift.
  */
-export interface GridEventMap {
-  SimulationTick: SimulationTickPayload;
-  SimStateChanged: SimStateChangedPayload;
+export interface GridEventMap extends KernelEventMap {
   WeatherChanged: WeatherChangedPayload;
   LoadChanged: LoadChangedPayload;
   GenerationChanged: GenerationChangedPayload;

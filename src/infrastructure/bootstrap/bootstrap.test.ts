@@ -1,11 +1,11 @@
+import { asScenarioId } from '@app-types';
 import { PROFILES } from '@config';
 import { EVENT_BUS, LOGGER, SERIALIZER } from '@core';
 import { SIMULATION_ENGINE } from '@engine';
-import { SIMULATION_KERNEL } from '@kernel';
 import { SCENARIO_REGISTRY } from '@scenarios';
-import { asScenarioId } from '@app-types';
 import { describe, expect, it } from 'vitest';
 
+import { SIMULATION_KERNEL } from '../di/composition-root';
 import { bootstrap } from './bootstrap';
 
 /**

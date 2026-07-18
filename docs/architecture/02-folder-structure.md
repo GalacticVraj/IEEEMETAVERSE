@@ -15,7 +15,7 @@ src/
 │   ├── ids.ts                   Branded ids: NodeId, LineId, ZoneId, GeneratorId, SystemId, …
 │   ├── units.ts                 Branded units: MegaWatts, PerUnit, Hertz, Seconds, Ratio, …
 │   ├── enums.ts                 LineState, ZoneState, WeatherKind, LineTripCause, GameOutcome, …
-│   └── simulation-state.ts      SimulationState vocabulary (FSM state names)
+│   └── kernel-state.ts          KernelState vocabulary (runtime FSM state names)
 │
 ├── constants/        @constants  Named constants — NO magic numbers live in engine code
 │   ├── events.ts                GRID_EVENT registry + GridEventName union
@@ -40,7 +40,7 @@ src/
 │   ├── scheduler/               createScheduler — steps systems in order each tick
 │   ├── registry/                createSystemRegistry — insertion-ordered system store
 │   ├── lifecycle/               createLifecycleManager — init/reset/dispose fan-out
-│   ├── fsm/                     transitions.ts + createSimulationStateMachine
+│   ├── fsm/                     kernel-transitions.ts + createKernelLifecycle
 │   └── simulation-kernel.ts     createSimulationKernel + SIMULATION_KERNEL token
 │
 ├── ethics/           @ethics     EIA snapshot, calibration, equity. UPSTREAM of engine.

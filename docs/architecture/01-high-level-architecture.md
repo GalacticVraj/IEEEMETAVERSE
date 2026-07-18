@@ -80,7 +80,7 @@ flowchart TB
 ## How the layers cooperate at runtime
 
 1. **`@infra`** resolves the active profile and builds a DI container (the composition root), binding each interface token to a concrete implementation.
-2. **`@kernel`** owns the single `GridEventBus`, a deterministic `SimClock`, a seeded `mulberry32` RNG, the system registry, and the lifecycle FSM. Each tick it steps registered systems in order, then emits `SimulationTick`.
+2. **`@kernel`** owns the single `GridEventBus`, a deterministic `SimClock`, a seeded `xoroshiro128+` RNG, the system registry, and the lifecycle FSM. Each tick it steps registered systems in order, then emits `SimulationTick`.
 3. **`@engine`** (System A) is the one `SimulationSystem` that owns authoritative `GridState`. Each tick it runs `weather → generation → load → powerflow → protection → cascade → restoration → director`, emitting typed events for every meaningful change.
 4. **`@state`** subscribes to those events and copies payloads into Zustand projections — no computation, just projection.
 5. **Consumers** (`@rendering`, `@ui`, `@audio`, `@debug`) read those projections (and, where appropriate, subscribe to events directly) and produce visuals/sound. They never write back.

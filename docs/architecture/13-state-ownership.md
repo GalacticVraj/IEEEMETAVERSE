@@ -4,11 +4,11 @@ Exactly one place in the system owns authoritative simulation state: the engine.
 
 ## The three kinds of state
 
-| Kind                               | Owner                | Written by                         | Read by                                             | Example                                                                   |
-| ---------------------------------- | -------------------- | ---------------------------------- | --------------------------------------------------- | ------------------------------------------------------------------------- |
-| **Authoritative simulation state** | `@engine` (System A) | the engine only, during `step`     | the engine; emitted as events                       | `GridState` (`frequency`, `LineFlow[]`, `ZoneStatus[]`, totals)           |
-| **Projections (read models)**      | `@state` (Zustand)   | `@state` binders, from events only | consumers (`@rendering`, `@ui`, `@audio`, `@debug`) | `SimulationProjection` (`tick`, `simTime`, `lifecycle`, `maxLineLoading`) |
-| **UI state**                       | `@ui` (`useUiStore`) | UI components                      | UI components                                       | panel open/closed, selected district, camera preset                       |
+| Kind                               | Owner                | Written by                         | Read by                                             | Example                                                                                   |
+| ---------------------------------- | -------------------- | ---------------------------------- | --------------------------------------------------- | ----------------------------------------------------------------------------------------- |
+| **Authoritative simulation state** | `@engine` (System A) | the engine only, during `step`     | the engine; emitted as events                       | `GridState` (`frequency`, `LineFlow[]`, `ZoneStatus[]`, totals)                           |
+| **Projections (read models)**      | `@state` (Zustand)   | `@state` binders, from events only | consumers (`@rendering`, `@ui`, `@audio`, `@debug`) | `SimulationProjection` (`tick`, `simTime`, `lifecycle` = `KernelState`, `maxLineLoading`) |
+| **UI state**                       | `@ui` (`useUiStore`) | UI components                      | UI components                                       | panel open/closed, selected district, camera preset                                       |
 
 ## Ownership diagram
 
@@ -62,7 +62,7 @@ flowchart TB
 
 ## Why projections are copy-only
 
-A projection store contains **no logic beyond copying event fields**. Look at the real `bindSimulationStore`: three subscriptions, each a single `setState` of payload fields (`tick`, `simTime`, `lifecycle`, `maxLineLoading`). There is nowhere to derive a simulation fact, because there is no code path that computes one — only assignment from an event the engine already emitted.
+A projection store contains **no logic beyond copying event fields**. Look at the real `bindSimulationStore`: three subscriptions, each a single `setState` of payload fields — `tick`/`simTime` from `SimulationTick`, `lifecycle` from `KernelStateChanged` (the payload's `to`, a `KernelState`), and `maxLineLoading` from the power-flow event. There is nowhere to derive a simulation fact, because there is no code path that computes one — only assignment from an event the kernel/engine already emitted.
 
 This is deliberate. If a projection _computed_ (e.g. re-derived line loading from raw flows), the renderer could show a value the engine never produced — a divergent "invented" state. By making projections mechanical, a consumer literally cannot read a fact the simulation did not emit.
 

@@ -23,6 +23,15 @@ export interface DebugConfig {
   readonly logLevel: LogLevel;
 }
 
+export interface KernelConfig {
+  /** Freeze event payloads for immutability (catches accidental mutation). */
+  readonly freezePayloads: boolean;
+  /** Listener-count threshold before the bus warns about a leak. */
+  readonly leakThreshold: number;
+  /** Whether runtime diagnostics are collected. */
+  readonly diagnostics: boolean;
+}
+
 /**
  * The fully-resolved application configuration. Every configurable value lives
  * here — no hardcoded tunables elsewhere. Assembled per profile in `profiles.ts`.
@@ -32,4 +41,5 @@ export interface AppConfig {
   readonly simulation: SimulationConfig;
   readonly render: RenderConfig;
   readonly debug: DebugConfig;
+  readonly kernel: KernelConfig;
 }

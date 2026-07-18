@@ -1,6 +1,8 @@
 # 14 · Initialization Sequence
 
-Startup is a single, deterministic, top-to-bottom sequence: resolve the profile, build the container, resolve the shared bus and kernel, validate the engine wiring, bind projections, then render React. Phase 1 deliberately stops short of ticking the placeholder engine.
+Startup is a single, deterministic, top-to-bottom sequence: resolve the profile, build the container, resolve the shared bus and kernel, validate the engine wiring, bind projections, then render React. `bootstrap` resolves the kernel **and** the engine to prove DI wiring, but deliberately does **not** `kernel.boot()` or `tick()` yet — the engine is still a placeholder.
+
+> The kernel is real (Phase 2). When it _is_ booted, `kernel.boot()` walks the runtime lifecycle `Boot → Loading → Configuration → RegisterSystems → Calibration → Idle`, resolving the deterministic system order and initializing systems along the way (see [docs/kernel/01](../kernel/01-simulation-lifecycle.md)).
 
 ## Entry point
 
@@ -64,7 +66,7 @@ sequenceDiagram
 | 8    | return `AppRuntime`             | `{ container, config, shutdown }`.                                                                              |
 | 9    | `render(<App config />)`        | Mount the three consumers; they read projections that are already live-bound.                                   |
 
-## Why Phase 1 does NOT boot/tick the engine
+## Why bootstrap does NOT boot/tick yet
 
 `bootstrap` intentionally omits `kernel.boot()` and `kernel.tick()`:
 
@@ -72,10 +74,10 @@ sequenceDiagram
 - The runtime exists to **prove the wiring end-to-end**: the container resolves, the bus is shared, the kernel is real, projections are bound, and React mounts over them.
 - Resolving `SIMULATION_ENGINE` (step 6) still validates that the engine _constructs_ and its dependencies resolve — it just isn't registered as a tickable system.
 
-Phase 2 changes this in one place: register the engine with the kernel (`kernel.register(engine)`), call `kernel.boot()`, and drive `kernel.tick()` from a loop. No consumer or projection wiring changes — they are already listening.
+Turning the loop on is a localized change: register the engine with the kernel (`kernel.register(engine)`), call `kernel.boot()` (which runs the `Boot → … → Idle` walk), `kernel.start()`, and drive `kernel.tick()` from a loop. No consumer or projection wiring changes — they are already listening.
 
-## What is live after bootstrap (Phase 1)
+## What is live after bootstrap
 
-- Real: config resolution, DI container, `EVENT_BUS`, `SIMULATION_KERNEL` (clock/RNG/FSM/registry/scheduler), scenario registry, projections bound to the bus, React tree mounted.
-- Silent (by design): no simulation ticks, so no `SimulationTick`/physics events flow yet. The FSM can still transition and would emit `SimStateChanged` if driven.
+- Real: config resolution, DI container, `EVENT_BUS` (the kernel's tick-aware bus), `SIMULATION_KERNEL` (clock/RNG/lifecycle FSM/registry/task scheduler/diagnostics), scenario registry, projections bound to the bus, React tree mounted.
+- Silent (by design): the kernel is resolved but **not booted**, so no simulation ticks flow yet — no `SimulationTick`/physics events. The lifecycle FSM can still transition and would emit `KernelStateChanged` if driven.
 - The `FoundationScreen` stands in for gameplay UI, showing the resolved `profile` and `seed`.

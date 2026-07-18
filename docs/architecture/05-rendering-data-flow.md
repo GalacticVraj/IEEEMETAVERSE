@@ -33,11 +33,11 @@ flowchart LR
 
 Example (the real `bindSimulationStore`):
 
-| Event             | Store write                                        | Store field       |
-| ----------------- | -------------------------------------------------- | ----------------- |
-| `SimulationTick`  | `setState({ tick, simTime })`                      | `tick`, `simTime` |
-| `SimStateChanged` | `setState({ lifecycle: payload.to })`              | `lifecycle`       |
-| `PowerFlowSolved` | `setState({ maxLineLoading: payload.maxLoading })` | `maxLineLoading`  |
+| Event                | Store write                                        | Store field       |
+| -------------------- | -------------------------------------------------- | ----------------- |
+| `SimulationTick`     | `setState({ tick, simTime })`                      | `tick`, `simTime` |
+| `KernelStateChanged` | `setState({ lifecycle: payload.to })`              | `lifecycle`       |
+| `PowerFlowSolved`    | `setState({ maxLineLoading: payload.maxLoading })` | `maxLineLoading`  |
 
 The store is a **read model**: `SimulationProjection` is a plain record of React-observable fields. Its docstring states the guarantee explicitly — "it never computes simulation."
 
@@ -49,7 +49,7 @@ Consumers subscribe to the Zustand stores with hooks (`useSimulationStore(...)`)
 
 - **`@rendering`** maps `LineFlow.loading` to line color/emissive, `ZoneStatus.state` to district lighting, cascade events to particle bursts and postFX.
 - **`@ui`** maps `lifecycle` to the HUD mode, `maxLineLoading` to gauges, `DecisionRequested` to the decision wheel.
-- **`@audio`** maps `SimStateChanged`/severity to adaptive music intensity, discrete events (`LineTripped`, `ZoneBlackout`) to SFX.
+- **`@audio`** maps `KernelStateChanged`/severity to adaptive music intensity, discrete events (`LineTripped`, `ZoneBlackout`) to SFX.
 
 ## Why "pure consumer" is more than a convention
 

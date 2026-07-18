@@ -85,6 +85,9 @@ export default tseslint.config(
   {
     rules: {
       '@typescript-eslint/no-explicit-any': 'error',
+      // Conflicts with banning `!` (no-non-null-assertion): with
+      // noUncheckedIndexedAccess we must narrow `T | undefined` with `as T`.
+      '@typescript-eslint/non-nullable-type-assertion-style': 'off',
       '@typescript-eslint/no-unused-vars': [
         'error',
         { args: 'after-used', argsIgnorePattern: '^_', varsIgnorePattern: '^_' },

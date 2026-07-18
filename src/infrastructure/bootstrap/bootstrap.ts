@@ -2,10 +2,9 @@ import type { AppConfig } from '@config';
 import { EVENT_BUS, LOGGER } from '@core';
 import type { Container } from '@core';
 import { SIMULATION_ENGINE } from '@engine';
-import { SIMULATION_KERNEL } from '@kernel';
 import { bindStores } from '@state';
 
-import { createCompositionRoot } from '../di/composition-root';
+import { SIMULATION_KERNEL, createCompositionRoot } from '../di/composition-root';
 
 /** Handle to the running application runtime. */
 export interface AppRuntime {
@@ -26,11 +25,12 @@ export interface AppRuntime {
 export function bootstrap(config: AppConfig): AppRuntime {
   const container = createCompositionRoot(config);
   const bus = container.resolve(EVENT_BUS);
-  const kernel = container.resolve(SIMULATION_KERNEL);
   const logger = container.resolve(LOGGER).child('bootstrap');
 
-  // Eagerly construct the engine to validate DI wiring. It is not registered as
-  // a kernel system yet — its lifecycle is a placeholder. Phase 2 registers it.
+  // Eagerly construct the kernel and engine to validate DI wiring. Neither is
+  // booted/ticked yet — the engine is a placeholder. The runtime exists to prove
+  // the wiring end-to-end; the simulation loop starts once real systems land.
+  container.resolve(SIMULATION_KERNEL);
   container.resolve(SIMULATION_ENGINE);
 
   const unbindStores = bindStores(bus);
@@ -44,8 +44,10 @@ export function bootstrap(config: AppConfig): AppRuntime {
     container,
     config,
     shutdown(): void {
+      // The kernel was never booted, so there is nothing to dispose; just detach
+      // the event-driven projections and clear the bus.
       unbindStores();
-      kernel.dispose();
+      bus.clear();
       logger.info('GridGuard runtime shut down');
     },
   };
