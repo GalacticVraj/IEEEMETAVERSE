@@ -59,7 +59,7 @@ import {
   PlaceholderConceptGraph,
   PlaceholderDecisionScorer,
   PlaceholderKnowledgeTracer,
-  PlaceholderLearnerTwin,
+  LearnerTwin,
   PlaceholderLearningEngine,
   PlaceholderReferencePolicy,
   REFERENCE_POLICY,
@@ -67,7 +67,7 @@ import {
 import {
   CALIBRATION_SERVICE,
   EQUITY_ANALYZER,
-  PlaceholderCalibrationService,
+  CalibrationService,
   PlaceholderEquityAnalyzer,
 } from '@ethics';
 import {
@@ -225,7 +225,7 @@ export function createCompositionRoot(config: AppConfig): Container {
   });
 
   // ---- System B: Learning (placeholders) ----
-  container.register(LEARNER_TWIN, () => new PlaceholderLearnerTwin());
+  container.register(LEARNER_TWIN, (c) => new LearnerTwin(c.resolve(EVENT_BUS)));
   container.register(KNOWLEDGE_TRACER, () => new PlaceholderKnowledgeTracer());
   container.register(CONCEPT_GRAPH, () => new PlaceholderConceptGraph());
   container.register(REFERENCE_POLICY, () => new PlaceholderReferencePolicy());
@@ -234,7 +234,7 @@ export function createCompositionRoot(config: AppConfig): Container {
   container.register(LEARNING_ENGINE, () => new PlaceholderLearningEngine());
 
   // ---- Ethics (placeholders) ----
-  container.register(CALIBRATION_SERVICE, () => new PlaceholderCalibrationService());
+  container.register(CALIBRATION_SERVICE, () => new CalibrationService());
   container.register(EQUITY_ANALYZER, () => new PlaceholderEquityAnalyzer());
 
   // ---- Replay (real; timeline still placeholder) ----

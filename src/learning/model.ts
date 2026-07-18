@@ -21,6 +21,15 @@ export interface ConceptMastery {
 
 /** The observable state of the Learner Digital Twin. */
 export interface LearnerTwinState {
+  readonly learner_id: string;
+  readonly attempt: number;
+  readonly decisions_made: number;
+  readonly correct_tradeoff_decisions: number;
+  readonly blackouts_caused: number;
+  readonly zones_saved: number;
+  readonly avg_decision_time_sec: number;
+  readonly understanding_score: Ratio;
+  readonly weak_concept_tags: readonly string[];
+  readonly equity_awareness_score: Ratio;
   readonly concepts: readonly ConceptMastery[];
-  readonly decisionsObserved: number;
 }

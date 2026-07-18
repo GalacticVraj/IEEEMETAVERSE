@@ -73,19 +73,20 @@ export function OperatorPanel(): JSX.Element {
       top: 16,
       right: 16,
       width: 280,
-      background: 'rgba(15, 23, 42, 0.92)',
-      border: '1px solid rgba(99, 102, 241, 0.4)',
-      borderRadius: 10,
+      background: 'rgba(10, 31, 20, 0.92)',
+      border: '1px solid rgba(116, 198, 157, 0.3)',
+      borderRadius: 12,
       padding: '16px 18px',
-      fontFamily: 'monospace',
-      color: '#e2e8f0',
+      fontFamily: "'Inter', monospace",
+      color: '#D8F3DC',
       fontSize: 13,
       pointerEvents: 'all',
       userSelect: 'none',
-      boxShadow: '0 4px 30px rgba(0,0,0,0.6)',
+      boxShadow: '0 4px 30px rgba(0,0,0,0.5)',
+      backdropFilter: 'blur(16px)',
     }}>
-      <div style={{ fontWeight: 'bold', fontSize: 15, marginBottom: 12, color: '#818cf8', letterSpacing: 1 }}>
-        ⚡ GRIDGUARD OPERATOR
+      <div style={{ fontWeight: 'bold', fontSize: 15, marginBottom: 12, color: '#74C69D', letterSpacing: 1 }}>
+        🌿 GRIDGUARD OPERATOR
       </div>
 
       <Row label="Tick" value={String(tick)} />
@@ -125,7 +126,7 @@ export function OperatorPanel(): JSX.Element {
 
       {/* Controls */}
       <div style={{ display: 'flex', gap: 8, marginTop: 4 }}>
-        <Btn onClick={running ? pauseLoop : startLoop} color="#4f46e5">
+        <Btn onClick={running ? pauseLoop : startLoop} color="#2D6A4F">
           {running ? '⏸ Pause' : '▶ Play'}
         </Btn>
         <Btn onClick={resetLoop} color="#374151">

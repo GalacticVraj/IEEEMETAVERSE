@@ -16,6 +16,7 @@ export interface SimulationProjection {
   /** The kernel runtime lifecycle state. */
   readonly lifecycle: KernelState;
   readonly maxLineLoading: number;
+  readonly activeDecision: any | null;
 }
 
 export const useSimulationStore = create<SimulationProjection>()(() => ({
@@ -23,6 +24,7 @@ export const useSimulationStore = create<SimulationProjection>()(() => ({
   simTime: 0,
   lifecycle: KernelState.Boot,
   maxLineLoading: 0,
+  activeDecision: null,
 }));
 
 /**
@@ -39,6 +41,12 @@ export function bindSimulationStore(bus: GridEventBus): Unsubscribe {
     }),
     bus.on(GRID_EVENT.PowerFlowSolved, (payload) => {
       useSimulationStore.setState({ maxLineLoading: payload.maxLoading });
+    }),
+    bus.on(GRID_EVENT.DecisionRequested, (payload) => {
+      useSimulationStore.setState({ activeDecision: payload });
+    }),
+    bus.on(GRID_EVENT.DecisionCommitted, () => {
+      useSimulationStore.setState({ activeDecision: null });
     }),
   ];
   return () => {
