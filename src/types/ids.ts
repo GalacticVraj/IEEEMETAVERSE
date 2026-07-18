@@ -16,6 +16,12 @@ export type ScenarioId = Brand<string, 'ScenarioId'>;
 export type DecisionId = Brand<string, 'DecisionId'>;
 export type SnapshotId = Brand<string, 'SnapshotId'>;
 
+/** Electrical graph entity identifiers (Phase 3 topology engine). */
+export type BusId = Brand<string, 'BusId'>;
+export type BreakerId = Brand<string, 'BreakerId'>;
+export type SubstationId = Brand<string, 'SubstationId'>;
+export type TransformerId = Brand<string, 'TransformerId'>;
+
 /** Identifier for a kernel-registered simulation system (weather, cascade, …). */
 export type SystemId = Brand<string, 'SystemId'>;
 
@@ -27,4 +33,8 @@ export const asLoadId = (value: string): LoadId => value as LoadId;
 export const asScenarioId = (value: string): ScenarioId => value as ScenarioId;
 export const asDecisionId = (value: string): DecisionId => value as DecisionId;
 export const asSnapshotId = (value: string): SnapshotId => value as SnapshotId;
+export const asBusId = (value: string): BusId => value as BusId;
+export const asBreakerId = (value: string): BreakerId => value as BreakerId;
+export const asSubstationId = (value: string): SubstationId => value as SubstationId;
+export const asTransformerId = (value: string): TransformerId => value as TransformerId;
 export const asSystemId = (value: string): SystemId => value as SystemId;

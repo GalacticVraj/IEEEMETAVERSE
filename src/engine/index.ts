@@ -5,7 +5,20 @@
  * facade. Pure: depends only on `@core`, `@kernel`, `@app-types`, `@constants`,
  * `@utils`, `@ethics`. Never on the scenario plugin layer or any consumer.
  */
-export * from './model/grid';
+// The legacy Phase-1 grid model. `Generator`/`Load` are intentionally NOT
+// re-exported here — the authoritative names now belong to the Phase-3 graph
+// engine below. `model/grid.ts` remains for the Phase-1 subsystem placeholders
+// and will be reconciled with the graph engine in Phase 4.
+export type {
+  GridNode,
+  PowerLine,
+  Zone,
+  GridTopology,
+  LineFlow,
+  ZoneStatus,
+  GridState,
+} from './model/grid';
+export * from './graph';
 export * from './topology/topology';
 export * from './weather/weather';
 export * from './generation/generation';

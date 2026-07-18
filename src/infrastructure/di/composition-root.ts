@@ -17,6 +17,7 @@ export const SIMULATION_KERNEL: Token<SimulationKernel<GridEventMap>> =
 import {
   CASCADE_ENGINE,
   DIRECTOR,
+  ELECTRICAL_GRAPH,
   GENERATION_MODEL,
   LOAD_MODEL,
   POWER_FLOW_SOLVER,
@@ -35,6 +36,7 @@ import {
   SIMULATION_ENGINE,
   TOPOLOGY_SERVICE,
   WEATHER_MODEL,
+  createElectricalGraph,
 } from '@engine';
 import { SCENARIO_REGISTRY, createScenarioRegistry, HeatwaveScenario } from '@scenarios';
 import {
@@ -120,7 +122,14 @@ export function createCompositionRoot(config: AppConfig): Container {
   // current tick — essential for faithful replay recording.
   container.register(EVENT_BUS, (c) => c.resolve(SIMULATION_KERNEL).events);
 
-  // ---- System A: Simulation Engine (placeholders) ----
+  // ---- System A: Simulation Engine ----
+  // Real: the Phase-3 electrical graph engine (authoritative topology). It is
+  // tick-aware but unwired from the domain bus in Phase 3; Phase 4 will drive
+  // it inside the tick and route its events onto the shared bus.
+  container.register(ELECTRICAL_GRAPH, (c) =>
+    createElectricalGraph({ now: () => c.resolve(SIMULATION_KERNEL).clock.tick }),
+  );
+  // Placeholders (Phase 4+):
   container.register(TOPOLOGY_SERVICE, () => new PlaceholderTopologyService());
   container.register(WEATHER_MODEL, () => new PlaceholderWeatherModel());
   container.register(GENERATION_MODEL, () => new PlaceholderGenerationModel());
