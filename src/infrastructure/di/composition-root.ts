@@ -20,13 +20,11 @@ import {
   ELECTRICAL_GRAPH,
   GENERATION_MODEL,
   LOAD_MODEL,
-  POWER_FLOW_SOLVER,
   PROTECTION_SYSTEM,
   PlaceholderCascadeEngine,
   PlaceholderDirector,
   PlaceholderGenerationModel,
   PlaceholderLoadModel,
-  PlaceholderPowerFlowSolver,
   PlaceholderProtectionSystem,
   PlaceholderRestorationController,
   PlaceholderSimulationEngine,
@@ -134,7 +132,8 @@ export function createCompositionRoot(config: AppConfig): Container {
   container.register(WEATHER_MODEL, () => new PlaceholderWeatherModel());
   container.register(GENERATION_MODEL, () => new PlaceholderGenerationModel());
   container.register(LOAD_MODEL, () => new PlaceholderLoadModel());
-  container.register(POWER_FLOW_SOLVER, () => new PlaceholderPowerFlowSolver());
+  // Power flow is now the real Phase-4 DC solver (`solveDcPowerFlow`), a pure
+  // function invoked on the ELECTRICAL_GRAPH — no placeholder to register.
   container.register(PROTECTION_SYSTEM, () => new PlaceholderProtectionSystem());
   container.register(CASCADE_ENGINE, () => new PlaceholderCascadeEngine());
   container.register(RESTORATION_CONTROLLER, () => new PlaceholderRestorationController());

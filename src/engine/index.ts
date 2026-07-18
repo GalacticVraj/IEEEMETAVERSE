@@ -23,7 +23,7 @@ export * from './topology/topology';
 export * from './weather/weather';
 export * from './generation/generation';
 export * from './loads/loads';
-export * from './powerflow/power-flow';
+export * from './powerflow';
 export * from './protection/protection';
 export * from './cascade/cascade';
 export * from './restoration/restoration';
