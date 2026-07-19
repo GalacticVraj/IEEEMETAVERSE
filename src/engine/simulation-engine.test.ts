@@ -40,7 +40,7 @@ describe('GridSimulationEngine', () => {
       loads: [
         { id: 'ld1' as any, node: 'b2' as any, zone: 'Z1' as any, nominalDemand: asMegaWatts(50), critical: false },
       ],
-      zones: [{ id: 'Z1' as any, name: 'Zone 1' }],
+      zones: [{ id: 'Z1' as any, name: 'Zone 1', buildingIds: [] }],
     }),
   });
 

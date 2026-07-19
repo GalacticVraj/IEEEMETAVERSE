@@ -2,6 +2,8 @@ import { useRuntime } from '../../runtime-context';
 import { useSimulationStore } from '@state';
 import type { ReactElement } from 'react';
 import type { Seconds } from '@app-types';
+import { useGridStore } from '../../state/grid-store';
+import { useAppFlowStore } from '../../state/app-flow-store';
 
 /**
  * The radial/modal decision menu. Opens on `DecisionRequested`, previews the delta of
@@ -15,6 +17,21 @@ export function DecisionWheel(): ReactElement | null {
   if (!activeDecision) return null;
 
   const handleOptionSelect = (index: number) => {
+    const optString = activeDecision.options[index];
+    const zoneId = optString.includes('North') ? 'RN' : optString.includes('Downtown') ? 'DT' : optString.includes('South') ? 'RS' : optString.includes('Industrial') ? 'IN' : 'unknown';
+    const actionType = optString.includes('Shed') ? 'controlled_shed' : 'other';
+
+    useAppFlowStore.getState().logDecision({
+      tick: useGridStore.getState().tick,
+      action: { type: actionType, label: optString },
+      zoneId,
+      zoneIncomeTier: zoneId === 'RS' ? 'low' : zoneId === 'RN' ? 'high' : null,
+      alternativesConsidered: activeDecision.options.map((o: string) => ({
+        action: { type: o.includes('Shed') ? 'controlled_shed' : 'other', label: o },
+        projectedMaxLineLoading: Math.random() * 0.2 + 0.85 // Mock evaluation
+      }))
+    });
+
     // We would use the kernel to dispatch a decision commit
     // But since the UI is just emitting, we can emit the event directly onto the bus
     runtime.kernel.events.emit('DecisionCommitted', {

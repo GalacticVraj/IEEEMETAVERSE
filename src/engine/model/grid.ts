@@ -50,9 +50,23 @@ export interface Load {
   readonly critical: boolean;
 }
 
+export interface Appliance {
+  id: string;
+  name: string;
+  category: 'ac' | 'ev_charger' | 'water_heater' | 'lighting' | 'refrigeration';
+  wattage: number;
+  isOn: boolean;
+}
+
+export interface BuildingApplianceState {
+  buildingId: string;
+  appliances: Appliance[];
+}
+
 export interface Zone {
   readonly id: ZoneId;
   readonly name: string;
+  readonly buildingIds: string[];
 }
 
 export interface GridTopology {

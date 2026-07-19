@@ -82,10 +82,21 @@ export function HeroOverlay(): ReactElement {
         {/* CTA */}
         <button
           onClick={enterCity}
-          className="btn-moss animate-fade-in-up animate-pulse-glow pointer-events-auto"
-          style={{ marginTop: '2rem', animationDelay: '0.8s', animationFillMode: 'both', fontSize: '16px', padding: '14px 36px' }}
+          className="animate-fade-in-up pointer-events-auto transition-transform hover:scale-105 active:scale-95"
+          style={{ 
+            marginTop: '2rem', 
+            animationDelay: '0.8s', 
+            animationFillMode: 'both', 
+            fontSize: '16px', 
+            padding: '14px 36px',
+            backgroundColor: '#ffffff',
+            color: '#1a1a1a',
+            fontWeight: 600,
+            borderRadius: '9999px',
+            boxShadow: '0 8px 30px rgba(0, 0, 0, 0.12)'
+          }}
         >
-          🌿 Enter City
+          Enter City
         </button>
       </div>
 

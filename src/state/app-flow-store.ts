@@ -9,7 +9,9 @@ import { create } from 'zustand';
 
 export enum AppMode {
   Hero = 'Hero',
+  Arrival = 'Arrival',
   Explore = 'Explore',
+  Briefing = 'Briefing',
   CrisisSelect = 'CrisisSelect',
   ActiveCrisis = 'ActiveCrisis',
   AfterAction = 'AfterAction',
@@ -29,7 +31,7 @@ export const CRISIS_CARDS: CrisisCard[] = [
   { id: 'demand_surge', label: 'Demand Surge', icon: '🔌', description: 'EV charging and AC load spike suddenly in 2–3 zones.' },
 ];
 
-export type BuildingType = 'hospital' | 'school' | 'corporate' | 'ev_station' | 'house_high' | 'house_low' | 'solar_farm';
+export type BuildingType = 'hospital' | 'school' | 'corporate' | 'ev_station' | 'house_high' | 'house_low' | 'solar_farm' | 'courthouse';
 
 export interface InspectCard {
   name: string;
@@ -40,6 +42,23 @@ export interface InspectCard {
   teachingNote: string;
   incomeTier?: 'low' | 'high';
   equityNote?: string;
+  appliances?: any[];
+  priorityTier?: 1 | 2 | 3 | 4;
+  priorityLabel?: string;
+}
+
+export interface Decision {
+  type: string;
+  label: string;
+  [key: string]: any;
+}
+
+export interface DecisionLogEntry {
+  tick: number;
+  action: Decision;
+  zoneId: string;
+  zoneIncomeTier: 'low' | 'high' | null;
+  alternativesConsidered: { action: Decision; projectedMaxLineLoading: number }[];
 }
 
 export interface AppFlowState {
@@ -47,21 +66,25 @@ export interface AppFlowState {
   selectedCrisis: string | null;
   inspectedBuilding: InspectCard | null;
   hasInspectedAny: boolean;
+  inspectedBuildingIds: Set<string>;
   exploreEnteredAt: number;
   crisisResult: 'success' | 'blackout' | null;
-  decisionLog: Array<{ action: string; zone: string; outcome: string }>;
+  decisionLog: DecisionLogEntry[];
   postmortemNarrative: string | null;
 
   // Actions
   enterCity: () => void;
-  openInspectCard: (card: InspectCard) => void;
+  finishArrival: () => void;
+  openInspectCard: (id: string, card: InspectCard) => void;
   closeInspectCard: () => void;
+  enterBriefing: () => void;
   enterSimulation: () => void;
   selectCrisis: (id: string) => void;
   resolveCrisis: (result: 'success' | 'blackout') => void;
-  logDecision: (entry: { action: string; zone: string; outcome: string }) => void;
+  logDecision: (entry: DecisionLogEntry) => void;
   setPostmortem: (narrative: string) => void;
   replay: () => void;
+  returnToHero: () => void;
 }
 
 export const useAppFlowStore = create<AppFlowState>()((set) => ({
@@ -69,14 +92,21 @@ export const useAppFlowStore = create<AppFlowState>()((set) => ({
   selectedCrisis: null,
   inspectedBuilding: null,
   hasInspectedAny: false,
+  inspectedBuildingIds: new Set<string>(),
   exploreEnteredAt: 0,
   crisisResult: null,
   decisionLog: [],
   postmortemNarrative: null,
 
-  enterCity: () => set({ mode: AppMode.Explore, exploreEnteredAt: Date.now() }),
-  openInspectCard: (card) => set({ inspectedBuilding: card, hasInspectedAny: true }),
+  enterCity: () => set({ mode: AppMode.Arrival }),
+  finishArrival: () => set({ mode: AppMode.Explore, exploreEnteredAt: Date.now() }),
+  openInspectCard: (id, card) => set((s) => {
+    const newSet = new Set(s.inspectedBuildingIds);
+    newSet.add(id);
+    return { inspectedBuilding: card, hasInspectedAny: true, inspectedBuildingIds: newSet };
+  }),
   closeInspectCard: () => set({ inspectedBuilding: null }),
+  enterBriefing: () => set({ mode: AppMode.Briefing }),
   enterSimulation: () => set({ mode: AppMode.CrisisSelect }),
   selectCrisis: (id) => set({ selectedCrisis: id, mode: AppMode.ActiveCrisis }),
   resolveCrisis: (result) => set({ crisisResult: result, mode: AppMode.AfterAction }),
@@ -88,5 +118,16 @@ export const useAppFlowStore = create<AppFlowState>()((set) => ({
     decisionLog: [],
     postmortemNarrative: null,
     selectedCrisis: null,
+  }),
+  returnToHero: () => set({
+    mode: AppMode.Hero,
+    crisisResult: null,
+    decisionLog: [],
+    postmortemNarrative: null,
+    selectedCrisis: null,
+    hasInspectedAny: false,
+    exploreEnteredAt: 0,
+    inspectedBuilding: null,
+    inspectedBuildingIds: new Set<string>()
   }),
 }));

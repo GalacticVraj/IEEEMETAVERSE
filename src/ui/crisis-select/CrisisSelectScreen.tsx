@@ -4,11 +4,33 @@
  * Three crisis cards over the (still-visible, gently orbiting) city.
  * Selecting a card transitions into Active Crisis Mode.
  */
-import type { ReactElement } from 'react';
+import { useEffect, useState, type ReactElement } from 'react';
 import { useAppFlowStore, CRISIS_CARDS } from '../../state/app-flow-store';
+import { useRuntime } from '../../runtime-context';
+import { LEARNER_TWIN } from '../../learning/twin/learner-twin';
 
 export function CrisisSelectScreen(): ReactElement {
   const selectCrisis = useAppFlowStore((s) => s.selectCrisis);
+  const runtime = useRuntime();
+  const [recommendedId, setRecommendedId] = useState<string | null>(null);
+
+  useEffect(() => {
+    try {
+      const twin = runtime.container.resolve(LEARNER_TWIN);
+      const state = twin.state();
+      if (state.weak_concept_tags.length > 0) {
+        // Map concepts to scenarios
+        const weak = state.weak_concept_tags[0]; // Take the first weak concept
+        if (!weak) return;
+        if (weak.includes('demand') || weak.includes('peak')) setRecommendedId('heatwave');
+        else if (weak.includes('generation') || weak.includes('cost')) setRecommendedId('price_spike');
+        else if (weak.includes('local') || weak.includes('overload')) setRecommendedId('demand_surge');
+        else setRecommendedId('heatwave'); // fallback
+      }
+    } catch {
+      // Twin might not be fully initialized or not found in container
+    }
+  }, [runtime]);
 
   return (
     <div className="absolute inset-0 z-30 flex items-center justify-center pointer-events-auto">
@@ -47,9 +69,9 @@ export function CrisisSelectScreen(): ReactElement {
               }}
             >
               {/* Recommended badge */}
-              {card.recommended && (
+              {(card.recommended || recommendedId === card.id) && (
                 <div
-                  className="inline-block px-2 py-0.5 rounded-md text-xs font-semibold mb-3"
+                  className="inline-block px-2 py-0.5 rounded-md text-xs font-semibold mb-3 animate-pulse"
                   style={{ background: 'rgba(244, 163, 0, 0.2)', color: '#F4A300' }}
                 >
                   ✦ Recommended for you

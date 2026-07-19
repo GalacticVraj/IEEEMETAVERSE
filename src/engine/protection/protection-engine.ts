@@ -1,4 +1,4 @@
-import type { BusId, LineId, LineTripCause, MegaWatts, PerUnit } from '@app-types';
+import type { BusId, LineId, MegaWatts, PerUnit } from '@app-types';
 import { createToken } from '@core';
 import type { Token, TypedEventBus } from '@core';
 
@@ -100,8 +100,8 @@ export function createProtectionEngine(options: ProtectionEngineOptions = {}): P
         lineSpecs.set(line.id, {
           from: line.from as BusId,
           to: line.to as BusId,
-          capacityMw: line.capacityMw,
-          reactancePu: line.reactancePu,
+          capacityMw: line.capacityMw as unknown as MegaWatts,
+          reactancePu: line.reactancePu as unknown as PerUnit,
         });
       }
     }

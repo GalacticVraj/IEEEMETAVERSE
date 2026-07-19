@@ -22,8 +22,12 @@ import {
   TransmissionLines,
 } from './rendering/grid-scene';
 import { CityLayout } from './rendering/city-layout';
+import { DroneCamera } from './rendering/drone-camera';
+import { ArrivalCamera } from './rendering/arrival-camera';
+import { AdvisorDrone } from './rendering/advisor-drone';
 import { OperatorPanel } from './ui/operator-panel/operator-panel';
 import { HeroOverlay } from './ui/hero/HeroOverlay';
+import { ArrivalOverlay } from './ui/hero/ArrivalOverlay';
 import { ExploreHud } from './ui/explore/ExploreHud';
 import { CrisisSelectScreen } from './ui/crisis-select/CrisisSelectScreen';
 import { AfterActionScreen } from './ui/after-action/AfterActionScreen';
@@ -62,7 +66,9 @@ export function App({ config }: AppProps): ReactElement {
   const mode = useAppFlowStore((s) => s.mode);
 
   const isHero = mode === AppMode.Hero;
+  const isArrival = mode === AppMode.Arrival;
   const isExplore = mode === AppMode.Explore;
+  const isBriefing = mode === AppMode.Briefing;
   const isCrisisSelect = mode === AppMode.CrisisSelect;
   const isActiveCrisis = mode === AppMode.ActiveCrisis;
   const isAfterAction = mode === AppMode.AfterAction;
@@ -104,22 +110,21 @@ export function App({ config }: AppProps): ReactElement {
 
         {/* Camera behavior depends on mode */}
         <AutoOrbitCamera enabled={isHero || isCrisisSelect} />
-        {(isExplore || isActiveCrisis || isAfterAction) && (
-          <OrbitControls
-            target={[0, 0, 0]}
-            minDistance={30}
-            maxDistance={350}
-            maxPolarAngle={Math.PI / 2.1}
-            enableDamping
-            dampingFactor={0.05}
-          />
+        {isArrival && <ArrivalCamera enabled={isArrival} />}
+        {(isExplore || isBriefing || isActiveCrisis || isAfterAction) && (
+          <DroneCamera enabled={isExplore || isBriefing || isActiveCrisis || isAfterAction} />
         )}
+
+        <AdvisorDrone enabled={isBriefing} />
       </Canvas>
 
       {/* ── DOM Overlays (mode-dependent) ────────────────────────── */}
 
       {/* Hero mode */}
       {isHero && <HeroOverlay />}
+
+      {/* Arrival mode (cinematic) */}
+      {isArrival && <ArrivalOverlay />}
 
       {/* Explore mode */}
       {isExplore && <ExploreHud />}

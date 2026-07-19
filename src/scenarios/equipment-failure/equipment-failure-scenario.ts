@@ -1,4 +1,4 @@
-import { Severity, asGeneratorId, asLineId, asLoadId, asScenarioId } from '@app-types';
+import { Severity, asLineId, asScenarioId } from '@app-types';
 import type { TickContext } from '@core';
 
 import type { ICrisisScenario, ScenarioContext, ScenarioFaultApi, ScenarioMetadata } from '../crisis-scenario';

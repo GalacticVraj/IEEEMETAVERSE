@@ -1,10 +1,9 @@
 import { asMegaWatts, asSystemId } from '@app-types';
 import type { LoadId, MegaWatts, SystemId, ZoneId } from '@app-types';
-import { GRID_EVENT } from '@constants';
 import { createToken } from '@core';
 import type { SimulationSystem, SnapshotableSystem, SystemContext, Token } from '@core';
 
-import type { GridTopology } from '../model/grid';
+import type { BuildingApplianceState, GridTopology } from '../model/grid';
 import type { WeatherState } from '../weather/weather';
 
 export interface ZoneDemand {
@@ -20,6 +19,8 @@ export interface ILoadModel extends SimulationSystem {
   getShedFraction(id: LoadId): number;
   resetShedding(): void;
   getLoadDemand(id: LoadId): MegaWatts;
+  getBuildingAppliances(): BuildingApplianceState[];
+  toggleAppliance(buildingId: string, applianceId: string, isOn: boolean): void;
 }
 
 export const LOAD_MODEL: Token<ILoadModel> = createToken('LoadModel');
@@ -33,10 +34,39 @@ export class MeridianBayLoadModel implements ILoadModel, SnapshotableSystem {
   private shedFractions = new Map<LoadId, number>();
   private lastDemands = new Map<LoadId, MegaWatts>();
   private currentZoneDemands: readonly ZoneDemand[] = [];
+  private buildings: BuildingApplianceState[] = [];
+
+  private generateInitialAppliances(topology: GridTopology) {
+    this.buildings = [];
+    for (const zone of topology.zones) {
+      for (const buildingId of zone.buildingIds) {
+        const appliances = [];
+        if (buildingId.includes('House')) {
+          appliances.push({ id: 'ac', name: 'Air Conditioner', category: 'ac', wattage: 2800, isOn: true });
+          appliances.push({ id: 'ev', name: 'EV Charger', category: 'ev_charger', wattage: 7200, isOn: true });
+          appliances.push({ id: 'heater', name: 'Water Heater', category: 'water_heater', wattage: 1500, isOn: true });
+          appliances.push({ id: 'lights', name: 'Lighting', category: 'lighting', wattage: 400, isOn: true });
+          appliances.push({ id: 'fridge', name: 'Refrigeration', category: 'refrigeration', wattage: 800, isOn: true });
+        } else if (buildingId.includes('Corp') || buildingId.includes('Hosp') || buildingId.includes('Sch') || buildingId.includes('Term')) {
+          appliances.push({ id: 'ac', name: 'HVAC System', category: 'ac', wattage: 15000, isOn: true });
+          appliances.push({ id: 'lights', name: 'Commercial Lighting', category: 'lighting', wattage: 5000, isOn: true });
+          appliances.push({ id: 'servers', name: 'Servers/Computers', category: 'lighting', wattage: 8000, isOn: true });
+        } else {
+          appliances.push({ id: 'machinery', name: 'Heavy Machinery', category: 'lighting', wattage: 25000, isOn: true });
+          appliances.push({ id: 'ac', name: 'HVAC', category: 'ac', wattage: 10000, isOn: true });
+        }
+        this.buildings.push({ buildingId, appliances: appliances as any });
+      }
+    }
+  }
 
   public init(context: SystemContext): void {
     this.context = context;
     this.reset();
+  }
+
+  public initializeTopology(topology: GridTopology): void {
+    this.generateInitialAppliances(topology);
   }
 
   public step(): void {
@@ -57,12 +87,14 @@ export class MeridianBayLoadModel implements ILoadModel, SnapshotableSystem {
   public captureState(): unknown {
     return {
       shedFractions: Array.from(this.shedFractions.entries()),
+      buildings: this.buildings,
     };
   }
 
   public restoreState(state: unknown): void {
-    const s = state as { shedFractions: [LoadId, number][] };
+    const s = state as { shedFractions: [LoadId, number][], buildings: BuildingApplianceState[] };
     this.shedFractions = new Map(s.shedFractions);
+    this.buildings = s.buildings || [];
   }
 
   public shedLoad(id: LoadId, fraction: number): void {
@@ -80,6 +112,20 @@ export class MeridianBayLoadModel implements ILoadModel, SnapshotableSystem {
 
   public getLoadDemand(id: LoadId): MegaWatts {
     return this.lastDemands.get(id) ?? (0 as MegaWatts);
+  }
+
+  public getBuildingAppliances(): BuildingApplianceState[] {
+    return this.buildings;
+  }
+
+  public toggleAppliance(buildingId: string, applianceId: string, isOn: boolean): void {
+    const b = this.buildings.find(x => x.buildingId === buildingId);
+    if (b) {
+      const a = b.appliances.find(x => x.id === applianceId);
+      if (a) {
+        a.isOn = isOn;
+      }
+    }
   }
 
   public demand(topology: GridTopology, weather: WeatherState): readonly ZoneDemand[] {
@@ -127,12 +173,26 @@ export class MeridianBayLoadModel implements ILoadModel, SnapshotableSystem {
     }
 
     const result: ZoneDemand[] = [];
-    for (const [zoneId, demandMw] of zoneMap.entries()) {
-      result.push({ zone: zoneId, demand: asMegaWatts(demandMw) });
-      // Emit LoadChanged when aggregate demand changes
-      this.context.events.emit(GRID_EVENT.LoadChanged, {
-        zone: zoneId,
-        demand: asMegaWatts(demandMw),
+    for (const zone of topology.zones) {
+      const baseZoneDemand = zoneMap.get(zone.id) ?? 0;
+      
+      // Calculate appliance-level load for this zone (in MW)
+      const applianceLoadKw = this.buildings
+        .filter(b => zone.buildingIds.includes(b.buildingId))
+        .flatMap(b => b.appliances)
+        .filter(a => a.isOn)
+        .reduce((sum, a) => sum + a.wattage, 0);
+      const applianceLoadMw = applianceLoadKw / 1000;
+
+      // The zone demand is a combination of the base load nodes + detailed appliance loads
+      // For simplicity in this demo, we can just use the appliance load as an additive term
+      // or replace a portion. We'll add it to baseZoneDemand for now.
+      const totalMw = baseZoneDemand + applianceLoadMw;
+
+      result.push({ zone: zone.id, demand: asMegaWatts(totalMw) });
+      (this.context.events as any).emit('LoadChanged', {
+        zone: zone.id,
+        demand: asMegaWatts(totalMw),
       });
     }
 

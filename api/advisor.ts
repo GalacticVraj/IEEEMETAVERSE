@@ -30,7 +30,7 @@ interface AdvisorRequestBody {
   mode: 'live' | 'postmortem';
   gridState: { loadPct: number; zoneAtRisk: string };
   twinState: { blackoutsCaused: number; conceptMastery: Record<string, number> };
-  decisionLog?: Array<{ action: string; zone: string; outcome: string }>;
+  decisionLog?: Array<any>;
 }
 
 function buildLiveAdvisorPrompt(body: AdvisorRequestBody) {
@@ -50,22 +50,24 @@ function buildLiveAdvisorPrompt(body: AdvisorRequestBody) {
 }
 
 function buildPostmortemPrompt(body: AdvisorRequestBody) {
-  return {
-    contents: [{
-      parts: [{
-        text:
-          `You are an AI energy advisor writing a post-mortem for a power-grid crisis simulation called GridGuard. ` +
-          `Here is the full decision log: ${JSON.stringify(body.decisionLog ?? [])}. ` +
-          `The learner's concept mastery: ${JSON.stringify(body.twinState.conceptMastery)}. ` +
-          `Write a short, encouraging post-mortem (4–6 sentences) that: ` +
-          `(1) names the single most consequential decision and what a stronger choice would have looked like, ` +
-          `(2) checks whether any low-income zone was shed more than a high-income zone and gently flags it if so, ` +
-          `(3) ends with one concrete tip for the next attempt. ` +
-          `Do not shame the learner — this is formative feedback, not a grade. ` +
-          `Respond in JSON: { "narrative": "...", "keyDecision": "...", "equityFlag": true|false, "tip": "..." }`
-      }]
-    }]
-  };
+  const ruralSheds = (body.decisionLog || []).filter(
+    (d: any) => d.action?.type === 'controlled_shed' && d.zoneIncomeTier === 'low'
+  );
+  const groundedEvents = ruralSheds.map((e: any) => ({
+    tick: e.tick, zoneShed: e.zoneId,
+    alternatives: (e.alternativesConsidered || []).map((a: any) => ({
+      action: a.action.label, projectedMaxLineLoading: a.projectedMaxLineLoading,
+    })),
+  }));
+
+  return { contents: [{ parts: [{ text:
+    `A learner shed power to a low-income/rural zone at these moments during a grid crisis: ${JSON.stringify(groundedEvents)}. ` +
+    `For each one, pick the best alternative from the "alternatives" list provided (the one with the lowest projectedMaxLineLoading) ` +
+    `and tell the learner, by name, what it was (e.g., "delaying EV charging in the commercial district") and, in one sentence, ` +
+    `why it would have kept this zone powered, citing the actual loading numbers given. Only use alternatives from the list — ` +
+    `do not invent an action that wasn't actually available. If there were no rural sheds this run, say so and name what the ` +
+    `learner did well instead. End with one encouraging sentence, not a lecture.`
+  }]}]};
 }
 
 // ---------------------------------------------------------------------------

@@ -9,25 +9,25 @@ import { useEffect, useState, type ReactElement } from 'react';
 import { useAppFlowStore, type InspectCard } from '../../state/app-flow-store';
 
 export function ExploreHud(): ReactElement {
-  const enterSimulation = useAppFlowStore((s) => s.enterSimulation);
-  const hasInspectedAny = useAppFlowStore((s) => s.hasInspectedAny);
+  const enterBriefing = useAppFlowStore((s) => s.enterBriefing);
   const exploreEnteredAt = useAppFlowStore((s) => s.exploreEnteredAt);
   const inspectedBuilding = useAppFlowStore((s) => s.inspectedBuilding);
   const closeInspectCard = useAppFlowStore((s) => s.closeInspectCard);
+  const inspectedBuildingIds = useAppFlowStore((s) => s.inspectedBuildingIds);
 
   const [showEnterBtn, setShowEnterBtn] = useState(false);
 
   useEffect(() => {
-    if (hasInspectedAny) {
+    if (inspectedBuildingIds.size >= 2) {
       setShowEnterBtn(true);
       return;
     }
-    // 10-second grace period
+    // 20-second grace period
     const elapsed = Date.now() - exploreEnteredAt;
-    const remaining = Math.max(0, 10_000 - elapsed);
+    const remaining = Math.max(0, 20_000 - elapsed);
     const timer = setTimeout(() => setShowEnterBtn(true), remaining);
     return () => clearTimeout(timer);
-  }, [hasInspectedAny, exploreEnteredAt]);
+  }, [inspectedBuildingIds.size, exploreEnteredAt]);
 
   return (
     <>
@@ -42,8 +42,8 @@ export function ExploreHud(): ReactElement {
       {showEnterBtn && (
         <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-30 animate-fade-in-up">
           <button
-            onClick={enterSimulation}
-            className="btn-moss animate-pulse-glow"
+            onClick={enterBriefing}
+            className="btn-moss animate-pulse-glow pointer-events-auto"
             style={{ fontSize: '15px', padding: '14px 36px' }}
           >
             ⚡ Enter Simulation
@@ -77,11 +77,26 @@ function InspectCardOverlay({ card, onClose }: { card: InspectCard; onClose: () 
               {card.name}
             </h3>
             <span
-              className="inline-block px-2 py-0.5 rounded-md text-xs font-semibold"
+              className="inline-block px-2 py-0.5 rounded-md text-xs font-semibold mr-2"
               style={{ background: 'rgba(116, 198, 157, 0.15)', color: '#74C69D' }}
             >
               {card.type.replace('_', ' ').toUpperCase()}
             </span>
+            {card.priorityTier && (
+              <span
+                className="inline-block px-2 py-0.5 rounded-md text-xs font-semibold"
+                style={{ 
+                  background: card.priorityTier === 1 ? 'rgba(230, 57, 70, 0.2)' : 
+                              card.priorityTier === 2 ? 'rgba(244, 163, 0, 0.2)' : 
+                              card.priorityTier === 3 ? 'rgba(116, 198, 157, 0.2)' : 'rgba(148, 163, 184, 0.2)',
+                  color: card.priorityTier === 1 ? '#E63946' : 
+                         card.priorityTier === 2 ? '#F4A300' : 
+                         card.priorityTier === 3 ? '#74C69D' : '#94a3b8' 
+                }}
+              >
+                TIER {card.priorityTier} — {card.priorityLabel?.toUpperCase()}
+              </span>
+            )}
           </div>
           <button
             onClick={onClose}
@@ -107,6 +122,23 @@ function InspectCardOverlay({ card, onClose }: { card: InspectCard; onClose: () 
         <p style={{ color: 'rgba(216, 243, 220, 0.7)', fontSize: 13, lineHeight: 1.5, marginBottom: 10 }}>
           {card.flavorText}
         </p>
+
+        {/* Appliances */}
+        {card.appliances && card.appliances.length > 0 && (
+          <div className="mb-3 border-t border-b border-emerald-500/20 py-2">
+            <div className="text-xs text-emerald-400 font-bold mb-1 uppercase">Appliances</div>
+            <div className="flex flex-col gap-1">
+              {card.appliances.map(app => (
+                <div key={app.id} className="flex justify-between items-center text-xs">
+                  <span style={{ color: app.isOn ? '#D8F3DC' : '#64748b' }}>
+                    {app.isOn ? '🟢' : '⚫'} {app.name}
+                  </span>
+                  <span style={{ color: '#94a3b8' }}>{(app.wattage / 1000).toFixed(1)} kW</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Teaching note */}
         <div

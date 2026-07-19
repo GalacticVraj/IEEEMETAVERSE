@@ -118,9 +118,9 @@ export class GridDirector implements IDirector, SnapshotableSystem {
         decisionId: asDecisionId(`dec-overload-${tick}`),
         prompt: 'High line loading detected. Power flows are approaching limits. Choose emergency action:',
         options: [
-          'Shed non-critical load (15% in Residential North)',
-          'Manually trip overloaded line (control load routing)',
-          'Ramp peaker generation to maximum (+50 MW)',
+          'Shed AC in Residential North',
+          'Delay EV Charging in Downtown',
+          'Shed all Commercial Lighting',
           'Do nothing (rely on automatic relay protection)',
         ],
       });
@@ -132,8 +132,8 @@ export class GridDirector implements IDirector, SnapshotableSystem {
         decisionId: asDecisionId(`dec-cascade-${tick}`),
         prompt: 'Cascading failure sequence detected! Network stability is compromised. Select emergency intervention:',
         options: [
-          'Perform emergency brownout (shed 30% load in Downtown)',
-          'Activate battery storage discharge (+50 MW)',
+          'Shed Water Heaters in Residential South',
+          'Shed Heavy Machinery in Industrial',
           'Request emergency imports (+100 MW)',
           'Hold current topology and monitor',
         ],

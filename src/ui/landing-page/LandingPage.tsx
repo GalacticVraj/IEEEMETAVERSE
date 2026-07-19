@@ -1,4 +1,68 @@
-import type { ReactElement } from 'react';
+import { useEffect, useState, type ReactElement, type ReactNode } from 'react';
+
+// --- FadeIn Component ---
+function FadeIn({ children, delay = 0, duration = 1000 }: { children: ReactNode, delay?: number, duration?: number }) {
+  const [visible, setVisible] = useState(false);
+  useEffect(() => {
+    const timer = setTimeout(() => setVisible(true), delay);
+    return () => clearTimeout(timer);
+  }, [delay]);
+
+  return (
+    <div
+      className="transition-opacity"
+      style={{
+        opacity: visible ? 1 : 0,
+        transitionDuration: `${duration}ms`,
+      }}
+    >
+      {children}
+    </div>
+  );
+}
+
+// --- AnimatedHeading Component ---
+function AnimatedHeading({ text, delay = 200 }: { text: string, delay?: number }) {
+  const [start, setStart] = useState(false);
+  useEffect(() => {
+    const timer = setTimeout(() => setStart(true), delay);
+    return () => clearTimeout(timer);
+  }, [delay]);
+
+  const lines = text.split('\n');
+  let globalCharIndex = 0;
+  const charDelay = 30; // ms
+
+  return (
+    <h1 
+      className="text-4xl md:text-5xl lg:text-6xl xl:text-[5rem] font-normal mb-4 text-white leading-[1.1]"
+      style={{ letterSpacing: '-0.04em' }}
+    >
+      {lines.map((line, lineIndex) => (
+        <div key={lineIndex} className="block">
+          {line.split('').map((char, charIndex) => {
+            const currentDelay = globalCharIndex * charDelay;
+            globalCharIndex++;
+            return (
+              <span
+                key={charIndex}
+                className="inline-block transition-all ease-out"
+                style={{
+                  opacity: start ? 1 : 0,
+                  transform: start ? 'translateX(0)' : 'translateX(-18px)',
+                  transitionDuration: '500ms',
+                  transitionDelay: `${currentDelay}ms`,
+                }}
+              >
+                {char === ' ' ? '\u00A0' : char}
+              </span>
+            );
+          })}
+        </div>
+      ))}
+    </h1>
+  );
+}
 
 export interface LandingPageProps {
   onEnter: () => void;
@@ -6,69 +70,85 @@ export interface LandingPageProps {
 
 export function LandingPage({ onEnter }: LandingPageProps): ReactElement {
   return (
-    <div className="relative h-screen w-full overflow-hidden flex flex-col bg-[#F8FAFC]">
-      {/* Background Video */}
-      <video
-        autoPlay
-        muted
-        loop
-        playsInline
-        className="absolute inset-0 z-0 w-full h-[130%] object-cover object-top opacity-80"
-        src="REPLACE_WITH_YOUR_GRIDGUARD_LOOP.mp4"
-      />
+    <div className="absolute inset-0 z-10 flex flex-col pointer-events-none">
+      {/* 
+        The 3D city scene handles the background ("3D merge"). 
+        We just provide the overlay UI.
+      */}
+      <div className="absolute inset-0" style={{ background: 'rgba(0,0,0,0.2)', pointerEvents: 'none' }} />
 
       {/* Navigation Bar */}
-      <div className="relative z-10 w-full flex justify-center pt-4 md:pt-6 px-4">
-        <nav className="flex items-center gap-6 bg-white/70 backdrop-blur-md rounded-xl px-4 md:px-6 py-3 shadow-sm">
-          {/* Logo SVG */}
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 256 256"
-            className="w-6 h-6 fill-[#0B2545]"
-            aria-label="GridGuard Logo"
-          >
-            <path d="M 256 256 L 128 256 L 0 128 L 128 128 Z" />
-            <path d="M 256 128 L 128 128 L 0 0 L 128 0 Z" />
-          </svg>
-          
-          {/* Links */}
-          <div className="hidden sm:flex items-center gap-6 text-sm font-medium text-[#0B2545]/80">
-            <a href="#" className="hover:text-[#0B2545] transition-opacity">Systems</a>
-            <a href="#" className="hover:text-[#0B2545] transition-opacity">Ethics & Data</a>
-            <a href="#" className="hover:text-[#0B2545] transition-opacity">Roadmap</a>
-            <a href="#" className="hover:text-[#0B2545] transition-opacity">Team</a>
+      <div className="w-full px-6 md:px-12 lg:px-16 pt-6 pointer-events-auto z-10">
+        <nav className="liquid-glass rounded-xl px-4 py-2 flex items-center justify-between">
+          <div className="text-2xl font-semibold tracking-tight text-white flex items-center gap-2">
+            GridGuard
           </div>
+          
+          <div className="hidden md:flex items-center gap-8 text-sm text-gray-300 font-medium">
+            <a href="#" className="hover:text-white transition-colors">Systems</a>
+            <a href="#" className="hover:text-white transition-colors">Ethics & Data</a>
+            <a href="#" className="hover:text-white transition-colors">Roadmap</a>
+            <a href="#" className="hover:text-white transition-colors">Team</a>
+          </div>
+
+          <button 
+            onClick={onEnter}
+            className="bg-white text-black px-6 py-2 rounded-lg text-sm font-medium hover:bg-gray-100 transition-colors"
+          >
+            Start Simulation
+          </button>
         </nav>
       </div>
 
-      {/* Hero Content */}
-      <div className="relative z-10 flex-1 flex flex-col items-center justify-center text-center px-4 mt-8 md:mt-16">
-        {/* Badge */}
-        <div className="mb-6 inline-flex items-center gap-2 rounded-xl border border-[#0B2545]/10 bg-white/70 backdrop-blur-sm px-4 py-2 text-sm font-medium text-[#0B2545]">
-          <div className="bg-[#F4A300] rounded w-5 h-5 flex items-center justify-center text-white text-xs">
-            ⚡
+      {/* Hero Content (Bottom of viewport) */}
+      <div className="px-6 md:px-12 lg:px-16 flex-1 flex flex-col justify-end pb-12 lg:pb-16 pointer-events-none z-10">
+        <div className="lg:grid lg:grid-cols-2 lg:items-end w-full">
+          
+          {/* Left Column - Main content */}
+          <div className="flex flex-col pointer-events-auto">
+            <FadeIn delay={400} duration={800}>
+              <div className="mb-4 inline-flex items-center gap-2 liquid-glass px-4 py-2 rounded-lg text-sm font-medium text-amber-400">
+                Built for IEEE Metaverse Grand Challenge 2026
+              </div>
+            </FadeIn>
+
+            <AnimatedHeading text="Break the grid\nbefore it breaks you." delay={200} />
+
+            <FadeIn delay={800} duration={1000}>
+              <p className="text-base md:text-lg text-gray-300 mb-5 max-w-xl">
+                A live simulation of energy consequences. Every choice you make — cutting AC, activating solar, delaying EVs — has a visible, immediate consequence on the city.
+              </p>
+            </FadeIn>
+
+            <FadeIn delay={1200} duration={1000}>
+              <div className="flex flex-wrap gap-4">
+                <button
+                  onClick={onEnter}
+                  className="bg-white text-black px-8 py-3 rounded-lg font-medium hover:bg-gray-100 transition-colors cursor-pointer shadow-lg"
+                >
+                  Enter City
+                </button>
+                <button
+                  className="liquid-glass border border-white/20 text-white px-8 py-3 rounded-lg font-medium hover:bg-white hover:text-black transition-all cursor-pointer shadow-lg"
+                >
+                  Explore Features
+                </button>
+              </div>
+            </FadeIn>
           </div>
-          Built for IEEE Metaverse Grand Challenge 2026
+
+          {/* Right Column - Tag */}
+          <div className="hidden lg:flex items-end justify-end pointer-events-auto mt-8 lg:mt-0">
+            <FadeIn delay={1400} duration={1000}>
+              <div className="liquid-glass border border-white/20 px-6 py-3 rounded-xl shadow-lg">
+                <span className="text-lg md:text-xl lg:text-2xl font-light text-white tracking-wide">
+                  Simulate. Balance. Survive.
+                </span>
+              </div>
+            </FadeIn>
+          </div>
+
         </div>
-
-        {/* Heading */}
-        <h1 className="font-['Instrument_Serif'] text-4xl sm:text-5xl md:text-7xl lg:text-8xl leading-[0.95] tracking-tight text-[#0B2545] max-w-4xl">
-          Break the grid <br />
-          before it breaks you
-        </h1>
-
-        {/* Subtitle */}
-        <p className="mt-5 sm:mt-6 max-w-3xl text-xs sm:text-sm md:text-base leading-relaxed text-[#0B2545]/70">
-          Step into a live power-grid crisis in Meridian Bay, a small coastal city on the day a record heatwave hits. Every choice you make — cutting AC, activating solar, delaying EV charging — has a visible, immediate consequence. No diagrams, no textbooks. Just the grid, live, and an AI advisor coaching you through it.
-        </p>
-
-        {/* CTA Button */}
-        <button
-          onClick={onEnter}
-          className="mt-7 sm:mt-8 rounded-xl bg-[#FEFEFE] px-6 sm:px-8 py-3 sm:py-3.5 text-sm font-semibold text-[#0B2545] shadow-[0px_4px_12px_rgba(0,0,0,0.15)] hover:shadow-[0px_6px_16px_rgba(0,0,0,0.2)] transition-all duration-300 cursor-pointer"
-        >
-          Enter the Simulation
-        </button>
       </div>
     </div>
   );

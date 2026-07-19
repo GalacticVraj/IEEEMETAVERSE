@@ -27,7 +27,7 @@ const CHARGE_GLOW = '#22c55e';      // charge indicator
 // ---------------------------------------------------------------------------
 // Hospital — tallest boxy form, white facade, red cross, garden plaza
 // ---------------------------------------------------------------------------
-export function Hospital({ position }: { position: [number, number, number] }) {
+export function Hospital({ position, onClick, onPointerDown, onPointerUp }: { position: [number, number, number]; onClick?: any; onPointerDown?: any; onPointerUp?: any }) {
   const beaconRef = useRef<THREE.MeshStandardMaterial>(null);
 
   useFrame(({ clock }) => {
@@ -37,7 +37,7 @@ export function Hospital({ position }: { position: [number, number, number] }) {
   });
 
   return (
-    <group position={position}>
+    <group position={position} onClick={onClick} onPointerDown={onPointerDown} onPointerUp={onPointerUp}>
       {/* Main building */}
       <mesh position={[0, 10, 0]}>
         <boxGeometry args={[7, 20, 6]} />
@@ -77,9 +77,9 @@ export function Hospital({ position }: { position: [number, number, number] }) {
 // ---------------------------------------------------------------------------
 // School — mid-height, warm facade, green playground, rooftop solar panels
 // ---------------------------------------------------------------------------
-export function School({ position }: { position: [number, number, number] }) {
+export function School({ position, onClick, onPointerDown, onPointerUp }: { position: [number, number, number]; onClick?: any; onPointerDown?: any; onPointerUp?: any }) {
   return (
-    <group position={position}>
+    <group position={position} onClick={onClick} onPointerDown={onPointerDown} onPointerUp={onPointerUp}>
       {/* Main building */}
       <mesh position={[0, 4, 0]}>
         <boxGeometry args={[8, 8, 5]} />
@@ -107,9 +107,41 @@ export function School({ position }: { position: [number, number, number] }) {
 }
 
 // ---------------------------------------------------------------------------
+// Courthouse — moderate height, columned facade (Tier 2)
+// ---------------------------------------------------------------------------
+export function Courthouse({ position, onClick, onPointerDown, onPointerUp }: { position: [number, number, number]; onClick?: any; onPointerDown?: any; onPointerUp?: any }) {
+  return (
+    <group position={position} onClick={onClick} onPointerDown={onPointerDown} onPointerUp={onPointerUp}>
+      {/* Main building block */}
+      <mesh position={[0, 5, 0]}>
+        <boxGeometry args={[10, 10, 8]} />
+        <meshStandardMaterial color="#e2e8f0" roughness={0.5} />
+      </mesh>
+      {/* Roof pediment (classic triangle) */}
+      <mesh position={[0, 11, 0]} rotation={[0, 0, 0]}>
+        <coneGeometry args={[6.5, 3, 4]} />
+        <meshStandardMaterial color="#cbd5e1" roughness={0.6} />
+      </mesh>
+      {/* Front steps */}
+      <mesh position={[0, 0.5, 5]}>
+        <boxGeometry args={[6, 1, 3]} />
+        <meshStandardMaterial color="#94a3b8" />
+      </mesh>
+      {/* Columns */}
+      {[-3, -1, 1, 3].map((x, i) => (
+        <mesh key={i} position={[x, 5, 4.5]}>
+          <cylinderGeometry args={[0.3, 0.4, 10, 8]} />
+          <meshStandardMaterial color="#f1f5f9" />
+        </mesh>
+      ))}
+    </group>
+  );
+}
+
+// ---------------------------------------------------------------------------
 // Corporate Tower — tall glass high-rise, tinted windows, rooftop greenery
 // ---------------------------------------------------------------------------
-export function CorporateTower({ position, height = 18 }: { position: [number, number, number]; height?: number }) {
+export function CorporateTower({ position, height = 18, onClick, onPointerDown, onPointerUp }: { position: [number, number, number]; height?: number; onClick?: any; onPointerDown?: any; onPointerUp?: any }) {
   const matRef = useRef<THREE.MeshStandardMaterial>(null);
 
   useFrame(({ clock }) => {
@@ -119,7 +151,7 @@ export function CorporateTower({ position, height = 18 }: { position: [number, n
   });
 
   return (
-    <group position={position}>
+    <group position={position} onClick={onClick} onPointerDown={onPointerDown} onPointerUp={onPointerUp}>
       {/* Main tower */}
       <mesh position={[0, height / 2, 0]}>
         <boxGeometry args={[4.5, height, 4.5]} />
@@ -146,7 +178,7 @@ export function CorporateTower({ position, height = 18 }: { position: [number, n
 // ---------------------------------------------------------------------------
 // EV Charging Station — solar canopy, parked cars with charge glow
 // ---------------------------------------------------------------------------
-export function EvStation({ position }: { position: [number, number, number] }) {
+export function EvStation({ position, onClick, onPointerDown, onPointerUp }: { position: [number, number, number]; onClick?: any; onPointerDown?: any; onPointerUp?: any }) {
   const glowRef = useRef<THREE.MeshStandardMaterial>(null);
 
   useFrame(({ clock }) => {
@@ -156,7 +188,7 @@ export function EvStation({ position }: { position: [number, number, number] }) 
   });
 
   return (
-    <group position={position}>
+    <group position={position} onClick={onClick} onPointerDown={onPointerDown} onPointerUp={onPointerUp}>
       {/* Solar canopy */}
       <mesh position={[0, 4, 0]}>
         <boxGeometry args={[8, 0.2, 5]} />
@@ -195,9 +227,9 @@ export function EvStation({ position }: { position: [number, number, number] }) 
 // ---------------------------------------------------------------------------
 // Houses — two income tiers sharing similar base geometry
 // ---------------------------------------------------------------------------
-export function HouseHigh({ position }: { position: [number, number, number] }) {
+export function HouseHigh({ position, onClick, onPointerDown, onPointerUp }: { position: [number, number, number]; onClick?: any; onPointerDown?: any; onPointerUp?: any }) {
   return (
-    <group position={position}>
+    <group position={position} onClick={onClick} onPointerDown={onPointerDown} onPointerUp={onPointerUp}>
       {/* House body — larger footprint */}
       <mesh position={[0, 2, 0]}>
         <boxGeometry args={[4, 4, 3.5]} />
@@ -231,9 +263,9 @@ export function HouseHigh({ position }: { position: [number, number, number] }) 
   );
 }
 
-export function HouseLow({ position }: { position: [number, number, number] }) {
+export function HouseLow({ position, onClick, onPointerDown, onPointerUp }: { position: [number, number, number]; onClick?: any; onPointerDown?: any; onPointerUp?: any }) {
   return (
-    <group position={position}>
+    <group position={position} onClick={onClick} onPointerDown={onPointerDown} onPointerUp={onPointerUp}>
       {/* House body — smaller footprint, no solar, no EV */}
       <mesh position={[0, 1.5, 0]}>
         <boxGeometry args={[3, 3, 2.5]} />
@@ -256,12 +288,12 @@ export function HouseLow({ position }: { position: [number, number, number] }) {
 // ---------------------------------------------------------------------------
 // Solar Farm — angled panel field
 // ---------------------------------------------------------------------------
-export function SolarFarm({ position }: { position: [number, number, number] }) {
+export function SolarFarm({ position, onClick, onPointerDown, onPointerUp }: { position: [number, number, number]; onClick?: any; onPointerDown?: any; onPointerUp?: any }) {
   const panelRows = 4;
   const panelCols = 5;
 
   return (
-    <group position={position}>
+    <group position={position} onClick={onClick} onPointerDown={onPointerDown} onPointerUp={onPointerUp}>
       {Array.from({ length: panelRows }, (_, r) =>
         Array.from({ length: panelCols }, (_, c) => (
           <group key={`${r}-${c}`} position={[(c - 2) * 3, 0, (r - 1.5) * 3]}>
@@ -390,3 +422,4 @@ export function Road({ from, to, width = 2 }: { from: [number, number]; to: [num
     </group>
   );
 }
+

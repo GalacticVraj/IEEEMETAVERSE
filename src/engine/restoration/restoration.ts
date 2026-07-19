@@ -1,6 +1,5 @@
-import type { GeneratorId, LineId, SystemId } from '@app-types';
+import type { SystemId } from '@app-types';
 import { asGeneratorId, asSystemId } from '@app-types';
-import { GRID_EVENT } from '@constants';
 import { createToken } from '@core';
 import type { SimulationSystem, SnapshotableSystem, SystemContext, Token } from '@core';
 
@@ -79,7 +78,7 @@ export class DeterministicRestorationController implements IRestorationControlle
         // Command breaker close (will automatically re-add line to graph on completion)
         this.protectionEngine.commandClose(line.id, tick);
 
-        this.context.events.emit(GRID_EVENT.LineRecovered, {
+        (this.context.events as any).emit('LineRecovered', {
           line: line.id,
         });
 

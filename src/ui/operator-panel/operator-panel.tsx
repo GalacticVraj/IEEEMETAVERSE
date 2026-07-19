@@ -15,9 +15,12 @@ import { KernelState } from '@app-types';
 import { useGridStore, useSimulationStore } from '@state';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useRuntime } from '../../runtime-context';
+import { useAppFlowStore, type AppFlowState } from '../../state/app-flow-store';
 
 /** Interval between kernel ticks in ms (10 ticks/s → ~real-time). */
 const TICK_INTERVAL_MS = 100;
+/** Max crisis duration: 3 minutes at 10 ticks/s = 1800 ticks. */
+const MAX_TICKS = 1800;
 
 export function OperatorPanel(): JSX.Element {
   const runtime = useRuntime();
@@ -60,18 +63,57 @@ export function OperatorPanel(): JSX.Element {
     try { kernel.reset(); } catch { /* ignore */ }
   }, [kernel, pauseLoop]);
 
-  // Clean up on unmount
-  useEffect(() => () => {
-    if (intervalRef.current !== null) clearInterval(intervalRef.current);
+  // On Mount: reset the kernel and start it cleanly
+  useEffect(() => {
+    resetLoop();
+    startLoop();
+    return () => {
+      pauseLoop();
+    };
   }, []);
 
+  const resolveCrisis = useAppFlowStore((s: AppFlowState) => s.resolveCrisis);
+
+  // Monitor for simulation end conditions
+  useEffect(() => {
+    if (tick >= MAX_TICKS) {
+      pauseLoop();
+      resolveCrisis('success');
+    } else if (trippedCount >= 3) {
+      pauseLoop();
+      resolveCrisis('blackout');
+    }
+  }, [tick, trippedCount, pauseLoop, resolveCrisis]);
+
   const openList = [...openLines].join(', ') || 'none';
+  const selectedCrisis = useAppFlowStore((s: AppFlowState) => s.selectedCrisis);
+  
+  // Assuming 10 ticks = 1 second. Max time 3 minutes (180s) = 1800 ticks
+  const ticksRemaining = Math.max(0, MAX_TICKS - tick);
+  const secondsRemaining = Math.floor(ticksRemaining / 10);
+  const mins = Math.floor(secondsRemaining / 60);
+  const secs = (secondsRemaining % 60).toString().padStart(2, '0');
 
   return (
-    <div style={{
-      position: 'fixed',
-      top: 16,
-      right: 16,
+    <>
+      {/* Crisis Banner */}
+      <div className="fixed top-0 left-1/2 -translate-x-1/2 mt-4 z-50 animate-slide-down pointer-events-none">
+        <div className="bg-[#111827]/90 backdrop-blur-md border border-red-500/50 rounded-xl px-8 py-3 flex items-center gap-6 shadow-[0_0_20px_rgba(239,68,68,0.3)]">
+          <div className="flex flex-col">
+            <span className="text-red-500 text-xs font-bold uppercase tracking-widest">Active Crisis</span>
+            <span className="text-white font-bold text-lg">{selectedCrisis?.replace('_', ' ').toUpperCase() || 'SYSTEM STRESS'}</span>
+          </div>
+          <div className="h-8 w-px bg-slate-700"></div>
+          <div className="text-3xl font-mono font-bold text-red-400 tabular-nums">
+            {mins}:{secs}
+          </div>
+        </div>
+      </div>
+
+      <div style={{
+        position: 'fixed',
+        top: 16,
+        right: 16,
       width: 280,
       background: 'rgba(10, 31, 20, 0.92)',
       border: '1px solid rgba(116, 198, 157, 0.3)',
@@ -134,6 +176,7 @@ export function OperatorPanel(): JSX.Element {
         </Btn>
       </div>
     </div>
+    </>
   );
 }
 

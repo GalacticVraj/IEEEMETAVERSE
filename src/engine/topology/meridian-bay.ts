@@ -43,12 +43,12 @@ const gkind = (k: string): GenerationKind => k as GenerationKind;
 // Zones
 // ---------------------------------------------------------------------------
 const ZONES: readonly Zone[] = [
-  { id: zid('DT'), name: 'Downtown' },
-  { id: zid('IN'), name: 'Industrial' },
-  { id: zid('RN'), name: 'Residential North' },
-  { id: zid('RS'), name: 'Residential South' },
-  { id: zid('AP'), name: 'Airport' },
-  { id: zid('HB'), name: 'Harbor' },
+  { id: zid('DT'), name: 'Downtown', buildingIds: ['DT-Corp1', 'DT-Corp2', 'DT-Corp3', 'DT-Corp4', 'DT-Corp5', 'DT-Hosp'] },
+  { id: zid('IN'), name: 'Industrial', buildingIds: ['IN-Fac1', 'IN-Fac2'] },
+  { id: zid('RN'), name: 'Residential North', buildingIds: ['RN-House1', 'RN-House2', 'RN-House3', 'RN-House4', 'RN-House5', 'RN-House6', 'RN-House7', 'RN-Sch1', 'RN-EV1', 'RN-Solar'] },
+  { id: zid('RS'), name: 'Residential South', buildingIds: ['RS-House1', 'RS-House2', 'RS-House3', 'RS-House4', 'RS-House5', 'RS-House6', 'RS-House7', 'RS-House8', 'RS-House9', 'RS-Sch2', 'RS-EV2'] },
+  { id: zid('AP'), name: 'Airport', buildingIds: ['AP-Term', 'AP-EV3'] },
+  { id: zid('HB'), name: 'Harbor', buildingIds: ['HB-Fac'] },
 ];
 
 // ---------------------------------------------------------------------------

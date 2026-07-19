@@ -8,7 +8,7 @@
  *   3. The fault API calls are routed correctly (mock verification).
  */
 import { asGeneratorId, asLineId, asLoadId } from '@app-types';
-import type { GeneratorId, LineId, LoadId } from '@app-types';
+import type { GeneratorId, LineId, LoadId, Seconds } from '@app-types';
 import type { TickContext } from '@core';
 import { describe, expect, it, vi } from 'vitest';
 
@@ -86,10 +86,9 @@ function makeScenarioContext(faults: ScenarioFaultApi): ScenarioContext {
 function makeTickContext(tick: number): TickContext {
   return {
     tick,
-    time: tick,
-    timestep: 1,
+    time: tick as Seconds,
+    timestep: 1 as Seconds,
     events: { emit: vi.fn(), on: vi.fn(), off: vi.fn() } as any,
-    clock: { tick, elapsed: tick } as any,
     rng: { next: () => 0.5 } as any,
   };
 }

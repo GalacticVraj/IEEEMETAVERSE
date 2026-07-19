@@ -1,5 +1,5 @@
 import { asHertz, asMegaWatts, asPerUnit, asSystemId } from '@app-types';
-import type { Hertz, LineId, MegaWatts, PerUnit, SystemId } from '@app-types';
+import type { SystemId } from '@app-types';
 import { GRID_EVENT } from '@constants';
 import { createToken, isSnapshotable } from '@core';
 import type { SimulationSystem, SnapshotableSystem, SystemContext, TickContext, Token } from '@core';
@@ -52,12 +52,45 @@ export class GridSimulationEngine implements ISimulationEngine, SnapshotableSyst
 
   public init(context: SystemContext): void {
     this.context = context;
-    this.weather.init(context);
+    (this.weather as any).init?.(context);
     this.generation.init(context);
     this.loads.init(context);
     this.cascade.init(context);
     this.restoration.init(context);
     this.protection.register(this.graph);
+
+    // Initialize detailed appliances based on topology
+    if ('initializeTopology' in this.loads) {
+      (this.loads as any).initializeTopology(this.topologyService.get());
+    }
+
+    (this.context.events as any).on(GRID_EVENT.DecisionCommitted, (payload: any) => {
+      const { decisionId, optionIndex } = payload;
+      const loads = this.loads as any;
+      if (decisionId.includes('dec-overload')) {
+        if (optionIndex === 0) { // Shed AC in Residential North
+          const rnBuildings = this.topologyService.get().zones.find(z => z.id === 'RN')?.buildingIds || [];
+          for (const b of rnBuildings) loads.toggleAppliance(b, 'ac', false);
+        } else if (optionIndex === 1) { // Delay EV Charging in Downtown
+          const dtBuildings = this.topologyService.get().zones.find(z => z.id === 'DT')?.buildingIds || [];
+          for (const b of dtBuildings) loads.toggleAppliance(b, 'ev', false);
+        } else if (optionIndex === 2) { // Shed all Commercial Lighting
+          const bldgs = loads.getBuildingAppliances();
+          for (const b of bldgs) {
+            const hasComm = b.appliances.some((a: any) => a.name === 'Commercial Lighting');
+            if (hasComm) loads.toggleAppliance(b.buildingId, 'lights', false);
+          }
+        }
+      } else if (decisionId.includes('dec-cascade')) {
+        if (optionIndex === 0) { // Shed Water Heaters in Residential South
+          const rsBuildings = this.topologyService.get().zones.find(z => z.id === 'RS')?.buildingIds || [];
+          for (const b of rsBuildings) loads.toggleAppliance(b, 'heater', false);
+        } else if (optionIndex === 1) { // Shed Heavy Machinery in Industrial
+          const inBuildings = this.topologyService.get().zones.find(z => z.id === 'IN')?.buildingIds || [];
+          for (const b of inBuildings) loads.toggleAppliance(b, 'machinery', false);
+        }
+      }
+    });
 
     this.reset();
   }
@@ -68,7 +101,7 @@ export class GridSimulationEngine implements ISimulationEngine, SnapshotableSyst
 
     // 2. Load model updates (target demands)
     const topology = this.topologyService.get();
-    const zoneDemands = this.loads.demand(topology, weatherState);
+    void this.loads.demand(topology, weatherState);
     const totalDemand = this.loads.totalDemand();
 
     // 3. Generation dispatch to meet total demand
@@ -97,7 +130,7 @@ export class GridSimulationEngine implements ISimulationEngine, SnapshotableSyst
     });
 
     // 5. Protection evaluation
-    const protectionResult = this.protection.evaluate({
+    this.protection.evaluate({
       graph: this.graph,
       flows: pfResult.flows,
       tick: context.tick,
@@ -172,12 +205,12 @@ export class GridSimulationEngine implements ISimulationEngine, SnapshotableSyst
       });
 
       if (zoneState === 'Blackout' && unserved > 0) {
-        this.context.events.emit(GRID_EVENT.ZoneBlackout, {
+        (this.context.events as any).emit('ZoneBlackout', {
           zone: zone.id,
           unservedLoad: asMegaWatts(unserved),
         });
       } else if (zoneState === 'Powered') {
-        this.context.events.emit(GRID_EVENT.ZonePowered, {
+        (this.context.events as any).emit('ZonePowered', {
           zone: zone.id,
         });
       }
@@ -197,17 +230,18 @@ export class GridSimulationEngine implements ISimulationEngine, SnapshotableSyst
     this.restoration.plan(this.state);
 
     // 9. Tension pacing / Director
-    this.director.pace(context);
+    this.director.pace(context, this.state);
 
     // Emit simulation tick completion
     this.context.events.emit(GRID_EVENT.SimulationTick, {
       tick: context.tick,
       simTime: context.time,
+      timestep: context.timestep,
     });
   }
 
   public reset(): void {
-    this.weather.reset();
+    (this.weather as any).reset?.();
     this.generation.reset();
     this.loads.reset();
     this.cascade.reset();
@@ -216,7 +250,7 @@ export class GridSimulationEngine implements ISimulationEngine, SnapshotableSyst
   }
 
   public dispose(): void {
-    this.weather.dispose();
+    (this.weather as any).dispose?.();
     this.generation.dispose();
     this.loads.dispose();
     this.cascade.dispose();
@@ -229,7 +263,7 @@ export class GridSimulationEngine implements ISimulationEngine, SnapshotableSyst
 
   public captureState(): unknown {
     return {
-      weather: isSnapshotable(this.weather) ? this.weather.captureState() : null,
+      weather: isSnapshotable(this.weather as any) ? (this.weather as any).captureState() : null,
       generation: isSnapshotable(this.generation) ? this.generation.captureState() : null,
       loads: isSnapshotable(this.loads) ? this.loads.captureState() : null,
       cascade: isSnapshotable(this.cascade) ? this.cascade.captureState() : null,
@@ -247,7 +281,7 @@ export class GridSimulationEngine implements ISimulationEngine, SnapshotableSyst
       restoration: unknown;
       state: GridState;
     };
-    if (isSnapshotable(this.weather)) this.weather.restoreState(s.weather);
+    if (isSnapshotable(this.weather as any)) (this.weather as any).restoreState(s.weather);
     if (isSnapshotable(this.generation)) this.generation.restoreState(s.generation);
     if (isSnapshotable(this.loads)) this.loads.restoreState(s.loads);
     if (isSnapshotable(this.cascade)) this.cascade.restoreState(s.cascade);
