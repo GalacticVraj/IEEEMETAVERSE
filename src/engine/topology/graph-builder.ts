@@ -1,4 +1,4 @@
-import type { BusId, GeneratorId, LineId, LoadId } from '@app-types';
+import type { BusId } from '@app-types';
 
 import type { ElectricalGraph, MutationResult } from '../graph/electrical-graph';
 import type { GridTopology } from '../model/grid';
@@ -25,7 +25,7 @@ export function populateGraphFromTopology(
     }
     for (const line of topology.lines) {
       tx.addLine({
-        id: line.id as unknown as LineId,
+        id: line.id,
         from: line.from as unknown as BusId,
         to: line.to as unknown as BusId,
         capacityMw: line.capacity,
@@ -34,7 +34,7 @@ export function populateGraphFromTopology(
     }
     for (const generator of topology.generators) {
       tx.addGenerator({
-        id: generator.id as unknown as GeneratorId,
+        id: generator.id,
         busId: generator.node as unknown as BusId,
         capacityMw: generator.capacity,
         generationKind: generator.kind,
@@ -42,7 +42,7 @@ export function populateGraphFromTopology(
     }
     for (const load of topology.loads) {
       tx.addLoad({
-        id: load.id as unknown as LoadId,
+        id: load.id,
         busId: load.node as unknown as BusId,
         nominalDemandMw: load.nominalDemand,
         critical: load.critical,
