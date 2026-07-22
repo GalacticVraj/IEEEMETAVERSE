@@ -17,10 +17,10 @@ export interface UiState {
   readonly selectedAsset: SelectedAsset | null;
   readonly debugOverlayVisible: boolean;
   readonly activePanel: string | null;
-  selectZone(zone: ZoneId | null): void;
-  selectAsset(asset: SelectedAsset | null): void;
-  toggleDebugOverlay(): void;
-  setActivePanel(panel: string | null): void;
+  readonly selectZone: (zone: ZoneId | null) => void;
+  readonly selectAsset: (asset: SelectedAsset | null) => void;
+  readonly toggleDebugOverlay: () => void;
+  readonly setActivePanel: (panel: string | null) => void;
 }
 
 export const useUiStore = create<UiState>()((set) => ({

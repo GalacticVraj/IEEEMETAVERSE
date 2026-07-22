@@ -4,7 +4,7 @@
  * Upgraded with "Game-Level" Stylized Graphics.
  */
 import { MERIDIAN_BAY_TOPOLOGY } from '@engine/topology/meridian-bay';
-import { useGridStore } from '@state';
+import { useGridStore, useUiStore } from '@state';
 import { Text } from '@react-three/drei';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
@@ -96,6 +96,7 @@ function StylizedBuilding({ zone, color, pos }: { zone: string; color: string; p
 // ---------------------------------------------------------------------------
 export function BusMarkers(): JSX.Element {
   const nodes = MERIDIAN_BAY_TOPOLOGY.nodes;
+  const selectAsset = useUiStore((s) => s.selectAsset);
 
   return (
     <group name="buses">
@@ -105,7 +106,13 @@ export function BusMarkers(): JSX.Element {
         const zone = BUS_ZONE[node.id] ?? 'DT';
         const color = ZONE_COLOR[zone] ?? '#ffffff';
         return (
-          <group key={node.id}>
+          <group
+            key={node.id}
+            onClick={(e) => {
+              e.stopPropagation();
+              selectAsset({ kind: 'bus', id: node.id as string });
+            }}
+          >
             <StylizedBuilding zone={zone} color={color} pos={pos} />
             <Text
               position={[pos[0], 18, pos[1]]}
@@ -171,14 +178,27 @@ function AnimatedTurbine({ pos, isTripped }: { pos: [number, number], isTripped:
 
 export function GeneratorMarkers(): JSX.Element {
   const generators = MERIDIAN_BAY_TOPOLOGY.generators;
+  const liveGenerators = useGridStore((s) => s.generators);
+  const selectAsset = useUiStore((s) => s.selectAsset);
 
   return (
     <group name="generators">
       {generators.map((gen) => {
         const pos = BUS_POSITIONS[gen.node];
         if (!pos) return null;
-        // In a real scenario we'd check if tripped. For now just animate.
-        return <AnimatedTurbine key={gen.id} pos={pos} isTripped={false} />;
+        // REAL tripped state from the live projection — rotor stops when tripped.
+        const live = liveGenerators.find((g) => (g.id as string) === (gen.id as string));
+        return (
+          <group
+            key={gen.id}
+            onClick={(e) => {
+              e.stopPropagation();
+              selectAsset({ kind: 'generator', id: gen.id as string });
+            }}
+          >
+            <AnimatedTurbine pos={pos} isTripped={live?.tripped ?? false} />
+          </group>
+        );
       })}
     </group>
   );
@@ -196,6 +216,7 @@ export function TransmissionLines(): JSX.Element {
     return m;
   }, [flows]);
   const openLines = useGridStore((s) => s.openLines);
+  const selectAsset = useUiStore((s) => s.selectAsset);
 
   return (
     <group name="lines">
@@ -217,7 +238,15 @@ export function TransmissionLines(): JSX.Element {
         const angle = Math.atan2(dx, dz);
 
         return (
-          <group key={line.id} position={[mx, 1.5, mz]} rotation={[0, angle, 0]}>
+          <group
+            key={line.id}
+            position={[mx, 1.5, mz]}
+            rotation={[0, angle, 0]}
+            onClick={(e) => {
+              e.stopPropagation();
+              selectAsset({ kind: 'line', id: line.id as string });
+            }}
+          >
             {/* Base Wire */}
             <mesh>
               <cylinderGeometry args={[0.6, 0.6, length, 6]} />
