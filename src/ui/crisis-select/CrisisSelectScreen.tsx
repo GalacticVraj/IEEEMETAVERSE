@@ -61,7 +61,11 @@ export function CrisisSelectScreen(): ReactElement {
           {CRISIS_CARDS.map((card, i) => (
             <button
               key={card.id}
-              onClick={() => selectCrisis(card.id)}
+              onClick={() => {
+                // Start the REAL simulation run, then flip the UI mode.
+                runtime.session.start(card.id);
+                selectCrisis(card.id);
+              }}
               className="glass-panel-solid p-6 text-left transition-all duration-300 hover:scale-[1.03] animate-fade-in-up cursor-pointer group"
               style={{
                 animationDelay: `${0.2 + i * 0.15}s`,

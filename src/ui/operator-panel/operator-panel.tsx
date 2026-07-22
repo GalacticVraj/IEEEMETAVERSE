@@ -1,30 +1,20 @@
 /**
  * OperatorPanel — the minimal HUD overlay for the vertical slice.
  *
- * Displays:
- *   - Current tick
- *   - Active scenario
- *   - Total load / generation (MW)
- *   - Number of tripped lines
- *   - Play / Pause / Reset buttons
- *
- * Reads from useGridStore and useSimulationStore. Controls the kernel via
- * the RuntimeContext. No simulation logic runs here.
+ * Displays live grid telemetry from useGridStore. Playback control delegates
+ * to the runtime CrisisSession — the ONE real-time driver. This panel never
+ * ticks the kernel and never decides win/lose (director + session own that).
  */
-import { KernelState } from '@app-types';
 import { useGridStore, useSimulationStore } from '@state';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useState } from 'react';
 import { useRuntime } from '../../runtime-context';
 import { useAppFlowStore, type AppFlowState } from '../../state/app-flow-store';
 
-/** Interval between kernel ticks in ms (10 ticks/s → ~real-time). */
-const TICK_INTERVAL_MS = 100;
 /** Max crisis duration: 3 minutes at 10 ticks/s = 1800 ticks. */
 const MAX_TICKS = 1800;
 
 export function OperatorPanel(): JSX.Element {
   const runtime = useRuntime();
-  const { kernel } = runtime;
 
   const tick = useGridStore((s) => s.tick);
   const totalLoad = useGridStore((s) => s.totalLoad);
@@ -33,57 +23,23 @@ export function OperatorPanel(): JSX.Element {
   const openLines = useGridStore((s) => s.openLines);
   const lifecycle = useSimulationStore((s) => s.lifecycle);
 
-  const [running, setRunning] = useState(false);
-  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const [running, setRunning] = useState(runtime.session.running);
 
-  const startLoop = useCallback(() => {
-    if (intervalRef.current !== null) return;
-    // Transition kernel to Running if it's Idle
-    try {
-      if (kernel.state === KernelState.Idle) kernel.start();
-      else if (kernel.state === KernelState.Paused) kernel.resume();
-    } catch { /* already running */ }
-    intervalRef.current = setInterval(() => {
-      try { kernel.tick(); } catch { /* kernel not ready */ }
-    }, TICK_INTERVAL_MS);
-    setRunning(true);
-  }, [kernel]);
-
-  const pauseLoop = useCallback(() => {
-    if (intervalRef.current !== null) {
-      clearInterval(intervalRef.current);
-      intervalRef.current = null;
-    }
-    try { kernel.pause(); } catch { /* ignore */ }
+  const pauseLoop = (): void => {
+    runtime.session.pause();
     setRunning(false);
-  }, [kernel]);
-
-  const resetLoop = useCallback(() => {
-    pauseLoop();
-    try { kernel.reset(); } catch { /* ignore */ }
-  }, [kernel, pauseLoop]);
-
-  // On Mount: reset the kernel and start it cleanly
-  useEffect(() => {
-    resetLoop();
-    startLoop();
-    return () => {
-      pauseLoop();
-    };
-  }, []);
-
-  const resolveCrisis = useAppFlowStore((s: AppFlowState) => s.resolveCrisis);
-
-  // Monitor for simulation end conditions
-  useEffect(() => {
-    if (tick >= MAX_TICKS) {
-      pauseLoop();
-      resolveCrisis('success');
-    } else if (trippedCount >= 3) {
-      pauseLoop();
-      resolveCrisis('blackout');
+  };
+  const startLoop = (): void => {
+    runtime.session.resume();
+    setRunning(runtime.session.running);
+  };
+  const resetLoop = (): void => {
+    const id = runtime.session.activeScenarioId;
+    if (id !== null) {
+      runtime.session.start(id);
+      setRunning(true);
     }
-  }, [tick, trippedCount, pauseLoop, resolveCrisis]);
+  };
 
   const openList = [...openLines].join(', ') || 'none';
   const selectedCrisis = useAppFlowStore((s: AppFlowState) => s.selectedCrisis);
@@ -132,7 +88,7 @@ export function OperatorPanel(): JSX.Element {
       </div>
 
       <Row label="Tick" value={String(tick)} />
-      <Row label="Scenario" value="Heatwave" />
+      <Row label="Scenario" value={selectedCrisis ?? '—'} />
       <Row label="Lifecycle" value={lifecycle} />
       <div style={{ borderTop: '1px solid rgba(255,255,255,0.08)', margin: '10px 0' }} />
       <Row label="Total Load" value={`${totalLoad.toFixed(0)} MW`} />
