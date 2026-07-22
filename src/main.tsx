@@ -7,6 +7,7 @@ import { bootstrap } from '@infra';
 import { bindAppFlow } from '@state';
 
 import { useCameraStore } from './rendering/camera/camera-store';
+import { startDemo } from './ui/prefs/demo-driver';
 
 import { App } from './App';
 import './index.css';
@@ -28,6 +29,11 @@ audio.start();
 // flight (public store API only; the camera system itself is untouched).
 if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
   useCameraStore.setState({ autoFollow: false, introDone: true });
+}
+
+// `?demo` — hands-free competition walkthrough from a cold start.
+if (new URLSearchParams(window.location.search).has('demo')) {
+  setTimeout(() => startDemo(runtime), 1500);
 }
 
 const rootElement = document.getElementById('root');

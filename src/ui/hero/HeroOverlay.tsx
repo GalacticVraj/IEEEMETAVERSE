@@ -7,9 +7,12 @@
  */
 import type { ReactElement } from 'react';
 import { useAppFlowStore } from '../../state/app-flow-store';
+import { useRuntime } from '../../runtime-context';
+import { startDemo } from '../prefs/demo-driver';
 
 export function HeroOverlay(): ReactElement {
   const enterSimulation = useAppFlowStore((s) => s.enterSimulation);
+  const runtime = useRuntime();
 
   return (
     <div
@@ -53,13 +56,23 @@ export function HeroOverlay(): ReactElement {
             cutting AC, pausing EV charging, shedding industry — has a visible,
             physical consequence in the live simulation below.
           </p>
-          <button
-            className="console-btn-primary"
-            style={{ marginTop: 20, fontSize: 14, padding: '10px 32px' }}
-            onClick={enterSimulation}
-          >
-            Begin Shift
-          </button>
+          <div style={{ display: 'flex', gap: 10, justifyContent: 'center', marginTop: 20 }}>
+            <button
+              className="console-btn-primary"
+              style={{ fontSize: 14, padding: '10px 32px' }}
+              onClick={enterSimulation}
+            >
+              Begin Shift
+            </button>
+            <button
+              className="console-btn"
+              style={{ fontSize: 14, padding: '10px 24px' }}
+              onClick={() => startDemo(runtime)}
+              title="Hands-free walkthrough of the full learning loop — every event is real"
+            >
+              ▶ Competition Demo
+            </button>
+          </div>
         </div>
       </div>
 

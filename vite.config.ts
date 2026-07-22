@@ -68,6 +68,16 @@ export default defineConfig(({ mode }) => {
       target: 'es2022',
       sourcemap: true,
       outDir: 'dist',
+      rollupOptions: {
+        output: {
+          // Vendor split: three.js and React load as cacheable chunks and the
+          // app chunk stays small enough to parse fast on judge hardware.
+          manualChunks: {
+            three: ['three', '@react-three/fiber', '@react-three/drei', '@react-three/postprocessing'],
+            react: ['react', 'react-dom'],
+          },
+        },
+      },
     },
     server: {
       port: 5173,
