@@ -55,7 +55,7 @@ describe('DeterministicCascadeEngine', () => {
 
   it('steps and then ends cascade when contained', () => {
     const model = new DeterministicCascadeEngine();
-    let tick = 1;
+    const tick = 1;
     const ctx = makeMockContext(tick);
     model.init(ctx);
 

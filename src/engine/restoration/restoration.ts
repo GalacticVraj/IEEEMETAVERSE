@@ -65,7 +65,7 @@ export class DeterministicRestorationController implements IRestorationControlle
       if (!isTripped) continue;
 
       const breaker = this.protectionEngine.breakerFor(line.id);
-      if (breaker === undefined || breaker.phase !== 'Open') continue;
+      if (breaker?.phase !== 'Open') continue;
 
       const thermal = this.protectionEngine.thermalFor(line.id);
       if (thermal === undefined) continue;

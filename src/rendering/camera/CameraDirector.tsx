@@ -30,6 +30,12 @@ import {
 } from './shots';
 import type { CameraPose, Shot } from './shots';
 
+/** Cubic smoothstep — faster acceleration out of the gate. */
+const smoothstep = (x: number): number => {
+  const t = Math.min(1, Math.max(0, x));
+  return t * t * (3 - 2 * t);
+};
+
 /** Quintic smootherstep — gentle in, gentle out, zero jerk at the ends. */
 const smootherstep = (x: number): number => {
   const t = Math.min(1, Math.max(0, x));
@@ -315,8 +321,10 @@ export function CameraDirector(): ReactElement {
       return;
     }
 
-    const s = smootherstep(raw);
-    if (flight.isIntro && flight.posCurve !== null && flight.tgtCurve !== null) {
+    const isIntro = flight.isIntro && flight.posCurve !== null && flight.tgtCurve !== null;
+    const s = isIntro ? smoothstep(raw) : smootherstep(raw);
+
+    if (isIntro && flight.posCurve !== null && flight.tgtCurve !== null) {
       flight.posCurve.getPointAt(s, camera.position);
       flight.tgtCurve.getPointAt(s, currentTargetRef.current);
       camera.lookAt(currentTargetRef.current);

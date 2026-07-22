@@ -107,8 +107,7 @@ export function App({ config }: AppProps): ReactElement {
       {/* After-Action report layered above the console */}
       {isAfterAction && <AfterActionScreen />}
 
-      {/* Debug overlay (always available in dev) */}
-      {config.debug.overlay ? <DebugOverlay seed={config.simulation.seed} /> : null}
+      {/* Debug overlay (removed per user request) */}
     </div>
   );
 }

@@ -12,11 +12,16 @@ import { startDemo } from './ui/prefs/demo-driver';
 import { App } from './App';
 import './index.css';
 import { RuntimeContext } from './runtime-context';
-
 // Resolve the runtime profile and bootstrap the full simulation runtime.
 const profile = resolveProfile(import.meta.env['VITE_PROFILE'] as string | undefined);
 const config = PROFILES[profile];
 const runtime = bootstrap(config);
+
+// Expose runtime to window for E2E testing
+if (import.meta.env.DEV) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  (window as any).__GRID_GUARD_RUNTIME = runtime;
+}
 
 // Route terminal simulation outcomes (GameEnded) into the app flow.
 bindAppFlow(runtime.container.resolve(EVENT_BUS), runtime.session);

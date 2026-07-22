@@ -261,4 +261,4 @@ export const INTRO_LEGS: readonly IntroLeg[] = [
   },
 ];
 
-export const INTRO_DURATION_S = 9.5;
+export const INTRO_DURATION_S = 16.5;

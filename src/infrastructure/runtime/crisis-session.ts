@@ -1,7 +1,7 @@
 import { GameOutcome, KernelState, asScenarioId } from '@app-types';
 import { GRID_EVENT } from '@constants';
 import { GridGuardError } from '@core';
-import type { GridEventMap, TypedEventBus } from '@core';
+import type { GridEventMap } from '@core';
 import type { SimulationKernel } from '@kernel';
 import type { ICrisisScenario, ScenarioRegistry } from '@scenarios';
 
@@ -69,7 +69,7 @@ export function createCrisisSession(deps: CrisisSessionDeps): CrisisSession {
     active?.onTick({ tick: clock.tick, time: clock.time, timestep: clock.timestep });
     if (!ended && clock.tick >= maxTicks) {
       ended = true;
-      (kernel.events as TypedEventBus<GridEventMap>).emit(GRID_EVENT.GameEnded, {
+      (kernel.events).emit(GRID_EVENT.GameEnded, {
         outcome: GameOutcome.Held,
         score: 100,
       });

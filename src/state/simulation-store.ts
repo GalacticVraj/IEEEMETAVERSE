@@ -16,7 +16,7 @@ export interface SimulationProjection {
   /** The kernel runtime lifecycle state. */
   readonly lifecycle: KernelState;
   readonly maxLineLoading: number;
-  readonly activeDecision: any | null;
+  readonly activeDecision: any;
 }
 
 export const useSimulationStore = create<SimulationProjection>()(() => ({

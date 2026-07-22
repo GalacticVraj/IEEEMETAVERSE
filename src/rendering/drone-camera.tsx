@@ -107,7 +107,7 @@ export function DroneCamera({ enabled }: { enabled: boolean }) {
 
     const handleClick = () => {
       if (enabled && !isPointerLocked.current) {
-        gl.domElement.requestPointerLock();
+        void gl.domElement.requestPointerLock();
       }
     };
 
@@ -203,7 +203,7 @@ export function DroneCamera({ enabled }: { enabled: boolean }) {
     );
     
     const desired = state.position.clone().add(offset);
-    camera.position.lerp(desired, 0.15);
+    camera.position.lerp(desired, 1 - Math.exp(-3 * delta));
     camera.lookAt(state.position.clone().add(new THREE.Vector3(0, 1.5, 0)));
   });
 

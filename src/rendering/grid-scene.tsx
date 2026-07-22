@@ -7,8 +7,8 @@ import { MERIDIAN_BAY_TOPOLOGY } from '@engine/topology/meridian-bay';
 import { useGridStore, useUiStore } from '@state';
 import { Text } from '@react-three/drei';
 import { useFrame } from '@react-three/fiber';
-import * as THREE from 'three';
-import { useMemo, useRef } from 'react';
+import type * as THREE from 'three';
+import { useRef } from 'react';
 import { BUS_POSITIONS, BUS_ZONE, ZONE_COLOR } from './layout';
 
 // ---------------------------------------------------------------------------
@@ -111,7 +111,7 @@ export function BusMarkers(): JSX.Element {
             key={node.id}
             onClick={(e) => {
               e.stopPropagation();
-              selectAsset({ kind: 'bus', id: node.id as string });
+              selectAsset({ kind: 'bus', id: node.id });
             }}
           >
             <StylizedBuilding zone={zone} color={color} pos={pos} />
@@ -199,7 +199,7 @@ export function GeneratorMarkers(): JSX.Element {
             key={gen.id}
             onClick={(e) => {
               e.stopPropagation();
-              selectAsset({ kind: 'generator', id: gen.id as string });
+              selectAsset({ kind: 'generator', id: gen.id });
             }}
           >
             <AnimatedTurbine
@@ -217,16 +217,77 @@ export function GeneratorMarkers(): JSX.Element {
 // ---------------------------------------------------------------------------
 // LineSegments (Animated glowing flows)
 // ---------------------------------------------------------------------------
+
+function TransmissionLine({ line, from, to }: { line: any; from: readonly [number, number]; to: readonly [number, number] }) {
+  const loadingTarget = useGridStore((s) => s.lines.find((l) => l.line === line.id)?.loading ?? 0);
+  const isOpen = useGridStore((s) => s.openLines.has(line.id));
+  const selectAsset = useUiStore((s) => s.selectAsset);
+
+  const loadingVisual = useRef(loadingTarget);
+  const coreMaterialRef = useRef<THREE.MeshStandardMaterial>(null);
+
+  useFrame((_, delta) => {
+    // Smoothly interpolate towards the target loading state
+    const alpha = 1 - Math.exp(-2 * delta);
+    loadingVisual.current = loadingVisual.current + (loadingTarget - loadingVisual.current) * alpha;
+
+    if (coreMaterialRef.current && !isOpen) {
+      const color = loadingColor(loadingVisual.current, isOpen);
+      coreMaterialRef.current.color.set(color);
+      coreMaterialRef.current.emissive.set(color);
+      coreMaterialRef.current.emissiveIntensity = loadingVisual.current * 0.9 + 0.2;
+    }
+  });
+
+  const fx = from[0], fz = from[1];
+  const tx = to[0], tz = to[1];
+  const mx = (fx + tx) / 2;
+  const mz = (fz + tz) / 2;
+  const dx = tx - fx, dz = tz - fz;
+  const length = Math.sqrt(dx * dx + dz * dz);
+  const angle = Math.atan2(dx, dz);
+
+  return (
+    <group
+      position={[mx, 1.5, mz]}
+      rotation={[0, angle, 0]}
+      onClick={(e) => {
+        e.stopPropagation();
+        selectAsset({ kind: 'line', id: line.id });
+      }}
+    >
+      {/* Base Wire — cylinder Y-axis laid flat along the corridor */}
+      <mesh rotation={[Math.PI / 2, 0, 0]}>
+        <cylinderGeometry args={[0.6, 0.6, length, 6]} />
+        <meshStandardMaterial color="#4A555F" transparent={isOpen} opacity={isOpen ? 0.2 : 0.9} />
+      </mesh>
+      {/* Status core — loading color, restrained emissive */}
+      {!isOpen && (
+        <mesh rotation={[Math.PI / 2, 0, 0]} scale={[1.2, 1, 1.2]}>
+          <cylinderGeometry args={[0.4, 0.4, length, 6]} />
+          <meshStandardMaterial
+            ref={coreMaterialRef}
+            color={loadingColor(loadingVisual.current, isOpen)}
+            emissive={loadingColor(loadingVisual.current, isOpen)}
+            emissiveIntensity={loadingVisual.current * 0.9 + 0.2}
+            transparent
+            opacity={0.9}
+          />
+        </mesh>
+      )}
+      {/* Fault visual if tripped */}
+      {isOpen && (
+        <mesh rotation={[Math.PI / 2, 0, 0]} scale={[2, 1, 2]}>
+          <cylinderGeometry args={[1, 1, length, 4]} />
+          <meshStandardMaterial color="#B3261E" emissive="#B3261E" emissiveIntensity={0.8} wireframe />
+        </mesh>
+      )}
+    </group>
+  );
+}
+
 export function TransmissionLines(): JSX.Element {
   const lines = MERIDIAN_BAY_TOPOLOGY.lines;
-  const flows = useGridStore((s) => s.lines);
-  const flowMap = useMemo(() => {
-    const m: Record<string, number> = {};
-    for (const f of flows) m[f.line] = f.loading;
-    return m;
-  }, [flows]);
-  const openLines = useGridStore((s) => s.openLines);
-  const selectAsset = useUiStore((s) => s.selectAsset);
 
   return (
     <group name="lines">
@@ -235,49 +296,7 @@ export function TransmissionLines(): JSX.Element {
         const to = BUS_POSITIONS[line.to];
         if (!from || !to) return null;
 
-        const loading = flowMap[line.id] ?? 0;
-        const isOpen = openLines.has(line.id);
-        const color = loadingColor(loading, isOpen);
-
-        const fx = from[0], fz = from[1];
-        const tx = to[0], tz = to[1];
-        const mx = (fx + tx) / 2;
-        const mz = (fz + tz) / 2;
-        const dx = tx - fx, dz = tz - fz;
-        const length = Math.sqrt(dx * dx + dz * dz);
-        const angle = Math.atan2(dx, dz);
-
-        return (
-          <group
-            key={line.id}
-            position={[mx, 1.5, mz]}
-            rotation={[0, angle, 0]}
-            onClick={(e) => {
-              e.stopPropagation();
-              selectAsset({ kind: 'line', id: line.id as string });
-            }}
-          >
-            {/* Base Wire — cylinder Y-axis laid flat along the corridor */}
-            <mesh rotation={[Math.PI / 2, 0, 0]}>
-              <cylinderGeometry args={[0.6, 0.6, length, 6]} />
-              <meshStandardMaterial color="#4A555F" transparent={isOpen} opacity={isOpen ? 0.2 : 0.9} />
-            </mesh>
-            {/* Status core — loading color, restrained emissive */}
-            {!isOpen && (
-              <mesh rotation={[Math.PI / 2, 0, 0]} scale={[1.2, 1, 1.2]}>
-                <cylinderGeometry args={[0.4, 0.4, length, 6]} />
-                <meshStandardMaterial color={color} emissive={color} emissiveIntensity={loading * 0.9 + 0.2} transparent opacity={0.9} />
-              </mesh>
-            )}
-            {/* Fault visual if tripped */}
-            {isOpen && (
-              <mesh rotation={[Math.PI / 2, 0, 0]} scale={[2, 1, 2]}>
-                 <cylinderGeometry args={[1, 1, length, 4]} />
-                 <meshStandardMaterial color="#B3261E" emissive="#B3261E" emissiveIntensity={0.8} wireframe />
-              </mesh>
-            )}
-          </group>
-        );
+        return <TransmissionLine key={line.id} line={line} from={from} to={to} />;
       })}
     </group>
   );

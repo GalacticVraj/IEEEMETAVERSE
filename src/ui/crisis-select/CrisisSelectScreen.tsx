@@ -73,7 +73,7 @@ export function CrisisSelectScreen(): ReactElement {
               }}
             >
               {/* Recommended badge */}
-              {(card.recommended || recommendedId === card.id) && (
+              {(card.recommended ?? recommendedId === card.id) && (
                 <div
                   className="inline-block px-2 py-0.5 rounded-md text-xs font-semibold mb-3 animate-pulse"
                   style={{ background: 'rgba(244, 163, 0, 0.2)', color: '#F4A300' }}

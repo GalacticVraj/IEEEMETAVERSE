@@ -96,7 +96,7 @@ export class MeridianBayGenerationModel implements IGenerationModel, Snapshotabl
     targetDemand: MegaWatts = 895 as MegaWatts,
   ): readonly GenerationDispatch[] {
     const results: GenerationDispatch[] = [];
-    let remainingDemand: number = targetDemand as number;
+    let remainingDemand: number = targetDemand;
 
     // 1. Calculate maximum available capacity for each generator under current weather
     const availabilities = new Map<GeneratorId, number>();
@@ -106,7 +106,7 @@ export class MeridianBayGenerationModel implements IGenerationModel, Snapshotabl
         continue;
       }
 
-      let avail: number = gen.capacity as number;
+      let avail: number = gen.capacity;
       if (gen.kind === 'Solar') {
         avail = gen.capacity * weather.irradiance;
       } else if (gen.kind === 'Wind') {

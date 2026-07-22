@@ -57,7 +57,7 @@ export function OperatorPanel(): JSX.Element {
         <div className="bg-[#111827]/90 backdrop-blur-md border border-red-500/50 rounded-xl px-8 py-3 flex items-center gap-6 shadow-[0_0_20px_rgba(239,68,68,0.3)]">
           <div className="flex flex-col">
             <span className="text-red-500 text-xs font-bold uppercase tracking-widest">Active Crisis</span>
-            <span className="text-white font-bold text-lg">{selectedCrisis?.replace('_', ' ').toUpperCase() || 'SYSTEM STRESS'}</span>
+            <span className="text-white font-bold text-lg">{selectedCrisis?.replace('_', ' ').toUpperCase() ?? 'SYSTEM STRESS'}</span>
           </div>
           <div className="h-8 w-px bg-slate-700"></div>
           <div className="text-3xl font-mono font-bold text-red-400 tabular-nums">

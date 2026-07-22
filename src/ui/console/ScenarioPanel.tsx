@@ -28,8 +28,9 @@ export function ScenarioPanel(): ReactElement {
   };
 
   return (
-    <div className="console-panel" style={{ padding: '10px 14px', display: 'flex', flexDirection: 'column', gap: 8 }}>
-      <div className="console-section-title">Select Scenario</div>
+    <div className="console-panel" style={{ padding: '10px 14px', display: 'flex', flexDirection: 'column', gap: 8, flex: 1, minHeight: 250 }}>
+      <div className="console-section-title" style={{ flexShrink: 0 }}>Select Scenario</div>
+      <div style={{ overflowY: 'auto', flex: 1, minHeight: 0, paddingRight: '4px', display: 'flex', flexDirection: 'column', gap: 8 }}>
       {CRISIS_CARDS.map((card) => {
         const isSelected = card.id === selected;
         return (
@@ -55,7 +56,7 @@ export function ScenarioPanel(): ReactElement {
                 {card.difficulty.toUpperCase()}
               </span>
             </div>
-            <div style={{ fontSize: 11, color: '#5A6774', marginTop: 3, lineHeight: 1.45 }}>
+            <div style={{ fontSize: 11, color: '#5A6774', margin: '3px 0 0 0', lineHeight: 1.45 }}>
               {card.description}
             </div>
             {card.recommended === true && (
@@ -66,7 +67,8 @@ export function ScenarioPanel(): ReactElement {
           </button>
         );
       })}
-      <button className="console-btn-primary" onClick={start} disabled={selected === null}>
+      </div>
+      <button className="console-btn-primary" onClick={start} disabled={selected === null} style={{ flexShrink: 0 }}>
         Start Scenario
       </button>
     </div>

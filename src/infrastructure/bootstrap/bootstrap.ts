@@ -95,7 +95,7 @@ export function bootstrap(config: AppConfig): AppRuntime {
       for (const line of topology.lines) {
         protection.resetRelay(line.id);
         const breaker = protection.breakerFor(line.id);
-        if (breaker !== undefined && breaker.phase === 'Open') {
+        if (breaker?.phase === 'Open') {
           protection.commandClose(line.id, 0);
         }
       }

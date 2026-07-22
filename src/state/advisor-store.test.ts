@@ -38,7 +38,7 @@ describe('in-play advisor', () => {
     const unbind = bindAdvisor(bus, { now });
 
     bus.emit(GRID_EVENT.SimulationTick, { tick: 410, simTime: asSeconds(41), timestep: asSeconds(0.1) });
-    bus.emit(GRID_EVENT.LineTripped, { line: 'GS1-DT1' as never, cause: 'Overload' as never });
+    bus.emit(GRID_EVENT.LineTripped, { line: 'GS1-DT1' as never, cause: 'Overload' });
 
     const message = useAdvisorStore.getState().current;
     expect(message?.kind).toBe('explanation');
@@ -57,11 +57,11 @@ describe('in-play advisor', () => {
     expect(first).not.toBeNull();
 
     fakeNow += 5_000; // within cooldown
-    bus.emit(GRID_EVENT.LineTripped, { line: 'DT1-DT2' as never, cause: 'Overload' as never });
+    bus.emit(GRID_EVENT.LineTripped, { line: 'DT1-DT2' as never, cause: 'Overload' });
     expect(useAdvisorStore.getState().current?.id).toBe(first?.id);
 
     fakeNow += 20_000; // cooldown passed
-    bus.emit(GRID_EVENT.LineTripped, { line: 'DT2-DT3' as never, cause: 'Overload' as never });
+    bus.emit(GRID_EVENT.LineTripped, { line: 'DT2-DT3' as never, cause: 'Overload' });
     expect(useAdvisorStore.getState().current?.text).toContain('DT2-DT3');
 
     unbind();

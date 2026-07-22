@@ -100,10 +100,10 @@ export class GridSimulationEngine implements ISimulationEngine, SnapshotableSyst
         loads.shedLoad('LD-HB-SHIP', 0.25);
       } else if (decisionId.includes('dec-overload')) {
         if (optionIndex === 0) { // Shed AC in Residential North
-          const rnBuildings = this.topologyService.get().zones.find(z => z.id === 'RN')?.buildingIds || [];
+          const rnBuildings = this.topologyService.get().zones.find(z => z.id === 'RN')?.buildingIds ?? [];
           for (const b of rnBuildings) loads.toggleAppliance(b, 'ac', false);
         } else if (optionIndex === 1) { // Delay EV Charging in Downtown
-          const dtBuildings = this.topologyService.get().zones.find(z => z.id === 'DT')?.buildingIds || [];
+          const dtBuildings = this.topologyService.get().zones.find(z => z.id === 'DT')?.buildingIds ?? [];
           for (const b of dtBuildings) loads.toggleAppliance(b, 'ev', false);
         } else if (optionIndex === 2) { // Shed all Commercial Lighting
           const bldgs = loads.getBuildingAppliances();
@@ -114,10 +114,10 @@ export class GridSimulationEngine implements ISimulationEngine, SnapshotableSyst
         }
       } else if (decisionId.includes('dec-cascade')) {
         if (optionIndex === 0) { // Shed Water Heaters in Residential South
-          const rsBuildings = this.topologyService.get().zones.find(z => z.id === 'RS')?.buildingIds || [];
+          const rsBuildings = this.topologyService.get().zones.find(z => z.id === 'RS')?.buildingIds ?? [];
           for (const b of rsBuildings) loads.toggleAppliance(b, 'heater', false);
         } else if (optionIndex === 1) { // Shed Heavy Machinery in Industrial
-          const inBuildings = this.topologyService.get().zones.find(z => z.id === 'IN')?.buildingIds || [];
+          const inBuildings = this.topologyService.get().zones.find(z => z.id === 'IN')?.buildingIds ?? [];
           for (const b of inBuildings) loads.toggleAppliance(b, 'machinery', false);
         }
       }
@@ -173,7 +173,7 @@ export class GridSimulationEngine implements ISimulationEngine, SnapshotableSyst
       const relay = this.protection.relayFor(openedLine);
       domainEvents.emit(GRID_EVENT.LineTripped, {
         line: openedLine,
-        cause: relay?.lastTripTick != null ? LineTripCause.Overload : LineTripCause.Operator,
+        cause: relay?.lastTripTick !== null ? LineTripCause.Overload : LineTripCause.Operator,
       });
     }
 
@@ -261,7 +261,7 @@ export class GridSimulationEngine implements ISimulationEngine, SnapshotableSyst
     let renewableMw = 0;
     const generatorStatuses: GeneratorStatus[] = topology.generators.map((gen) => {
       const output = this.generation.getGeneratorOutput(gen.id);
-      if (RENEWABLE_KINDS.has(gen.kind as string)) renewableMw += output as number;
+      if (RENEWABLE_KINDS.has(gen.kind)) renewableMw += output as number;
       return {
         id: gen.id,
         outputMw: output,

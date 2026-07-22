@@ -49,7 +49,7 @@ export function GridHealthPanel(): ReactElement {
   const stressTone = stressPct >= 100 ? '#B3261E' : stressPct >= 80 ? '#B4531F' : stressPct >= 60 ? '#9A6B15' : '#217A56';
 
   return (
-    <div className="console-panel" style={{ padding: '10px 14px' }}>
+    <div className="console-panel" style={{ padding: '10px 14px', flexShrink: 0 }}>
       <div className="console-section-title" style={{ marginBottom: 4 }}>Grid Health</div>
       <Row label="Demand" value={`${Math.round(totalLoad)} MW`} meaning={HEALTH_MEANINGS.demand} />
       <Row label="Generation" value={`${Math.round(totalGeneration)} MW`} meaning={HEALTH_MEANINGS.generation} />

@@ -14,7 +14,7 @@ export function Hud(): ReactElement | null {
   // Poll the twin state
   useEffect(() => {
     const twin = runtime.container.resolve(LEARNER_TWIN);
-    if (!twin || !twin.state) return;
+    if (!twin?.state) return;
     
     const interval = setInterval(() => {
       try {
@@ -53,7 +53,7 @@ export function Hud(): ReactElement | null {
           confidence: 0.85,
           tone: "urgent"
         });
-      } catch (err) {
+      } catch {
         if (!isMounted) return;
         // Static fallback
         setAdvisorResponse({
@@ -67,7 +67,7 @@ export function Hud(): ReactElement | null {
       }
     };
 
-    fetchAdvisor();
+    void fetchAdvisor();
 
     return () => {
       isMounted = false;

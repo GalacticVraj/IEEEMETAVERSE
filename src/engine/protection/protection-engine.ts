@@ -98,8 +98,8 @@ export function createProtectionEngine(options: ProtectionEngineOptions = {}): P
         );
         thermals.set(line.id, createThermalState(line.id, thermalConfig));
         lineSpecs.set(line.id, {
-          from: line.from as BusId,
-          to: line.to as BusId,
+          from: line.from,
+          to: line.to,
           capacityMw: line.capacityMw as unknown as MegaWatts,
           reactancePu: line.reactancePu as unknown as PerUnit,
         });
@@ -132,7 +132,7 @@ export function createProtectionEngine(options: ProtectionEngineOptions = {}): P
 
     commandOpen(line: LineId, tick: number): void {
       const b = breakers.get(line);
-      if (b !== undefined && b.phase === BreakerPhase.Closed) {
+      if (b?.phase === BreakerPhase.Closed) {
         const stepResult = stepBreaker(b, 'open', tick);
         breakers.set(line, stepResult.breaker);
         for (const e of stepResult.events) {
@@ -143,7 +143,7 @@ export function createProtectionEngine(options: ProtectionEngineOptions = {}): P
 
     commandClose(line: LineId, tick: number): void {
       const b = breakers.get(line);
-      if (b !== undefined && b.phase === BreakerPhase.Open) {
+      if (b?.phase === BreakerPhase.Open) {
         const stepResult = stepBreaker(b, 'close', tick);
         breakers.set(line, stepResult.breaker);
         for (const e of stepResult.events) {

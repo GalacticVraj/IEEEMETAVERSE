@@ -59,27 +59,27 @@ export function bindGridStore(
       const gs = engine.getState();
       useGridStore.setState({
         tick: p.tick,
-        totalGeneration: gs.totalGeneration as number,
-        totalLoad: gs.totalLoad as number,
-        frequency: gs.frequency as number,
-        renewableGeneration: gs.renewableGeneration as number,
-        lines: gs.lines as readonly LineFlow[],
-        zones: gs.zones as readonly ZoneStatus[],
-        generators: gs.generators as readonly GeneratorStatus[],
+        totalGeneration: gs.totalGeneration,
+        totalLoad: gs.totalLoad,
+        frequency: gs.frequency,
+        renewableGeneration: gs.renewableGeneration,
+        lines: gs.lines,
+        zones: gs.zones,
+        generators: gs.generators,
       });
     }),
 
     bus.on(GRID_EVENT.LineTripped, (p) => {
       const prev = useGridStore.getState();
       const openLines = new Set<string>(prev.openLines);
-      openLines.add(p.line as string);
+      openLines.add(p.line);
       useGridStore.setState({ openLines, trippedCount: openLines.size });
     }),
 
     bus.on(GRID_EVENT.LineRecovered, (p) => {
       const prev = useGridStore.getState();
       const openLines = new Set<string>(prev.openLines);
-      openLines.delete(p.line as string);
+      openLines.delete(p.line);
       useGridStore.setState({ openLines, trippedCount: openLines.size });
     }),
 

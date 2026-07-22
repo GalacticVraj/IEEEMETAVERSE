@@ -18,7 +18,7 @@ describe('event log store', () => {
     const bus = makeBus();
     const unbind = bindEventLog(bus);
 
-    bus.emit(GRID_EVENT.LineTripped, { line: 'DT1-DT2' as never, cause: 'Overload' as never });
+    bus.emit(GRID_EVENT.LineTripped, { line: 'DT1-DT2' as never, cause: 'Overload' });
     bus.emit(GRID_EVENT.LineRecovered, { line: 'DT1-DT2' as never });
 
     const entries = useEventLogStore.getState().entries;
@@ -68,9 +68,9 @@ describe('event log store', () => {
     const bus = makeBus();
     const unbind = bindEventLog(bus);
 
-    bus.emit(GRID_EVENT.WeatherChanged, { kind: 'Heatwave' as never, temperature: asCelsius(41) });
-    bus.emit(GRID_EVENT.WeatherChanged, { kind: 'Heatwave' as never, temperature: asCelsius(42) });
-    bus.emit(GRID_EVENT.WeatherChanged, { kind: 'Storm' as never, temperature: asCelsius(18) });
+    bus.emit(GRID_EVENT.WeatherChanged, { kind: 'Heatwave', temperature: asCelsius(41) });
+    bus.emit(GRID_EVENT.WeatherChanged, { kind: 'Heatwave', temperature: asCelsius(42) });
+    bus.emit(GRID_EVENT.WeatherChanged, { kind: 'Storm', temperature: asCelsius(18) });
 
     expect(useEventLogStore.getState().entries).toHaveLength(2);
 
@@ -82,7 +82,7 @@ describe('event log store', () => {
     const unbind = bindEventLog(bus);
 
     for (let i = 0; i < 250; i++) {
-      bus.emit(GRID_EVENT.LineTripped, { line: `L-${i}` as never, cause: 'Overload' as never });
+      bus.emit(GRID_EVENT.LineTripped, { line: `L-${i}` as never, cause: 'Overload' });
     }
     const { entries } = useEventLogStore.getState();
     expect(entries).toHaveLength(200);

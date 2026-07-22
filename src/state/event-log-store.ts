@@ -128,7 +128,7 @@ export function bindEventLog(bus: GridEventBus): Unsubscribe {
       generatorTripped.set(id, generator.tripped);
       if (previous === undefined || previous === generator.tripped) continue;
       const name = GENERATOR_NAMES[id] ?? id;
-      const capacity = Math.round(generator.capacityMw as number);
+      const capacity = Math.round(generator.capacityMw);
       if (generator.tripped) {
         push(state.tick, {
           severity: 'critical',

@@ -122,12 +122,12 @@ describe('GridSimulationEngine', () => {
     const engine = new GridSimulationEngine(
       graph,
       topo,
-      weather as any,
-      generation as any,
+      weather,
+      generation,
       loads as any,
       protection as any,
-      cascade as any,
-      restoration as any,
+      cascade,
+      restoration,
       director as any,
     );
 
@@ -140,7 +140,7 @@ describe('GridSimulationEngine', () => {
       tx.addBus({ id: 'b1' as any, nominalVoltageKv: 230 });
       tx.addBus({ id: 'b2' as any, nominalVoltageKv: 230 });
       tx.addLine({ id: asLineId('l1'), from: 'b1' as any, to: 'b2' as any, capacityMw: 100, reactancePu: 0.1 });
-      tx.addGenerator({ id: asGeneratorId('g1'), busId: 'b1' as any, capacityMw: 100, generationKind: 'Baseload' as any });
+      tx.addGenerator({ id: asGeneratorId('g1'), busId: 'b1' as any, capacityMw: 100, generationKind: 'Baseload' });
       tx.addLoad({ id: 'ld1' as any, busId: 'b2' as any, nominalDemandMw: 50 });
     });
 
@@ -185,7 +185,7 @@ describe('GridSimulationEngine', () => {
       tx.addBus({ id: 'b1' as any, nominalVoltageKv: 230 });
       tx.addBus({ id: 'b2' as any, nominalVoltageKv: 230 });
       tx.addLine({ id: asLineId('l1'), from: 'b1' as any, to: 'b2' as any, capacityMw: 100, reactancePu: 0.1 });
-      tx.addGenerator({ id: asGeneratorId('g1'), busId: 'b1' as any, capacityMw: 100, generationKind: 'Baseload' as any });
+      tx.addGenerator({ id: asGeneratorId('g1'), busId: 'b1' as any, capacityMw: 100, generationKind: 'Baseload' });
       tx.addLoad({ id: 'ld1' as any, busId: 'b2' as any, nominalDemandMw: 50 });
     });
 

@@ -68,6 +68,7 @@ function DirectorPrompt(): ReactElement | null {
         borderRadius: 2,
         padding: '8px 10px',
         background: 'rgba(180, 83, 31, 0.06)',
+        flexShrink: 0,
       }}
     >
       <div className="console-section-title" style={{ color: '#B4531F', marginBottom: 4 }}>
@@ -151,19 +152,21 @@ export function OperatorActionsPanel(): ReactElement {
   return (
     <div
       className="console-panel"
-      style={{ padding: '10px 14px', display: 'flex', flexDirection: 'column', gap: 8, overflowY: 'auto' }}
+      style={{ padding: '10px 14px', display: 'flex', flexDirection: 'column', gap: 8, flex: 1, minHeight: 250 }}
     >
-      <div className="console-section-title">Operator Actions</div>
-      <DirectorPrompt />
-      <div>
-        {OPERATOR_ACTIONS.map((action) => (
-          <ActionRow
-            key={action.id}
-            action={action}
-            committedAtTick={committed[action.id]}
-            onExecute={() => execute(action)}
-          />
-        ))}
+      <div className="console-section-title" style={{ flexShrink: 0 }}>Operator Actions</div>
+      <div style={{ overflowY: 'auto', flex: 1, minHeight: 0, paddingRight: '4px', display: 'flex', flexDirection: 'column', gap: 8 }}>
+        <DirectorPrompt />
+        <div style={{ display: 'flex', flexDirection: 'column' }}>
+          {OPERATOR_ACTIONS.map((action) => (
+            <ActionRow
+              key={action.id}
+              action={action}
+              committedAtTick={committed[action.id]}
+              onExecute={() => execute(action)}
+            />
+          ))}
+        </div>
       </div>
     </div>
   );

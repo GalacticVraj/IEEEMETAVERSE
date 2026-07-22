@@ -58,18 +58,15 @@ export function AdvisorDrone({ enabled }: { enabled: boolean }) {
   const handleNext = () => {
     if (isTyping) {
       // Skip typing
-      setTypedText(BRIEFING_TEXT[currentParagraph] || '');
+      setTypedText(BRIEFING_TEXT[currentParagraph] ?? '');
       setIsTyping(false);
     } else {
       setCurrentParagraph(p => p + 1);
     }
   };
 
-  useFrame(({ clock }) => {
+  useFrame(({ clock }, delta) => {
     if (!enabled || !droneRef.current) return;
-
-    // Gentle hover animation
-    droneRef.current.position.y += Math.sin(clock.elapsedTime * 3) * 0.005;
 
     // Glowing core animation
     if (coreRef.current) {
@@ -77,12 +74,13 @@ export function AdvisorDrone({ enabled }: { enabled: boolean }) {
     }
 
     // Follow the camera: position slightly in front and right of the camera
-    const offset = new THREE.Vector3(3, -1, -5); // right, down, forward
+    const hoverY = Math.sin(clock.elapsedTime * 3) * 0.1;
+    const offset = new THREE.Vector3(3, -1 + hoverY, -5); // right, down, forward
     offset.applyQuaternion(camera.quaternion);
     const targetPos = camera.position.clone().add(offset);
     
     // Smooth follow
-    droneRef.current.position.lerp(targetPos, 0.05);
+    droneRef.current.position.lerp(targetPos, 1 - Math.exp(-2 * delta));
     // Look at camera
     droneRef.current.lookAt(camera.position);
   });
