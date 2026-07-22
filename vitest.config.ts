@@ -10,7 +10,7 @@ import viteConfig from './vite.config';
  * that require a DOM opt in per-file with `// @vitest-environment jsdom`.
  */
 export default mergeConfig(
-  viteConfig,
+  viteConfig({ mode: 'test', command: 'serve' }),
   defineConfig({
     test: {
       globals: true,

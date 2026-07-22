@@ -24,13 +24,44 @@ function isRateLimited(ip: string, maxPerHour = 30): boolean {
 }
 
 // ---------------------------------------------------------------------------
-// Prompt builders
+// Prompt builders — evidence contract (§4)
+//
+// The client sends ONLY measured facts (timestamps, verdicts, scores with
+// reasons). Gemini's job is to REWRITE that evidence into a warm educational
+// narrative — it must never add events, numbers, or recommendations that are
+// not derivable from the provided context.
 // ---------------------------------------------------------------------------
 interface AdvisorRequestBody {
   mode: 'live' | 'postmortem';
-  gridState: { loadPct: number; zoneAtRisk: string };
-  twinState: { blackoutsCaused: number; conceptMastery: Record<string, number> };
-  decisionLog?: Array<any>;
+  context: unknown;
+}
+
+const GUARDRAILS =
+  `HARD RULES: Use ONLY the evidence provided. Never invent timestamps, events, ` +
+  `decisions, metrics, or recommendations that are not present in the data. ` +
+  `Cite T+ timestamps exactly as given. If a section of evidence is empty, say so ` +
+  `plainly instead of inventing content. Plain language, no generic AI phrasing, ` +
+  `no bullet spam.`;
+
+function buildPostmortemPrompt(body: AdvisorRequestBody) {
+  return {
+    contents: [{
+      parts: [{
+        text:
+          `You are the operations mentor in GridGuard, a power-grid crisis simulator used ` +
+          `to teach energy literacy. A learner just completed a run. Below is the MEASURED ` +
+          `evidence from that run (real timestamps, real decision verdicts, real scores ` +
+          `with reasons).\n\n${GUARDRAILS}\n\n` +
+          `Write a single after-action narrative of at most 170 words with this arc: ` +
+          `(1) what happened this run, citing 2–3 of the given T+ moments; ` +
+          `(2) the intervention that mattered most, using its measured verdict and stress numbers; ` +
+          `(3) ONE concrete improvement grounded strictly in the listed evidence (a worsened/no-effect ` +
+          `decision, a low score reason, or a weak concept); ` +
+          `(4) one specific, encouraging closing sentence tied to their mastery data.\n\n` +
+          `EVIDENCE:\n${JSON.stringify(body.context)}`
+      }]
+    }]
+  };
 }
 
 function buildLiveAdvisorPrompt(body: AdvisorRequestBody) {
@@ -38,36 +69,13 @@ function buildLiveAdvisorPrompt(body: AdvisorRequestBody) {
     contents: [{
       parts: [{
         text:
-          `You are an AI energy advisor inside a power-grid crisis simulation called GridGuard. ` +
-          `Grid load is at ${body.gridState.loadPct}% in zone "${body.gridState.zoneAtRisk}". ` +
-          `The learner has caused ${body.twinState.blackoutsCaused} blackout(s) so far. ` +
-          `Give ONE short, simple suggestion (1–2 sentences) and a one-line reason. ` +
-          `Never suggest shedding a critical zone (hospital). ` +
-          `Respond in JSON: { "suggestion": "...", "reason": "...", "confidence": 0.0–1.0 }`
+          `You are the operations mentor in GridGuard, a power-grid crisis simulator. ` +
+          `Rewrite the following measured observation into ONE short teaching sentence ` +
+          `(max 30 words) for the operator.\n\n${GUARDRAILS}\n\n` +
+          `OBSERVATION:\n${JSON.stringify(body.context)}`
       }]
     }]
   };
-}
-
-function buildPostmortemPrompt(body: AdvisorRequestBody) {
-  const ruralSheds = (body.decisionLog || []).filter(
-    (d: any) => d.action?.type === 'controlled_shed' && d.zoneIncomeTier === 'low'
-  );
-  const groundedEvents = ruralSheds.map((e: any) => ({
-    tick: e.tick, zoneShed: e.zoneId,
-    alternatives: (e.alternativesConsidered || []).map((a: any) => ({
-      action: a.action.label, projectedMaxLineLoading: a.projectedMaxLineLoading,
-    })),
-  }));
-
-  return { contents: [{ parts: [{ text:
-    `A learner shed power to a low-income/rural zone at these moments during a grid crisis: ${JSON.stringify(groundedEvents)}. ` +
-    `For each one, pick the best alternative from the "alternatives" list provided (the one with the lowest projectedMaxLineLoading) ` +
-    `and tell the learner, by name, what it was (e.g., "delaying EV charging in the commercial district") and, in one sentence, ` +
-    `why it would have kept this zone powered, citing the actual loading numbers given. Only use alternatives from the list — ` +
-    `do not invent an action that wasn't actually available. If there were no rural sheds this run, say so and name what the ` +
-    `learner did well instead. End with one encouraging sentence, not a lecture.`
-  }]}]};
 }
 
 // ---------------------------------------------------------------------------
@@ -87,7 +95,7 @@ export default async function handler(req: Request) {
     });
   }
 
-  const apiKey = process.env.GEMINI_API_KEY;
+  const apiKey = process.env['GEMINI_API_KEY'];
   if (!apiKey) {
     return new Response(
       JSON.stringify({ error: 'server_misconfigured', message: 'GEMINI_API_KEY not set' }),
