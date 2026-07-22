@@ -22,6 +22,7 @@ import {
 import { CameraDirector } from './rendering/camera/CameraDirector';
 import { CameraHud } from './rendering/camera/CameraHud';
 import { useCameraStore } from './rendering/camera/camera-store';
+import { Atmosphere } from './rendering/atmosphere';
 import { CityLayout } from './rendering/city-layout';
 import { AdvisorCard } from './ui/advisor/AdvisorCard';
 import { ConsoleShell } from './ui/console';
@@ -56,6 +57,8 @@ export function App({ config }: AppProps): ReactElement {
       >
         {/* Neutral daylight rig — digital twin, not golden-hour cinematics */}
         <color attach="background" args={['#DDE3E8']} />
+        {/* Distance haze: depth cue that softens the horizon */}
+        <fog attach="fog" args={['#DDE3E8', 380, 950]} />
         <ambientLight intensity={0.45} color="#F5F7FA" />
         <directionalLight
           position={[80, 140, 60]}
@@ -75,6 +78,7 @@ export function App({ config }: AppProps): ReactElement {
 
         {/* City dressing (always visible) */}
         <CityLayout />
+        <Atmosphere />
 
         {/* Postprocessing — restrained: bloom only lifts true emissives */}
         <EffectComposer>

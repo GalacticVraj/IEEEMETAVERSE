@@ -136,13 +136,13 @@ export function BusMarkers(): JSX.Element {
 // ---------------------------------------------------------------------------
 // GeneratorMarkers (Animated Turbines / Power Plants)
 // ---------------------------------------------------------------------------
-function AnimatedTurbine({ pos, isTripped }: { pos: [number, number], isTripped: boolean }) {
+function AnimatedTurbine({ pos, isTripped, speed = 2 }: { pos: [number, number], isTripped: boolean, speed?: number }) {
   const bladesRef = useRef<THREE.Group>(null);
   const color = isTripped ? '#475569' : '#38bdf8'; // blue if active, gray if tripped
 
   useFrame((_, delta) => {
     if (bladesRef.current && !isTripped) {
-      bladesRef.current.rotation.z -= delta * 2; // spin blades
+      bladesRef.current.rotation.z -= delta * speed; // rotor follows real output
     }
   });
 
@@ -187,8 +187,13 @@ export function GeneratorMarkers(): JSX.Element {
       {generators.map((gen) => {
         const pos = BUS_POSITIONS[gen.node];
         if (!pos) return null;
-        // REAL tripped state from the live projection — rotor stops when tripped.
+        // REAL tripped state + output from the live projection — the rotor
+        // stops when tripped and its speed follows actual utilization.
         const live = liveGenerators.find((g) => (g.id as string) === (gen.id as string));
+        const utilization =
+          live !== undefined && (gen.capacity as number) > 0
+            ? (live.outputMw as number) / (gen.capacity as number)
+            : 0.4;
         return (
           <group
             key={gen.id}
@@ -197,7 +202,11 @@ export function GeneratorMarkers(): JSX.Element {
               selectAsset({ kind: 'generator', id: gen.id as string });
             }}
           >
-            <AnimatedTurbine pos={pos} isTripped={live?.tripped ?? false} />
+            <AnimatedTurbine
+              pos={pos}
+              isTripped={live?.tripped ?? false}
+              speed={0.5 + utilization * 3}
+            />
           </group>
         );
       })}
