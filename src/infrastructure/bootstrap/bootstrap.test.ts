@@ -72,4 +72,41 @@ describe('bootstrap', () => {
       runtime.shutdown();
     }).not.toThrow();
   });
+
+  it('ignites the simulation — graph populated, engine registered, physics ticking', () => {
+    const runtime = bootstrap(PROFILES.development);
+    const kernel = runtime.container.resolve(SIMULATION_KERNEL);
+    const engine = runtime.container.resolve(SIMULATION_ENGINE);
+
+    kernel.start();
+    kernel.tick();
+
+    const state = engine.getState();
+    expect(state.lines).toHaveLength(30);
+    expect(state.totalGeneration).toBeGreaterThan(0);
+    expect(state.totalLoad).toBeGreaterThan(0);
+    expect(state.zones).toHaveLength(6);
+
+    runtime.shutdown();
+  });
+
+  it('emits exactly one SimulationTick per kernel tick', () => {
+    const runtime = bootstrap(PROFILES.development);
+    const kernel = runtime.container.resolve(SIMULATION_KERNEL);
+    const bus = runtime.container.resolve(EVENT_BUS);
+
+    let tickEvents = 0;
+    const unsubscribe = bus.on('SimulationTick', () => {
+      tickEvents += 1;
+    });
+
+    kernel.start();
+    kernel.tick();
+    kernel.tick();
+
+    expect(tickEvents).toBe(2);
+
+    unsubscribe();
+    runtime.shutdown();
+  });
 });

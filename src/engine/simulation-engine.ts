@@ -1,8 +1,16 @@
-import { asHertz, asMegaWatts, asPerUnit, asSystemId } from '@app-types';
+import { LineTripCause, asHertz, asMegaWatts, asPerUnit, asSystemId } from '@app-types';
 import type { SystemId } from '@app-types';
 import { GRID_EVENT } from '@constants';
 import { createToken, isSnapshotable } from '@core';
-import type { SimulationSystem, SnapshotableSystem, SystemContext, TickContext, Token } from '@core';
+import type {
+  GridEventMap,
+  SimulationSystem,
+  SnapshotableSystem,
+  SystemContext,
+  TickContext,
+  Token,
+  TypedEventBus,
+} from '@core';
 
 import type { ICascadeEngine } from './cascade/cascade';
 import type { IDirector } from './director/director';
@@ -129,13 +137,22 @@ export class GridSimulationEngine implements ISimulationEngine, SnapshotableSyst
       events: this.context.events as any,
     });
 
-    // 5. Protection evaluation
-    this.protection.evaluate({
+    // 5. Protection evaluation — bridge opened lines onto the domain bus as
+    // LineTripped so cascade detection and UI projections observe them.
+    const protectionResult = this.protection.evaluate({
       graph: this.graph,
       flows: pfResult.flows,
       tick: context.tick,
       timestepS: context.timestep,
     });
+    const domainEvents = this.context.events as unknown as TypedEventBus<GridEventMap>;
+    for (const openedLine of protectionResult.opened) {
+      const relay = this.protection.relayFor(openedLine);
+      domainEvents.emit(GRID_EVENT.LineTripped, {
+        line: openedLine,
+        cause: relay?.lastTripTick != null ? LineTripCause.Overload : LineTripCause.Operator,
+      });
+    }
 
     const lineFlows: LineFlow[] = pfResult.flows.map((f) => {
       const lineId = f.line;
@@ -232,12 +249,8 @@ export class GridSimulationEngine implements ISimulationEngine, SnapshotableSyst
     // 9. Tension pacing / Director
     this.director.pace(context, this.state);
 
-    // Emit simulation tick completion
-    this.context.events.emit(GRID_EVENT.SimulationTick, {
-      tick: context.tick,
-      simTime: context.time,
-      timestep: context.timestep,
-    });
+    // NOTE: the kernel emits the single authoritative SimulationTick after all
+    // systems have stepped — the engine must not emit its own duplicate.
   }
 
   public reset(): void {

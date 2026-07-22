@@ -1,7 +1,8 @@
 import type { AppConfig } from '@config';
 import { EVENT_BUS, LOGGER } from '@core';
-import type { Container } from '@core';
-import { SIMULATION_ENGINE } from '@engine';
+import type { Container, SimulationSystem } from '@core';
+import { ELECTRICAL_GRAPH, SIMULATION_ENGINE, TOPOLOGY_SERVICE } from '@engine';
+import { populateGraphFromTopology } from '@engine/topology/graph-builder';
 import type { SimulationKernel } from '@kernel';
 import type { GridEventMap } from '@core';
 import { bindStores } from '@state';
@@ -29,6 +30,14 @@ export function bootstrap(config: AppConfig): AppRuntime {
 
   const kernel = container.resolve(SIMULATION_KERNEL);
   const engine = container.resolve(SIMULATION_ENGINE);
+
+  // Ignition: populate the authoritative electrical graph from the static
+  // topology, then register the engine as the kernel's simulation system.
+  // Both MUST happen before `boot()` — registration is only legal in Boot.
+  const graph = container.resolve(ELECTRICAL_GRAPH);
+  const topology = container.resolve(TOPOLOGY_SERVICE).get();
+  populateGraphFromTopology(graph, topology);
+  kernel.register(engine as SimulationSystem<GridEventMap>);
 
   // Boot the kernel: Boot → Loading → Configuration → Idle
   kernel.boot();

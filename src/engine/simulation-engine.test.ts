@@ -171,6 +171,35 @@ describe('GridSimulationEngine', () => {
     expect(state.zones[0].zone).toBe('Z1');
     expect(state.zones[0].state).toBe('Powered');
 
-    expect(ctx.emitSpy).toHaveBeenCalledWith(GRID_EVENT.SimulationTick, { tick: 1, simTime: 1 });
+    // The kernel emits the single authoritative SimulationTick after all
+    // systems have stepped — the engine must NOT emit its own duplicate.
+    expect(ctx.emitSpy).not.toHaveBeenCalledWith(
+      GRID_EVENT.SimulationTick,
+      expect.anything(),
+    );
+  });
+
+  it('bridges protection-opened lines onto the bus as LineTripped', () => {
+    const graph = createElectricalGraph({ now: () => 0 });
+    graph.mutate((tx) => {
+      tx.addBus({ id: 'b1' as any, nominalVoltageKv: 230 });
+      tx.addBus({ id: 'b2' as any, nominalVoltageKv: 230 });
+      tx.addLine({ id: asLineId('l1'), from: 'b1' as any, to: 'b2' as any, capacityMw: 100, reactancePu: 0.1 });
+      tx.addGenerator({ id: asGeneratorId('g1'), busId: 'b1' as any, capacityMw: 100, generationKind: 'Baseload' as any });
+      tx.addLoad({ id: 'ld1' as any, busId: 'b2' as any, nominalDemandMw: 50 });
+    });
+
+    const { engine, protection } = setupMockEngine(graph);
+    protection.evaluate.mockReturnValue({ trips: [], opened: [asLineId('l1')], decisions: [] });
+    protection.relayFor = vi.fn().mockReturnValue({ lastTripTick: 1 });
+
+    const ctx = makeMockContext();
+    engine.init(ctx);
+    engine.step({ tick: 1, time: 1 as any, timestep: 1 as any });
+
+    expect(ctx.emitSpy).toHaveBeenCalledWith(GRID_EVENT.LineTripped, {
+      line: asLineId('l1'),
+      cause: 'Overload',
+    });
   });
 });

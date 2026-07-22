@@ -1,7 +1,7 @@
 import type { AppConfig } from '@config';
 import { CONFIG_SERVICE, createConfigService } from '@config';
 import { EVENT_BUS, LOGGER, SERIALIZER, createContainer, createToken } from '@core';
-import type { Container, GridEventMap, Token } from '@core';
+import type { Container, GridEventMap, Token, TypedEventBus } from '@core';
 import { createSimulationKernel } from '@kernel';
 import type { SimulationKernel } from '@kernel';
 
@@ -36,6 +36,7 @@ import {
   createElectricalGraph,
   createProtectionEngine,
 } from '@engine';
+import type { ProtectionEventMap } from '@engine';
 import { SCENARIO_REGISTRY, createScenarioRegistry,
   HeatwaveScenario,
   StormScenario,
@@ -145,9 +146,14 @@ export function createCompositionRoot(config: AppConfig): Container {
   container.register(LOAD_MODEL, () => new MeridianBayLoadModel());
   // Power flow is now the real Phase-4 DC solver (`solveDcPowerFlow`), a pure
   // function invoked on the ELECTRICAL_GRAPH — no placeholder to register.
-  // Real Phase-5 protection engine (relays + breakers + thermal). Unwired from
-  // the domain bus in Phase 5; it changes topology only via graph transactions.
-  container.register(PROTECTION_ENGINE, () => createProtectionEngine());
+  // Real Phase-5 protection engine (relays + breakers + thermal) wired to the
+  // shared kernel bus so relay/breaker/thermal events reach the frontend. It
+  // still changes topology only via controlled graph transactions.
+  container.register(PROTECTION_ENGINE, (c) =>
+    createProtectionEngine({
+      events: c.resolve(EVENT_BUS) as unknown as TypedEventBus<ProtectionEventMap>,
+    }),
+  );
   container.register(CASCADE_ENGINE, () => new DeterministicCascadeEngine());
   container.register(RESTORATION_CONTROLLER, (c) => new DeterministicRestorationController(
     c.resolve(TOPOLOGY_SERVICE),
