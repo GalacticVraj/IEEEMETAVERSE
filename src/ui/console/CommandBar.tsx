@@ -20,10 +20,15 @@ const STABILITY_STYLE: Record<Stability, { color: string; bg: string }> = {
 };
 
 /** Pure display mapping — reads telemetry, renders a label. */
-function stabilityOf(maxLoading: number, trippedCount: number, darkZones: number): Stability {
+function stabilityOf(
+  maxLoading: number,
+  trippedCount: number,
+  darkZones: number,
+  deficitMw: number,
+): Stability {
   if (darkZones > 0) return 'BLACKOUT';
-  if (trippedCount > 0 || maxLoading >= 1.0) return 'EMERGENCY';
-  if (maxLoading >= 0.8) return 'ELEVATED';
+  if (trippedCount > 0 || maxLoading >= 1.0 || deficitMw >= 150) return 'EMERGENCY';
+  if (maxLoading >= 0.8 || deficitMw >= 40) return 'ELEVATED';
   return 'NORMAL';
 }
 
@@ -35,11 +40,14 @@ export function CommandBar(): ReactElement {
   const tick = useGridStore((s) => s.tick);
   const trippedCount = useGridStore((s) => s.trippedCount);
   const zones = useGridStore((s) => s.zones);
+  const totalLoad = useGridStore((s) => s.totalLoad);
+  const totalGeneration = useGridStore((s) => s.totalGeneration);
   const maxLineLoading = useSimulationStore((s) => s.maxLineLoading);
   const lifecycle = useSimulationStore((s) => s.lifecycle);
 
   const darkZones = zones.filter((z) => z.state === 'Blackout').length;
-  const stability = stabilityOf(maxLineLoading, trippedCount, darkZones);
+  const deficitMw = Math.max(0, totalLoad - totalGeneration);
+  const stability = stabilityOf(maxLineLoading, trippedCount, darkZones, deficitMw);
   const style = STABILITY_STYLE[stability];
   const active = mode === AppMode.ActiveCrisis;
   const paused = lifecycle === 'Paused';
