@@ -3,19 +3,10 @@
 @tailwind utilities;
 
 /* -----------------------------------------------------------------------
-   GridGuard — Nature-Forward Sustainable City Theme
-   Section 5 tokens applied globally.
+   GridGuard — Daylight Mission-Control Console (doctrine v2)
+   Neutral daylight surfaces, semantic status colors, restrained radii.
+   No glassmorphism, no neon, no decorative gradients.
    ----------------------------------------------------------------------- */
-:root {
-  --deep-green: #1B4332;
-  --moss: #2D6A4F;
-  --leaf: #74C69D;
-  --mint-glass: #D8F3DC;
-  --amber-energy: #F4A300;
-  --warning-red: #E63946;
-  --ground-dark: #0a1f14;
-  --ground-mid: #122a1d;
-}
 
 *, *::before, *::after {
   box-sizing: border-box;
@@ -27,98 +18,142 @@ html, body, #root {
   width: 100%;
   height: 100%;
   overflow: hidden;
-  background: var(--ground-dark);
+  background: #EEF0EF;
 }
 
 body {
-  font-family: 'Inter', sans-serif;
-  color: var(--deep-green);
+  font-family: 'Inter', system-ui, sans-serif;
+  color: #1C2530;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Glass panel utility */
-.glass-panel {
-  background: rgba(216, 243, 220, 0.12);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(116, 198, 157, 0.25);
-  border-radius: 16px;
+/* ── Console primitives ──────────────────────────────────────────────── */
+
+.console-panel {
+  background: #FAFAF7;
+  border: 1px solid #D3D7D2;
+  border-radius: 4px;
+  box-shadow: 0 1px 2px rgba(28, 37, 48, 0.06);
 }
 
+.console-section-title {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #5A6774;
+}
+
+.console-value {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-variant-numeric: tabular-nums;
+}
+
+.console-btn {
+  background: #FFFFFF;
+  color: #1C2530;
+  border: 1px solid #D3D7D2;
+  border-radius: 2px;
+  padding: 6px 14px;
+  font-family: 'Inter', system-ui, sans-serif;
+  font-weight: 500;
+  font-size: 12px;
+  cursor: pointer;
+  transition: background 120ms ease, border-color 120ms ease;
+}
+.console-btn:hover {
+  background: #F1F3F1;
+  border-color: #B9BFB9;
+}
+.console-btn:disabled {
+  color: #8B97A3;
+  cursor: default;
+  background: #F5F6F4;
+}
+
+.console-btn-primary {
+  background: #22637E;
+  color: #FAFAF7;
+  border: 1px solid #1B4F65;
+  border-radius: 2px;
+  padding: 6px 14px;
+  font-family: 'Inter', system-ui, sans-serif;
+  font-weight: 600;
+  font-size: 12px;
+  cursor: pointer;
+  transition: background 120ms ease;
+}
+.console-btn-primary:hover {
+  background: #1B4F65;
+}
+.console-btn-primary:disabled {
+  background: #7FA6B8;
+  border-color: #7FA6B8;
+  cursor: default;
+}
+
+.status-led {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 1px;
+  flex: none;
+}
+
+/* ── Legacy aliases (still-mounted old screens degrade professionally) ── */
+
+.glass-panel,
 .glass-panel-solid {
-  background: rgba(10, 31, 20, 0.88);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(116, 198, 157, 0.3);
-  border-radius: 12px;
+  background: #FAFAF7;
+  border: 1px solid #D3D7D2;
+  border-radius: 4px;
+  box-shadow: 0 1px 2px rgba(28, 37, 48, 0.06);
+  color: #1C2530;
 }
 
-/* Liquid Glass CSS */
 .liquid-glass {
-  background: rgba(0, 0, 0, 0.4);
-  background-blend-mode: luminosity;
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
-  border: none;
-  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.1);
-  position: relative;
-  overflow: hidden;
-}
-.liquid-glass::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  padding: 1.4px;
-  background: linear-gradient(180deg,
-    rgba(255,255,255,0.3) 0%, rgba(255,255,255,0.1) 20%,
-    rgba(255,255,255,0) 40%, rgba(255,255,255,0) 60%,
-    rgba(255,255,255,0.1) 80%, rgba(255,255,255,0.3) 100%);
-  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-  -webkit-mask-composite: xor;
-  mask-composite: exclude;
-  pointer-events: none;
+  background: #FAFAF7;
+  border: 1px solid #D3D7D2;
+  border-radius: 4px;
 }
 
-/* Button styles */
 .btn-moss {
-  background: var(--moss);
-  color: white;
-  border: none;
-  padding: 12px 28px;
-  border-radius: 12px;
-  font-family: 'Inter', sans-serif;
+  background: #22637E;
+  color: #FAFAF7;
+  border: 1px solid #1B4F65;
+  padding: 10px 24px;
+  border-radius: 2px;
+  font-family: 'Inter', system-ui, sans-serif;
   font-weight: 600;
   font-size: 14px;
   cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 16px rgba(45, 106, 79, 0.3);
+  transition: background 120ms ease;
 }
 .btn-moss:hover {
-  background: #3a7d5c;
-  box-shadow: 0 6px 24px rgba(45, 106, 79, 0.5);
-  transform: translateY(-1px);
+  background: #1B4F65;
 }
 
 .btn-outline {
   background: transparent;
-  color: var(--leaf);
-  border: 1px solid rgba(116, 198, 157, 0.4);
-  padding: 10px 24px;
-  border-radius: 10px;
-  font-family: 'Inter', sans-serif;
+  color: #22637E;
+  border: 1px solid #D3D7D2;
+  padding: 8px 20px;
+  border-radius: 2px;
+  font-family: 'Inter', system-ui, sans-serif;
   font-weight: 500;
   font-size: 13px;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: background 120ms ease, border-color 120ms ease;
 }
 .btn-outline:hover {
-  background: rgba(116, 198, 157, 0.1);
-  border-color: var(--leaf);
+  background: #F1F3F1;
+  border-color: #22637E;
 }
 
-/* Keyframe animations */
+/* ── Motion (restrained) ─────────────────────────────────────────────── */
+
 @keyframes fadeInUp {
   from { opacity: 0; transform: translateY(20px); }
   to { opacity: 1; transform: translateY(0); }
@@ -127,10 +162,6 @@ body {
   from { opacity: 0; }
   to { opacity: 1; }
 }
-@keyframes pulse-glow {
-  0%, 100% { box-shadow: 0 0 20px rgba(116, 198, 157, 0.3); }
-  50% { box-shadow: 0 0 40px rgba(116, 198, 157, 0.6); }
-}
 @keyframes slideDown {
   from { opacity: 0; transform: translateY(-12px); }
   to { opacity: 1; transform: translateY(0); }
@@ -138,5 +169,11 @@ body {
 
 .animate-fade-in-up { animation: fadeInUp 0.6s ease-out forwards; }
 .animate-fade-in { animation: fadeIn 0.5s ease-out forwards; }
-.animate-pulse-glow { animation: pulse-glow 2s ease-in-out infinite; }
 .animate-slide-down { animation: slideDown 0.4s ease-out forwards; }
+/* Legacy alias — glow forbidden; keep name so old screens don't break. */
+.animate-pulse-glow { animation: none; }
+
+/* ── Presentation mode: scale the console up on very large displays ──── */
+@media (min-width: 2200px) {
+  html { font-size: 18px; }
+}

@@ -1,10 +1,12 @@
 /** @type {import('tailwindcss').Config} */
 
 /*
- * GridGuard visual language — FROZEN. See docs/design/color.md and
- * docs/design/visual-language.md. Target: premium engineering operations
- * console (SCADA / Mission Control). Forbidden: neon, glassmorphism,
- * decorative gradients, oversized rounded cards.
+ * GridGuard visual language — doctrine v2: DAYLIGHT DIGITAL TWIN.
+ * See docs/superpowers/specs/2026-07-22-experience-foundation-design.md.
+ *
+ * The 3D city reads like a daylight digital twin; the UI is a mission-control
+ * overlay in neutral daylight surfaces. Forbidden as ever: neon, glassmorphism,
+ * decorative gradients, oversized rounded cards, emoji iconography.
  *
  * Every status color is SEMANTIC and traceable to a simulation state — never
  * decorative. Do not add a color here without a simulation meaning.
@@ -15,40 +17,40 @@ export default {
   theme: {
     extend: {
       colors: {
-        // Control-room surfaces — graphite, low-chroma, high legibility.
+        // Daylight console surfaces — warm paper neutrals, high legibility.
         surface: {
-          void: '#08090B', // deepest background / 3D clear color
-          base: '#0E1216', // app background
-          panel: '#141A20', // instrument panel
-          raised: '#1B222A', // raised control
-          border: '#232C35', // hairline dividers
+          void: '#DDE3E8', // 3D clear-color fallback / horizon haze
+          base: '#EEF0EF', // app background
+          panel: '#FAFAF7', // instrument panel
+          raised: '#FFFFFF', // raised control
+          border: '#D3D7D2', // hairline dividers
         },
         // Text — instrument labels and telemetry readouts.
         ink: {
-          primary: '#E6EDF3',
-          secondary: '#9DAAB6',
-          muted: '#66727E',
-          inverse: '#0E1216',
+          primary: '#1C2530',
+          secondary: '#5A6774',
+          muted: '#8B97A3',
+          inverse: '#FAFAF7',
         },
         // SEMANTIC grid/zone status — each maps to a simulation condition.
         status: {
-          nominal: '#3FB68B', // powered / within limits
-          caution: '#E0A64B', // approaching a limit
-          warning: '#E07B39', // overloaded, pre-trip
-          critical: '#D14B4B', // trip / cascade
-          offline: '#556170', // de-energized / blackout
+          nominal: '#217A56', // powered / within limits
+          caution: '#9A6B15', // approaching a limit
+          warning: '#B4531F', // overloaded, pre-trip
+          critical: '#B3261E', // trip / cascade
+          offline: '#5F6B76', // de-energized / blackout
+          recovery: '#217A56', // re-energization in progress
         },
         // Instrument accent — telemetry, selection, focus. Not decorative.
         instrument: {
-          DEFAULT: '#4FA8C7',
-          dim: '#2E6B82',
+          DEFAULT: '#22637E',
+          dim: '#7FA6B8',
         },
       },
       fontFamily: {
-        // Zero bundled font assets in Phase 1 — system stacks only.
         mono: [
-          'ui-monospace',
           'JetBrains Mono',
+          'ui-monospace',
           'SFMono-Regular',
           'Menlo',
           'Consolas',
