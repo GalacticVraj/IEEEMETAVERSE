@@ -1,10 +1,10 @@
 /**
  * App.tsx — GridGuard root: a single-page state machine.
  *
- * The camera and 3D scene persist across ALL five modes. Only the HUD layer
- * and camera behavior change. No page reloads, no route changes.
- *
- * Flow: Hero → Explore → CrisisSelect → ActiveCrisis → AfterAction
+ * The camera and 3D scene persist across ALL modes. Only the console overlay
+ * changes. Flow (compressed ops flow): Hero → CrisisSelect → ActiveCrisis →
+ * AfterAction. The city renders as a DAYLIGHT DIGITAL TWIN; the UI is a
+ * mission-control shell that never covers the center.
  */
 import { OrbitControls } from '@react-three/drei';
 import { Canvas, useFrame } from '@react-three/fiber';
@@ -22,14 +22,8 @@ import {
   TransmissionLines,
 } from './rendering/grid-scene';
 import { CityLayout } from './rendering/city-layout';
-import { DroneCamera } from './rendering/drone-camera';
-import { ArrivalCamera } from './rendering/arrival-camera';
-import { AdvisorDrone } from './rendering/advisor-drone';
-import { OperatorPanel } from './ui/operator-panel/operator-panel';
+import { ConsoleShell } from './ui/console';
 import { HeroOverlay } from './ui/hero/HeroOverlay';
-import { ArrivalOverlay } from './ui/hero/ArrivalOverlay';
-import { ExploreHud } from './ui/explore/ExploreHud';
-import { CrisisSelectScreen } from './ui/crisis-select/CrisisSelectScreen';
 import { AfterActionScreen } from './ui/after-action/AfterActionScreen';
 import { useAppFlowStore, AppMode } from './state/app-flow-store';
 
@@ -66,33 +60,31 @@ export function App({ config }: AppProps): ReactElement {
   const mode = useAppFlowStore((s) => s.mode);
 
   const isHero = mode === AppMode.Hero;
-  const isArrival = mode === AppMode.Arrival;
-  const isExplore = mode === AppMode.Explore;
-  const isBriefing = mode === AppMode.Briefing;
   const isCrisisSelect = mode === AppMode.CrisisSelect;
   const isActiveCrisis = mode === AppMode.ActiveCrisis;
   const isAfterAction = mode === AppMode.AfterAction;
+  const isConsole = isCrisisSelect || isActiveCrisis || isAfterAction;
 
   return (
-    <div style={{ width: '100vw', height: '100vh', background: '#050a06', position: 'relative' }}>
+    <div style={{ width: '100vw', height: '100vh', background: '#DDE3E8', position: 'relative' }}>
       {/* ── Persistent 3D Canvas ─────────────────────────────────── */}
       <Canvas
         camera={{ position: [0, 140, 200], fov: 45, near: 1, far: 1200 }}
         style={{ position: 'absolute', inset: 0 }}
         shadows
       >
-        {/* Warm golden-hour lighting (nature-forward, not cold-blue) */}
-        <ambientLight intensity={0.25} color="#fef3c7" />
+        {/* Neutral daylight rig — digital twin, not golden-hour cinematics */}
+        <color attach="background" args={['#DDE3E8']} />
+        <ambientLight intensity={0.45} color="#F5F7FA" />
         <directionalLight
-          position={[60, 120, 40]}
-          intensity={1.8}
-          color="#fde68a"
+          position={[80, 140, 60]}
+          intensity={1.6}
+          color="#FFF4E0"
           castShadow
           shadow-mapSize-width={2048}
           shadow-mapSize-height={2048}
         />
-        <pointLight position={[-40, 60, -20]} intensity={0.8} color="#74C69D" distance={250} />
-        <pointLight position={[40, 30, 40]} intensity={0.5} color="#F4A300" distance={150} />
+        <hemisphereLight args={['#CBD9E6', '#B8B2A6', 0.5]} />
 
         {/* Grid infrastructure (always visible) */}
         <GroundPlane />
@@ -103,19 +95,24 @@ export function App({ config }: AppProps): ReactElement {
         {/* City dressing (always visible) */}
         <CityLayout />
 
-        {/* Postprocessing */}
+        {/* Postprocessing — restrained: bloom only lifts true emissives */}
         <EffectComposer>
-          <Bloom luminanceThreshold={0.3} luminanceSmoothing={0.9} height={300} opacity={0.8} />
+          <Bloom luminanceThreshold={0.75} luminanceSmoothing={0.9} height={300} opacity={0.35} />
         </EffectComposer>
 
         {/* Camera behavior depends on mode */}
-        <AutoOrbitCamera enabled={isHero || isCrisisSelect} />
-        {isArrival && <ArrivalCamera enabled={isArrival} />}
-        {(isExplore || isBriefing || isActiveCrisis || isAfterAction) && (
-          <DroneCamera enabled={isExplore || isBriefing || isActiveCrisis || isAfterAction} />
+        <AutoOrbitCamera enabled={isHero} />
+        {isConsole && (
+          <OrbitControls
+            enablePan={false}
+            minPolarAngle={0.35}
+            maxPolarAngle={1.25}
+            minDistance={80}
+            maxDistance={420}
+            enableDamping
+            dampingFactor={0.08}
+          />
         )}
-
-        <AdvisorDrone enabled={isBriefing} />
       </Canvas>
 
       {/* ── DOM Overlays (mode-dependent) ────────────────────────── */}
@@ -123,19 +120,10 @@ export function App({ config }: AppProps): ReactElement {
       {/* Hero mode */}
       {isHero && <HeroOverlay />}
 
-      {/* Arrival mode (cinematic) */}
-      {isArrival && <ArrivalOverlay />}
+      {/* Mission-control console (CrisisSelect / ActiveCrisis / AfterAction) */}
+      {isConsole && <ConsoleShell mode={mode} />}
 
-      {/* Explore mode */}
-      {isExplore && <ExploreHud />}
-
-      {/* Crisis Select */}
-      {isCrisisSelect && <CrisisSelectScreen />}
-
-      {/* Active Crisis — operator panel + existing HUD */}
-      {isActiveCrisis && <OperatorPanel />}
-
-      {/* After-Action */}
+      {/* After-Action report layered above the console */}
       {isAfterAction && <AfterActionScreen />}
 
       {/* Debug overlay (always available in dev) */}

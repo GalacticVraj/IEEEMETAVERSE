@@ -1,111 +1,71 @@
 /**
- * HeroOverlay.tsx — The hero mode overlay rendered ON TOP of the live 3D scene.
+ * HeroOverlay.tsx — minimal console-style landing over the live daylight city.
  *
- * Section 1.1: The background is NOT a pre-recorded video — it's the actual
- * Three.js city scene rendered live in a slow auto-orbit. This overlay just
- * provides the glass-panel headline and CTA over the running canvas.
+ * No marketing chrome: identity, one line of mission framing, Begin Shift.
+ * The live 3D scene in slow orbit IS the hero — the overlay stays out of
+ * its way.
  */
 import type { ReactElement } from 'react';
 import { useAppFlowStore } from '../../state/app-flow-store';
 
 export function HeroOverlay(): ReactElement {
-  const enterCity = useAppFlowStore((s) => s.enterCity);
+  const enterSimulation = useAppFlowStore((s) => s.enterSimulation);
 
   return (
     <div
       className="absolute inset-0 z-30 flex flex-col pointer-events-none"
       style={{ fontFamily: "'Inter', sans-serif" }}
     >
-      {/* Navigation bar */}
-      <div className="w-full flex justify-center pt-5 px-4 pointer-events-auto animate-slide-down">
-        <nav className="glass-panel flex items-center gap-6 px-6 py-3">
-          {/* Logo */}
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" className="w-6 h-6" aria-label="GridGuard Logo">
-            <path d="M 256 256 L 128 256 L 0 128 L 128 128 Z" fill="#74C69D" />
-            <path d="M 256 128 L 128 128 L 0 0 L 128 0 Z" fill="#2D6A4F" />
-          </svg>
-          <div className="hidden sm:flex items-center gap-6 text-sm font-medium" style={{ color: 'rgba(216, 243, 220, 0.8)' }}>
-            <a href="#" className="hover:text-white transition-colors">Systems</a>
-            <a href="#" className="hover:text-white transition-colors">Ethics &amp; Data</a>
-            <a href="#" className="hover:text-white transition-colors">Roadmap</a>
-            <a href="#" className="hover:text-white transition-colors">Team</a>
-          </div>
-        </nav>
+      {/* Top identity strip */}
+      <div className="w-full flex justify-between items-center px-6 pt-5">
+        <span
+          className="console-value"
+          style={{ fontSize: 13, fontWeight: 600, letterSpacing: '0.06em', color: '#1C2530' }}
+        >
+          GRIDGUARD
+        </span>
+        <span className="console-value" style={{ fontSize: 11, color: '#5A6774' }}>
+          IEEE METAVERSE GRAND CHALLENGE 2026
+        </span>
       </div>
 
-      {/* Hero content */}
+      {/* Mission framing */}
       <div className="flex-1 flex flex-col items-center justify-center text-center px-6">
-        <div
-          className="mb-6 inline-flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-medium animate-fade-in-up glass-panel pointer-events-auto"
-          style={{ color: '#D8F3DC', animationDelay: '0.2s', animationFillMode: 'both' }}
-        >
-          <div className="rounded w-5 h-5 flex items-center justify-center text-white text-xs" style={{ background: '#F4A300' }}>⚡</div>
-          Built for IEEE Metaverse Grand Challenge 2026
+        <div className="console-panel pointer-events-auto animate-fade-in-up" style={{ padding: '28px 36px', maxWidth: 560 }}>
+          <div className="console-section-title" style={{ marginBottom: 10 }}>
+            Meridian Bay Grid Operations
+          </div>
+          <h1
+            style={{
+              fontSize: 'clamp(1.6rem, 3.4vw, 2.4rem)',
+              lineHeight: 1.15,
+              letterSpacing: '-0.01em',
+              color: '#1C2530',
+              fontWeight: 600,
+            }}
+          >
+            You are the grid operator.
+            <br />
+            Keep the city powered through the crisis.
+          </h1>
+          <p style={{ marginTop: 14, fontSize: 13.5, lineHeight: 1.6, color: '#5A6774' }}>
+            A record heatwave is bearing down on Meridian Bay. Every decision —
+            cutting AC, pausing EV charging, shedding industry — has a visible,
+            physical consequence in the live simulation below.
+          </p>
+          <button
+            className="console-btn-primary"
+            style={{ marginTop: 20, fontSize: 14, padding: '10px 32px' }}
+            onClick={enterSimulation}
+          >
+            Begin Shift
+          </button>
         </div>
-
-        {/* Heading */}
-        <h1
-          className="animate-fade-in-up"
-          style={{
-            fontFamily: "'Instrument Serif', serif",
-            fontSize: 'clamp(2.5rem, 7vw, 6rem)',
-            lineHeight: 0.95,
-            letterSpacing: '-0.02em',
-            color: '#D8F3DC',
-            maxWidth: '800px',
-            animationDelay: '0.4s',
-            animationFillMode: 'both',
-            textShadow: '0 2px 40px rgba(0,0,0,0.5)',
-          }}
-        >
-          Break the grid<br />before it breaks you
-        </h1>
-
-        {/* Subtitle */}
-        <p
-          className="animate-fade-in-up"
-          style={{
-            marginTop: '1.5rem',
-            maxWidth: '640px',
-            fontSize: 'clamp(0.8rem, 1.5vw, 1rem)',
-            lineHeight: 1.7,
-            color: 'rgba(216, 243, 220, 0.7)',
-            animationDelay: '0.6s',
-            animationFillMode: 'both',
-          }}
-        >
-          Step into a live power-grid crisis in Meridian Bay, a coastal city on the day a record
-          heatwave hits. Every choice you make — cutting AC, activating solar, delaying EV charging —
-          has a visible, immediate consequence.
-        </p>
-
-        {/* CTA */}
-        <button
-          onClick={enterCity}
-          className="animate-fade-in-up pointer-events-auto transition-transform hover:scale-105 active:scale-95"
-          style={{ 
-            marginTop: '2rem', 
-            animationDelay: '0.8s', 
-            animationFillMode: 'both', 
-            fontSize: '16px', 
-            padding: '14px 36px',
-            backgroundColor: '#ffffff',
-            color: '#1a1a1a',
-            fontWeight: 600,
-            borderRadius: '9999px',
-            boxShadow: '0 8px 30px rgba(0, 0, 0, 0.12)'
-          }}
-        >
-          Enter City
-        </button>
       </div>
 
       {/* Bottom attribution */}
-      <div
-        className="pb-6 text-center text-xs animate-fade-in"
-        style={{ color: 'rgba(216, 243, 220, 0.35)', animationDelay: '1s', animationFillMode: 'both' }}
-      >
-        GridGuard © 2026 — Simulation-Based Energy Literacy
+      <div className="pb-5 text-center" style={{ fontSize: 11, color: '#8B97A3' }}>
+        GridGuard — simulation-based energy literacy. Live physics, no scripted numbers.
       </div>
     </div>
   );

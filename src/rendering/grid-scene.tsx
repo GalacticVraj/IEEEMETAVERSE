@@ -28,18 +28,19 @@ function StylizedBuilding({ zone, color, pos }: { zone: string; color: string; p
   
   useFrame(({ clock }) => {
     if (materialRef.current) {
-      // Gentle pulsing effect for the glowing windows
-      materialRef.current.emissiveIntensity = 0.5 + Math.sin(clock.elapsedTime * 2 + pos[0]) * 0.2;
+      // Faint daylight accent shimmer — buildings must not glow like night
+      materialRef.current.emissiveIntensity = 0.1 + Math.sin(clock.elapsedTime * 2 + pos[0]) * 0.04;
     }
   });
 
+  // Daylight palette: light facades, zone color as a restrained accent glow.
   if (zone === 'DT') {
     return (
       <group position={[pos[0], 0, pos[1]]}>
         {/* Tall Skyscraper */}
-        <mesh position={[0, 8, 0]}>
+        <mesh position={[0, 8, 0]} castShadow>
           <boxGeometry args={[4, 16, 4]} />
-          <meshStandardMaterial ref={materialRef} color="#1e293b" emissive={color} emissiveIntensity={0.5} roughness={0.2} metalness={0.8} />
+          <meshStandardMaterial ref={materialRef} color="#C6CDD4" emissive={color} emissiveIntensity={0.12} roughness={0.4} metalness={0.3} />
         </mesh>
       </group>
     );
@@ -48,13 +49,13 @@ function StylizedBuilding({ zone, color, pos }: { zone: string; color: string; p
     return (
       <group position={[pos[0], 0, pos[1]]}>
         {/* Apartment Cluster */}
-        <mesh position={[-1.5, 4, -1.5]}>
+        <mesh position={[-1.5, 4, -1.5]} castShadow>
           <boxGeometry args={[3, 8, 3]} />
-          <meshStandardMaterial ref={materialRef} color="#1e293b" emissive={color} emissiveIntensity={0.4} />
+          <meshStandardMaterial ref={materialRef} color="#D3D0C8" emissive={color} emissiveIntensity={0.1} />
         </mesh>
-        <mesh position={[2, 3, 2]}>
+        <mesh position={[2, 3, 2]} castShadow>
           <boxGeometry args={[2.5, 6, 2.5]} />
-          <meshStandardMaterial color="#1e293b" emissive={color} emissiveIntensity={0.4} />
+          <meshStandardMaterial color="#CBC8C0" emissive={color} emissiveIntensity={0.1} />
         </mesh>
       </group>
     );
@@ -63,29 +64,29 @@ function StylizedBuilding({ zone, color, pos }: { zone: string; color: string; p
     return (
       <group position={[pos[0], 0, pos[1]]}>
         {/* Factory / Plant */}
-        <mesh position={[0, 3, 0]}>
+        <mesh position={[0, 3, 0]} castShadow>
           <boxGeometry args={[8, 6, 6]} />
-          <meshStandardMaterial color="#1e293b" emissive={color} emissiveIntensity={0.3} />
+          <meshStandardMaterial color="#BEC4CB" emissive={color} emissiveIntensity={0.08} />
         </mesh>
         {/* Smoke stacks */}
         <mesh position={[-2, 8, 0]}>
           <cylinderGeometry args={[0.5, 0.8, 4, 8]} />
-          <meshStandardMaterial color="#334155" />
+          <meshStandardMaterial color="#98A2AC" />
         </mesh>
         <mesh position={[2, 8, 0]}>
           <cylinderGeometry args={[0.5, 0.8, 4, 8]} />
-          <meshStandardMaterial color="#334155" />
+          <meshStandardMaterial color="#98A2AC" />
         </mesh>
       </group>
     );
   }
-  
+
   // Default (Substation/Other)
   return (
     <group position={[pos[0], 0, pos[1]]}>
       <mesh position={[0, 2, 0]}>
         <boxGeometry args={[5, 4, 5]} />
-        <meshStandardMaterial ref={materialRef} color="#1e293b" emissive={color} emissiveIntensity={0.6} wireframe />
+        <meshStandardMaterial ref={materialRef} color="#5A6774" emissive={color} emissiveIntensity={0.25} wireframe />
       </mesh>
     </group>
   );
@@ -247,23 +248,23 @@ export function TransmissionLines(): JSX.Element {
               selectAsset({ kind: 'line', id: line.id as string });
             }}
           >
-            {/* Base Wire */}
-            <mesh>
+            {/* Base Wire — cylinder Y-axis laid flat along the corridor */}
+            <mesh rotation={[Math.PI / 2, 0, 0]}>
               <cylinderGeometry args={[0.6, 0.6, length, 6]} />
-              <meshStandardMaterial color="#1e293b" transparent={isOpen} opacity={isOpen ? 0.2 : 0.8} />
+              <meshStandardMaterial color="#4A555F" transparent={isOpen} opacity={isOpen ? 0.2 : 0.9} />
             </mesh>
-            {/* Glowing Core / Pulse effect */}
+            {/* Status core — loading color, restrained emissive */}
             {!isOpen && (
-              <mesh scale={[1.2, 1, 1.2]}>
+              <mesh rotation={[Math.PI / 2, 0, 0]} scale={[1.2, 1, 1.2]}>
                 <cylinderGeometry args={[0.4, 0.4, length, 6]} />
-                <meshStandardMaterial color={color} emissive={color} emissiveIntensity={loading * 2 + 0.5} transparent opacity={0.8} />
+                <meshStandardMaterial color={color} emissive={color} emissiveIntensity={loading * 0.9 + 0.2} transparent opacity={0.9} />
               </mesh>
             )}
             {/* Fault visual if tripped */}
             {isOpen && (
-              <mesh scale={[2, 0.1, 2]}>
+              <mesh rotation={[Math.PI / 2, 0, 0]} scale={[2, 1, 2]}>
                  <cylinderGeometry args={[1, 1, length, 4]} />
-                 <meshStandardMaterial color="#ef4444" emissive="#ef4444" emissiveIntensity={2} wireframe />
+                 <meshStandardMaterial color="#B3261E" emissive="#B3261E" emissiveIntensity={0.8} wireframe />
               </mesh>
             )}
           </group>
@@ -279,13 +280,13 @@ export function TransmissionLines(): JSX.Element {
 export function GroundPlane(): JSX.Element {
   return (
     <group>
-      {/* Main terrain */}
+      {/* Main terrain — daylight sage, receives building shadows */}
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.5, 0]} receiveShadow>
         <planeGeometry args={[500, 500]} />
-        <meshStandardMaterial color="#1a3328" roughness={0.9} metalness={0.05} />
+        <meshStandardMaterial color="#A9B4A4" roughness={0.95} metalness={0.0} />
       </mesh>
-      {/* Subtle grid overlay for readability */}
-      <gridHelper args={[500, 50, 'rgba(45,106,79,0.3)', 'rgba(27,67,50,0.15)']} position={[0, 0.02, 0]} />
+      {/* Subtle survey grid for scale readability */}
+      <gridHelper args={[500, 50, '#93A08F', '#9DAA99']} position={[0, 0.02, 0]} />
     </group>
   );
 }

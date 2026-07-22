@@ -31,8 +31,8 @@ interface EventLogState {
   readonly entries: readonly EventLogEntry[];
   /** Selected entry (Timeline click) for the LearningFeedback card. */
   readonly focusedSeq: number | null;
-  focusEntry(seq: number | null): void;
-  clear(): void;
+  readonly focusEntry: (seq: number | null) => void;
+  readonly clear: () => void;
 }
 
 export const useEventLogStore = create<EventLogState>()((set) => ({

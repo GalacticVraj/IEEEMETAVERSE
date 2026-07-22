@@ -1,7 +1,7 @@
-import { asScenarioId } from '@app-types';
+import { asDecisionId, asScenarioId, asSeconds } from '@app-types';
 import { PROFILES } from '@config';
 import { EVENT_BUS, LOGGER, SERIALIZER } from '@core';
-import { SIMULATION_ENGINE } from '@engine';
+import { LOAD_MODEL, SIMULATION_ENGINE } from '@engine';
 import { SCENARIO_REGISTRY } from '@scenarios';
 import { describe, expect, it } from 'vitest';
 
@@ -86,6 +86,33 @@ describe('bootstrap', () => {
     expect(state.totalGeneration).toBeGreaterThan(0);
     expect(state.totalLoad).toBeGreaterThan(0);
     expect(state.zones).toHaveLength(6);
+
+    runtime.shutdown();
+  });
+
+  it('maps standing operator actions (op-*) to real load interventions', () => {
+    const runtime = bootstrap(PROFILES.development);
+    const bus = runtime.container.resolve(EVENT_BUS);
+    const loads = runtime.container.resolve(LOAD_MODEL);
+
+    // Residential AC on in the baseline
+    const rnHouse = loads.getBuildingAppliances().find((b) => b.buildingId.startsWith('RN-House'));
+    expect(rnHouse?.appliances.find((a) => a.id === 'ac')?.isOn).toBe(true);
+
+    bus.emit('DecisionCommitted', {
+      decisionId: asDecisionId('op-ac-residential-42'),
+      optionIndex: 0,
+      simTime: asSeconds(4.2),
+    });
+    expect(rnHouse?.appliances.find((a) => a.id === 'ac')?.isOn).toBe(false);
+
+    bus.emit('DecisionCommitted', {
+      decisionId: asDecisionId('op-shed-industrial-42'),
+      optionIndex: 0,
+      simTime: asSeconds(4.2),
+    });
+    expect(loads.getShedFraction('LD-IN-HVY' as never)).toBeCloseTo(0.3);
+    expect(loads.getShedFraction('LD-IN-LGT' as never)).toBeCloseTo(0.3);
 
     runtime.shutdown();
   });

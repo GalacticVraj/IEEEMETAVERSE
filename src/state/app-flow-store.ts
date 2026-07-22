@@ -100,19 +100,19 @@ export interface AppFlowState {
   decisionLog: DecisionLogEntry[];
   postmortemNarrative: string | null;
 
-  // Actions
-  enterCity: () => void;
-  finishArrival: () => void;
-  openInspectCard: (id: string, card: InspectCard) => void;
-  closeInspectCard: () => void;
-  enterBriefing: () => void;
-  enterSimulation: () => void;
-  selectCrisis: (id: string) => void;
-  resolveCrisis: (result: 'success' | 'blackout') => void;
-  logDecision: (entry: DecisionLogEntry) => void;
-  setPostmortem: (narrative: string) => void;
-  replay: () => void;
-  returnToHero: () => void;
+  // Actions (property-style so extracted references stay unbound-safe)
+  readonly enterCity: () => void;
+  readonly finishArrival: () => void;
+  readonly openInspectCard: (id: string, card: InspectCard) => void;
+  readonly closeInspectCard: () => void;
+  readonly enterBriefing: () => void;
+  readonly enterSimulation: () => void;
+  readonly selectCrisis: (id: string) => void;
+  readonly resolveCrisis: (result: 'success' | 'blackout') => void;
+  readonly logDecision: (entry: DecisionLogEntry) => void;
+  readonly setPostmortem: (narrative: string) => void;
+  readonly replay: () => void;
+  readonly returnToHero: () => void;
 }
 
 export const useAppFlowStore = create<AppFlowState>()((set) => ({

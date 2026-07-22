@@ -76,7 +76,29 @@ export class GridSimulationEngine implements ISimulationEngine, SnapshotableSyst
     (this.context.events as any).on(GRID_EVENT.DecisionCommitted, (payload: any) => {
       const { decisionId, optionIndex } = payload;
       const loads = this.loads as any;
-      if (decisionId.includes('dec-overload')) {
+      const zoneBuildings = (zoneId: string): string[] =>
+        this.topologyService.get().zones.find((z) => z.id === zoneId)?.buildingIds ?? [];
+
+      // Standing operator actions (op-*) — the console's action catalog.
+      if (decisionId.includes('op-ac-residential')) {
+        for (const b of [...zoneBuildings('RN'), ...zoneBuildings('RS')]) {
+          loads.toggleAppliance(b, 'ac', false);
+        }
+      } else if (decisionId.includes('op-ev-pause')) {
+        for (const zone of this.topologyService.get().zones) {
+          for (const b of zone.buildingIds) loads.toggleAppliance(b, 'ev', false);
+        }
+      } else if (decisionId.includes('op-lights-commercial')) {
+        for (const b of zoneBuildings('DT')) {
+          loads.toggleAppliance(b, 'lights', false);
+        }
+      } else if (decisionId.includes('op-shed-industrial')) {
+        loads.shedLoad('LD-IN-HVY', 0.30);
+        loads.shedLoad('LD-IN-LGT', 0.30);
+      } else if (decisionId.includes('op-shed-harbor')) {
+        loads.shedLoad('LD-HB-IND', 0.25);
+        loads.shedLoad('LD-HB-SHIP', 0.25);
+      } else if (decisionId.includes('dec-overload')) {
         if (optionIndex === 0) { // Shed AC in Residential North
           const rnBuildings = this.topologyService.get().zones.find(z => z.id === 'RN')?.buildingIds || [];
           for (const b of rnBuildings) loads.toggleAppliance(b, 'ac', false);
