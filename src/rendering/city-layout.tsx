@@ -13,10 +13,17 @@ import type { ReactNode } from 'react';
 
 import { useGridStore, useUiStore } from '@state';
 
+import { BUILDING_POSITIONS } from './camera/city-positions';
 import {
   Hospital, School, CorporateTower, Courthouse, EvStation,
   HouseHigh, HouseLow, SolarFarm, Tree, Park, Pond, Road,
 } from './city-buildings';
+
+/** World position for a building id from the shared table. */
+const at = (id: string): [number, number, number] => {
+  const p = BUILDING_POSITIONS[id] ?? [0, 0];
+  return [p[0], 0, p[1]];
+};
 
 /**
  * Wraps a building subtree and visually de-energizes it when its zone is in
@@ -79,47 +86,47 @@ export function CityLayout(): JSX.Element {
     <group name="city-layout">
       {/* === DOWNTOWN (DT) — Corporate cluster === */}
       <DimGroup dimmed={dark.has('DT')}>
-        <CorporateTower position={[-10, 0, 75]} height={22} onClick={select('DT-Corp1')} />
-        <CorporateTower position={[10, 0, 75]} height={18} onClick={select('DT-Corp2')} />
-        <CorporateTower position={[0, 0, 60]} height={25} onClick={select('DT-Corp3')} />
-        <CorporateTower position={[-15, 0, 60]} height={16} onClick={select('DT-Corp4')} />
-        <CorporateTower position={[15, 0, 60]} height={20} onClick={select('DT-Corp5')} />
-        <Hospital position={[30, 0, 68]} onClick={select('DT-Hosp')} />
-        <Courthouse position={[15, 0, 45]} onClick={select('DT-Gov1')} />
+        <CorporateTower position={at('DT-Corp1')} height={22} onClick={select('DT-Corp1')} />
+        <CorporateTower position={at('DT-Corp2')} height={18} onClick={select('DT-Corp2')} />
+        <CorporateTower position={at('DT-Corp3')} height={25} onClick={select('DT-Corp3')} />
+        <CorporateTower position={at('DT-Corp4')} height={16} onClick={select('DT-Corp4')} />
+        <CorporateTower position={at('DT-Corp5')} height={20} onClick={select('DT-Corp5')} />
+        <Hospital position={at('DT-Hosp')} onClick={select('DT-Hosp')} />
+        <Courthouse position={at('DT-Gov1')} onClick={select('DT-Gov1')} />
       </DimGroup>
 
       {/* === RESIDENTIAL NORTH (RN) === */}
       <DimGroup dimmed={dark.has('RN')}>
-        <School position={[-50, 0, 25]} onClick={select('RN-Sch1')} />
-        <EvStation position={[-5, 0, 50]} onClick={select('RN-EV1')} />
-        <HouseHigh position={[-60, 0, 40]} onClick={select('RN-House1')} />
-        <HouseHigh position={[-52, 0, 40]} onClick={select('RN-House2')} />
-        <HouseHigh position={[-68, 0, 20]} onClick={select('RN-House3')} />
-        <HouseHigh position={[-60, 0, 20]} onClick={select('RN-House4')} />
-        <HouseHigh position={[-58, 0, 0]} onClick={select('RN-House5')} />
-        <HouseHigh position={[-50, 0, 0]} onClick={select('RN-House6')} />
-        <HouseHigh position={[-62, 0, -8]} onClick={select('RN-House7')} />
-        <SolarFarm position={[-80, 0, 75]} onClick={select('RN-Solar')} />
+        <School position={at('RN-Sch1')} onClick={select('RN-Sch1')} />
+        <EvStation position={at('RN-EV1')} onClick={select('RN-EV1')} />
+        <HouseHigh position={at('RN-House1')} onClick={select('RN-House1')} />
+        <HouseHigh position={at('RN-House2')} onClick={select('RN-House2')} />
+        <HouseHigh position={at('RN-House3')} onClick={select('RN-House3')} />
+        <HouseHigh position={at('RN-House4')} onClick={select('RN-House4')} />
+        <HouseHigh position={at('RN-House5')} onClick={select('RN-House5')} />
+        <HouseHigh position={at('RN-House6')} onClick={select('RN-House6')} />
+        <HouseHigh position={at('RN-House7')} onClick={select('RN-House7')} />
+        <SolarFarm position={at('RN-Solar')} onClick={select('RN-Solar')} />
       </DimGroup>
 
       {/* === RESIDENTIAL SOUTH (RS) === */}
       <DimGroup dimmed={dark.has('RS')}>
-        <School position={[-30, 0, -50]} onClick={select('RS-Sch2')} />
-        <EvStation position={[55, 0, 25]} onClick={select('RS-EV2')} />
-        <HouseLow position={[-38, 0, -35]} onClick={select('RS-House1')} />
-        <HouseLow position={[-32, 0, -35]} onClick={select('RS-House2')} />
-        <HouseLow position={[-44, 0, -35]} onClick={select('RS-House3')} />
-        <HouseLow position={[-53, 0, -55]} onClick={select('RS-House4')} />
-        <HouseLow position={[-47, 0, -55]} onClick={select('RS-House5')} />
-        <HouseLow position={[-53, 0, -62]} onClick={select('RS-House6')} />
-        <HouseLow position={[-38, 0, -70]} onClick={select('RS-House7')} />
-        <HouseLow position={[-32, 0, -70]} onClick={select('RS-House8')} />
-        <HouseLow position={[-44, 0, -70]} onClick={select('RS-House9')} />
+        <School position={at('RS-Sch2')} onClick={select('RS-Sch2')} />
+        <EvStation position={at('RS-EV2')} onClick={select('RS-EV2')} />
+        <HouseLow position={at('RS-House1')} onClick={select('RS-House1')} />
+        <HouseLow position={at('RS-House2')} onClick={select('RS-House2')} />
+        <HouseLow position={at('RS-House3')} onClick={select('RS-House3')} />
+        <HouseLow position={at('RS-House4')} onClick={select('RS-House4')} />
+        <HouseLow position={at('RS-House5')} onClick={select('RS-House5')} />
+        <HouseLow position={at('RS-House6')} onClick={select('RS-House6')} />
+        <HouseLow position={at('RS-House7')} onClick={select('RS-House7')} />
+        <HouseLow position={at('RS-House8')} onClick={select('RS-House8')} />
+        <HouseLow position={at('RS-House9')} onClick={select('RS-House9')} />
       </DimGroup>
 
       {/* === AIRPORT (AP) === */}
       <DimGroup dimmed={dark.has('AP')}>
-        <EvStation position={[-40, 0, -25]} onClick={select('AP-EV3')} />
+        <EvStation position={at('AP-EV3')} onClick={select('AP-EV3')} />
       </DimGroup>
 
       {/* === GREEN INFRASTRUCTURE (not powered — never dimmed) === */}
