@@ -1,8 +1,15 @@
-import { asDecisionId, asSystemId } from '@app-types';
-import type { DecisionId, Severity, SystemId } from '@app-types';
+import { GameOutcome, asDecisionId, asSystemId } from '@app-types';
+import type { Severity, SystemId } from '@app-types';
 import { GRID_EVENT } from '@constants';
 import { createToken } from '@core';
-import type { SimulationSystem, SnapshotableSystem, SystemContext, Token } from '@core';
+import type {
+  GridEventMap,
+  SimulationSystem,
+  SnapshotableSystem,
+  SystemContext,
+  Token,
+  TypedEventBus,
+} from '@core';
 
 import type { GridState } from '../model/grid';
 
@@ -34,6 +41,16 @@ export class GridDirector implements IDirector, SnapshotableSystem {
 
   private severityHistory: Severity[] = [];
 
+  /** Consecutive ticks with ≥1 zone in blackout (partial-blackout countdown). */
+  private blackoutTicks = 0;
+  /** Single-fire guard for the terminal GameEnded emit. */
+  private gameEndedFired = false;
+
+  /** ≥1 zone dark for this many consecutive ticks ⇒ PartialBlackout loss. */
+  private static readonly PARTIAL_BLACKOUT_TICKS = 150;
+  /** ≥ this many zones dark simultaneously ⇒ immediate SystemBlackout loss. */
+  private static readonly SYSTEM_BLACKOUT_ZONES = 2;
+
   public init(context: SystemContext): void {
     this.context = context;
     this.reset();
@@ -48,6 +65,8 @@ export class GridDirector implements IDirector, SnapshotableSystem {
     this.requestedCascade = false;
     this.requestedBlackout = false;
     this.severityHistory = [];
+    this.blackoutTicks = 0;
+    this.gameEndedFired = false;
   }
 
   public dispose(): void {
@@ -60,6 +79,8 @@ export class GridDirector implements IDirector, SnapshotableSystem {
       requestedCascade: this.requestedCascade,
       requestedBlackout: this.requestedBlackout,
       severityHistory: [...this.severityHistory],
+      blackoutTicks: this.blackoutTicks,
+      gameEndedFired: this.gameEndedFired,
     };
   }
 
@@ -69,15 +90,20 @@ export class GridDirector implements IDirector, SnapshotableSystem {
       requestedCascade: boolean;
       requestedBlackout: boolean;
       severityHistory: Severity[];
+      blackoutTicks?: number;
+      gameEndedFired?: boolean;
     };
     this.requestedOverload = s.requestedOverload;
     this.requestedCascade = s.requestedCascade;
     this.requestedBlackout = s.requestedBlackout;
     this.severityHistory = [...s.severityHistory];
+    this.blackoutTicks = s.blackoutTicks ?? 0;
+    this.gameEndedFired = s.gameEndedFired ?? false;
   }
 
   public pace(context: any, state: GridState): DirectorDirective {
     const tick = context.tick;
+    const domainEvents = this.context.events as unknown as TypedEventBus<GridEventMap>;
 
     // 1. Calculate raw severity from grid stress
     let rawSeverity: Severity = 'Info';
@@ -114,7 +140,7 @@ export class GridDirector implements IDirector, SnapshotableSystem {
     // 3. Scripted decision request triggers
     if (maxLoading >= 1.0 && !this.requestedOverload) {
       this.requestedOverload = true;
-      this.context.events.emit(GRID_EVENT.DecisionRequested, {
+      domainEvents.emit(GRID_EVENT.DecisionRequested, {
         decisionId: asDecisionId(`dec-overload-${tick}`),
         prompt: 'High line loading detected. Power flows are approaching limits. Choose emergency action:',
         options: [
@@ -128,7 +154,7 @@ export class GridDirector implements IDirector, SnapshotableSystem {
 
     if (hasCascade && !this.requestedCascade) {
       this.requestedCascade = true;
-      this.context.events.emit(GRID_EVENT.DecisionRequested, {
+      domainEvents.emit(GRID_EVENT.DecisionRequested, {
         decisionId: asDecisionId(`dec-cascade-${tick}`),
         prompt: 'Cascading failure sequence detected! Network stability is compromised. Select emergency intervention:',
         options: [
@@ -140,9 +166,31 @@ export class GridDirector implements IDirector, SnapshotableSystem {
       });
     }
 
+    // 4. Terminal loss conditions — the director owns win/lose semantics.
+    if (!this.gameEndedFired) {
+      if (blackedOutZones.length >= GridDirector.SYSTEM_BLACKOUT_ZONES) {
+        this.gameEndedFired = true;
+        domainEvents.emit(GRID_EVENT.GameEnded, {
+          outcome: GameOutcome.SystemBlackout,
+          score: 0,
+        });
+      } else if (blackedOutZones.length >= 1) {
+        this.blackoutTicks += 1;
+        if (this.blackoutTicks >= GridDirector.PARTIAL_BLACKOUT_TICKS) {
+          this.gameEndedFired = true;
+          domainEvents.emit(GRID_EVENT.GameEnded, {
+            outcome: GameOutcome.PartialBlackout,
+            score: 40,
+          });
+        }
+      } else {
+        this.blackoutTicks = 0;
+      }
+    }
+
     if (blackedOutZones.length > 0 && !this.requestedBlackout) {
       this.requestedBlackout = true;
-      this.context.events.emit(GRID_EVENT.DecisionRequested, {
+      domainEvents.emit(GRID_EVENT.DecisionRequested, {
         decisionId: asDecisionId(`dec-blackout-${tick}`),
         prompt: 'Blackout detected in demand zones! Critical services are running on backup. Select restoration plan:',
         options: [

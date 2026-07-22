@@ -47,7 +47,11 @@ import { SCENARIO_REGISTRY, createScenarioRegistry,
   DemandSurgeScenario,
   TransformerFailureScenario,
 } from '@scenarios';
+import type { ScenarioContext } from '@scenarios';
 import { buildScenarioFaultApi } from '@engine';
+
+/** DI token for the shared scenario context (setup/re-setup seam). */
+export const SCENARIO_CONTEXT: Token<ScenarioContext> = createToken('ScenarioContext');
 
 import {
   ANALYTICS_COLLECTOR,
@@ -176,8 +180,9 @@ export function createCompositionRoot(config: AppConfig): Container {
 
 
   // ---- Scenarios (real registry, plugin instances) ----
-  container.register(SCENARIO_REGISTRY, (c) => {
-    const registry = createScenarioRegistry();
+  // The scenario context is its own registration so the crisis session can
+  // re-run `scenario.setup(context)` on restart, re-arming scripted faults.
+  container.register(SCENARIO_CONTEXT, (c) => {
     const engine = c.resolve(SIMULATION_ENGINE);
     const generation = c.resolve(GENERATION_MODEL);
     const loads = c.resolve(LOAD_MODEL);
@@ -185,7 +190,7 @@ export function createCompositionRoot(config: AppConfig): Container {
 
     const faults = buildScenarioFaultApi({ engine, generation, loads, protection });
 
-    const scenarioContext = {
+    return {
       engine,
       faults,
       generation: {
@@ -210,6 +215,11 @@ export function createCompositionRoot(config: AppConfig): Container {
           protection.relayFor(line),
       },
     };
+  });
+
+  container.register(SCENARIO_REGISTRY, (c) => {
+    const registry = createScenarioRegistry();
+    const scenarioContext = c.resolve(SCENARIO_CONTEXT);
 
     const scenarios = [
       new HeatwaveScenario(),

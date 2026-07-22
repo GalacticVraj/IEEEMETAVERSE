@@ -78,8 +78,10 @@ export function CrisisSelectScreen(): ReactElement {
                 </div>
               )}
 
-              {/* Icon */}
-              <div style={{ fontSize: 40, marginBottom: 12 }}>{card.icon}</div>
+              {/* Difficulty */}
+              <div style={{ fontSize: 11, marginBottom: 12, letterSpacing: '0.08em', textTransform: 'uppercase', opacity: 0.7 }}>
+                {card.difficulty}
+              </div>
 
               {/* Label */}
               <h3 style={{ color: '#D8F3DC', fontWeight: 700, fontSize: 18, marginBottom: 8 }}>

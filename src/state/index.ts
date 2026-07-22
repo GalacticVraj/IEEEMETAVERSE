@@ -17,6 +17,7 @@ export * from './simulation-store';
 export * from './learning-store';
 export * from './ui-store';
 export * from './grid-store';
+export * from './app-flow-store';
 
 /** Bind every event-driven projection to the bus. Returns a combined detach. */
 export function bindStores(

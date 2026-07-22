@@ -65,6 +65,7 @@ export class GridSimulationEngine implements ISimulationEngine, SnapshotableSyst
     this.loads.init(context);
     this.cascade.init(context);
     this.restoration.init(context);
+    (this.director as any).init?.(context);
     this.protection.register(this.graph);
 
     // Initialize detailed appliances based on topology
@@ -259,6 +260,7 @@ export class GridSimulationEngine implements ISimulationEngine, SnapshotableSyst
     this.loads.reset();
     this.cascade.reset();
     this.restoration.reset();
+    (this.director as any).reset?.();
     this._initializeState();
   }
 

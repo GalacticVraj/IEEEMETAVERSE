@@ -1,19 +1,25 @@
+import type { BusId } from '@app-types';
 import type { AppConfig } from '@config';
 import { EVENT_BUS, LOGGER } from '@core';
 import type { Container, SimulationSystem } from '@core';
-import { ELECTRICAL_GRAPH, SIMULATION_ENGINE, TOPOLOGY_SERVICE } from '@engine';
+import { ELECTRICAL_GRAPH, PROTECTION_ENGINE, SIMULATION_ENGINE, TOPOLOGY_SERVICE } from '@engine';
 import { populateGraphFromTopology } from '@engine/topology/graph-builder';
 import type { SimulationKernel } from '@kernel';
 import type { GridEventMap } from '@core';
+import { SCENARIO_REGISTRY } from '@scenarios';
 import { bindStores } from '@state';
 
-import { SIMULATION_KERNEL, createCompositionRoot } from '../di/composition-root';
+import { SCENARIO_CONTEXT, SIMULATION_KERNEL, createCompositionRoot } from '../di/composition-root';
+import { createCrisisSession } from '../runtime/crisis-session';
+import type { CrisisSession } from '../runtime/crisis-session';
 
 /** Handle to the running application runtime. */
 export interface AppRuntime {
   readonly container: Container;
   readonly config: AppConfig;
   readonly kernel: SimulationKernel<GridEventMap>;
+  /** The one real-time driver: starts/stops scenario runs and kernel ticking. */
+  readonly session: CrisisSession;
   /** Detach projections and dispose the kernel. */
   shutdown(): void;
 }
@@ -44,6 +50,42 @@ export function bootstrap(config: AppConfig): AppRuntime {
 
   const unbindStores = bindStores(bus, engine);
 
+  const session = createCrisisSession({
+    kernel,
+    registry: () => container.resolve(SCENARIO_REGISTRY),
+    prepareScenario: (scenario) => {
+      // Heal the grid from the previous run: protection removes tripped lines
+      // from the graph via controlled transactions, so a restart must re-add
+      // anything still missing and walk open breakers back toward Closed.
+      const protection = container.resolve(PROTECTION_ENGINE);
+      const missing = topology.lines.filter((line) => graph.getLine(line.id) === undefined);
+      if (missing.length > 0) {
+        graph.mutate((tx) => {
+          for (const line of missing) {
+            tx.addLine({
+              id: line.id,
+              from: line.from as unknown as BusId,
+              to: line.to as unknown as BusId,
+              capacityMw: line.capacity,
+              reactancePu: line.reactance,
+            });
+          }
+        });
+      }
+      for (const line of topology.lines) {
+        protection.resetRelay(line.id);
+        const breaker = protection.breakerFor(line.id);
+        if (breaker !== undefined && breaker.phase === 'Open') {
+          protection.commandClose(line.id, 0);
+        }
+      }
+      protection.register(graph);
+
+      // Re-arm the scenario's scripted faults for a fresh run.
+      scenario.setup(container.resolve(SCENARIO_CONTEXT));
+    },
+  });
+
   logger.info('GridGuard runtime bootstrapped', {
     profile: config.profile,
     seed: config.simulation.seed,
@@ -53,7 +95,9 @@ export function bootstrap(config: AppConfig): AppRuntime {
     container,
     config,
     kernel,
+    session,
     shutdown(): void {
+      session.stop();
       // Gracefully walk the FSM to Disposed from whatever state we're in.
       const k = kernel;
       try {
