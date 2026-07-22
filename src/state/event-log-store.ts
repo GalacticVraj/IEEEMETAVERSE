@@ -106,8 +106,8 @@ export function bindEventLog(bus: GridEventBus): Unsubscribe {
       push(currentTick, {
         severity: copy.severity,
         title: `Weather: ${kind}`,
-        detail: `${Math.round(p.temperature as number)} °C`,
-        what: `The weather shifted to ${kind.toLowerCase()} conditions (${Math.round(p.temperature as number)} °C).`,
+        detail: `${Math.round(p.temperature)} °C`,
+        what: `The weather shifted to ${kind.toLowerCase()} conditions (${Math.round(p.temperature)} °C).`,
         why: copy.why,
         action: copy.action,
       });
@@ -169,8 +169,8 @@ export function bindEventLog(bus: GridEventBus): Unsubscribe {
       push(currentTick, {
         severity: 'critical',
         title: `Blackout: ${zone}`,
-        detail: `${Math.round(p.unservedLoad as number)} MW unserved`,
-        what: `Zone ${zone} lost power — ${Math.round(p.unservedLoad as number)} MW of demand is unserved.`,
+        detail: `${Math.round(p.unservedLoad)} MW unserved`,
+        what: `Zone ${zone} lost power — ${Math.round(p.unservedLoad)} MW of demand is unserved.`,
         why: 'Every energized path into the zone was lost, so its buses are de-energized.',
         action: 'Restore a transmission path into the zone; critical loads are on limited backup.',
       });
