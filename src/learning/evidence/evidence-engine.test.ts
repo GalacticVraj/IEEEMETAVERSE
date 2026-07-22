@@ -142,7 +142,7 @@ describe('evidence engine', () => {
     const { bus, twin } = makeHarness();
 
     tick(bus, 100);
-    bus.emit(GRID_EVENT.GameEnded, { outcome: 'Held' as never, score: 100 });
+    bus.emit(GRID_EVENT.GameEnded, { outcome: 'Held', score: 100 });
 
     expect(twin.masteryOf(CONCEPT.Equity)).toBeGreaterThan(0.5);
   });

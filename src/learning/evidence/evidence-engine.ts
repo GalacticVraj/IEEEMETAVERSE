@@ -102,7 +102,7 @@ export function createEvidenceEngine(deps: EvidenceEngineDeps): IEvidenceEngine 
     const state = engine.getState();
     let maxLoading = 0;
     for (const line of state.lines) {
-      maxLoading = Math.max(maxLoading, line.loading as number);
+      maxLoading = Math.max(maxLoading, line.loading);
     }
     let darkZones = 0;
     let unservedMw = 0;
