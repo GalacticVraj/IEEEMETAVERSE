@@ -11,6 +11,8 @@ import { GRID_EVENT } from '@constants';
 import type { GridEventBus, Unsubscribe } from '@core';
 import { create } from 'zustand';
 
+import { useGridStore } from './grid-store';
+
 export type EventSeverity = 'info' | 'caution' | 'warning' | 'critical' | 'recovery';
 
 export interface EventLogEntry {
@@ -83,6 +85,18 @@ const WEATHER_COPY: Record<string, { severity: EventSeverity; why: string; actio
   },
 };
 
+/** Operator-facing generator names (mirrors the console learning copy). */
+const GENERATOR_NAMES: Record<string, string> = {
+  'G-BASE-S': 'Southbay Baseload Plant',
+  'G-PEAK-S': 'South Gas Peaker',
+  'G-PEAK-IN': 'Industrial Gas Peaker',
+  'G-SOLAR': 'Northfield Solar Farm',
+  'G-WIND': 'Northfield Wind Farm',
+  'G-BATT-DT': 'Downtown Battery',
+  'G-IMPORT': 'Regional Import Tie',
+  'G-GAS-HB': 'Harbor Gas Unit',
+};
+
 /**
  * Bind the event log to the bus. Call once at bootstrap; returns a detach.
  * The bus is tick-aware, so we read the tick from each event's metadata via
@@ -92,6 +106,40 @@ export function bindEventLog(bus: GridEventBus): Unsubscribe {
   let currentTick = 0;
   let lastWeatherKind: string | null = null;
   const zoneStates = new Map<string, 'Powered' | 'Blackout'>();
+
+  // Generator trip/recovery has no dedicated bus event (core events are
+  // frozen), so observe the grid projection for per-generator STATE CHANGES —
+  // still real simulation output, still deduped to transitions.
+  const generatorTripped = new Map<string, boolean>();
+  const unsubscribeGenerators = useGridStore.subscribe((state) => {
+    for (const generator of state.generators) {
+      const id = generator.id as string;
+      const previous = generatorTripped.get(id);
+      generatorTripped.set(id, generator.tripped);
+      if (previous === undefined || previous === generator.tripped) continue;
+      const name = GENERATOR_NAMES[id] ?? id;
+      const capacity = Math.round(generator.capacityMw as number);
+      if (generator.tripped) {
+        push(state.tick, {
+          severity: 'critical',
+          title: `Generator lost: ${name}`,
+          detail: `−${capacity} MW capacity`,
+          what: `${name} disconnected — ${capacity} MW of generating capacity is suddenly gone.`,
+          why: 'A unit fault (or scripted scenario event) forced the generator offline; the remaining fleet must cover its share.',
+          action: 'Reduce demand or lean on reserves until supply and demand rebalance.',
+        });
+      } else {
+        push(state.tick, {
+          severity: 'recovery',
+          title: `Generator back: ${name}`,
+          detail: `+${capacity} MW capacity`,
+          what: `${name} reconnected and can generate again.`,
+          why: 'The unit cleared its fault or was black-started by the restoration plan.',
+          action: 'Expect the supply balance to improve as it ramps.',
+        });
+      }
+    }
+  });
 
   const subs: Unsubscribe[] = [
     bus.on(GRID_EVENT.SimulationTick, (p) => {
@@ -232,6 +280,7 @@ export function bindEventLog(bus: GridEventBus): Unsubscribe {
   ];
 
   return () => {
+    unsubscribeGenerators();
     for (const u of subs) u();
   };
 }

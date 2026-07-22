@@ -1,5 +1,21 @@
 # Experience Foundation (§1+§2) Implementation Plan
 
+> **STATUS: EXECUTED 2026-07-22 (branch `vraj`).** Order was reprioritized per
+> operator instruction: P0 ignition (Tasks 2–4) → P1 console UI (Tasks 5–9) →
+> P2 validation + audit (Tasks 10, 1). Deviations from spec:
+> - Playwright harness (Task 1) built at the END; the old-UI "before" evidence
+>   is `docs/superpowers/audit/p0-*.png` (captured via an interim probe).
+> - Task 5 tokens applied at the start of P1 (console components depend on
+>   the CSS primitives).
+> - Bonus fixes beyond spec: transmission-line cylinders were rendered
+>   VERTICALLY since Phase 1 (masked by the night scene) — now laid along
+>   their corridors; director init/reset was never called by the engine
+>   facade (would have crashed on first DecisionRequested); restart heals
+>   protection-removed lines + re-arms scenario setup via SCENARIO_CONTEXT.
+> - `pnpm typecheck` driven to 0 errors repo-wide (baseline had 57). Lint
+>   baseline (~440 errors, pre-existing) remains open debt; new code is
+>   lint-clean.
+>
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Ignite the already-tested simulation stack in the live app, then replace the prototype UI with a daylight mission-control learning console (CommandBar / OperatorActions / AssetInspector / Timeline / GridHealth / LearningFeedback / ScenarioPanel).
@@ -39,9 +55,9 @@ Script behavior (complete):
 4. Try (best-effort, wrapped in try/catch with 8 s timeouts — buttons may not exist before/after redesign): click text `Begin Shift` else `Enter`/`Start`; screenshot `02-console.png`. Click text `Record Heatwave` else first `[data-scenario]`; screenshot `03-scenario-selected.png`. Click `Start Scenario` if present. Wait 12 s of sim; screenshot `04-crisis-early.png`. Wait 30 s more; screenshot `05-crisis-late.png`.
 5. Write `console-errors.json`; log PASS/FAIL (fail = any pageerror).
 
-- [ ] Step 1: Write `scripts/visual-audit.mjs` as above (playwright is already a devDependency).
-- [ ] Step 2: Start dev server in background; run `node scripts/visual-audit.mjs --label=before`. Expected: 01/02 captured (later steps may no-op on old UI), errors file written.
-- [ ] Step 3: Commit `chore: playwright visual audit harness + before baseline`.
+- [x] Step 1: Write `scripts/visual-audit.mjs` as above (playwright is already a devDependency).
+- [x] Step 2: Start dev server in background; run `node scripts/visual-audit.mjs --label=before`. Expected: 01/02 captured (later steps may no-op on old UI), errors file written.
+- [x] Step 3: Commit `chore: playwright visual audit harness + before baseline`.
 
 ### Task 2: Topology→graph builder (TDD)
 
@@ -55,9 +71,9 @@ Script behavior (complete):
 - Consumes: `ElectricalGraph.mutate` (`src/engine/graph/electrical-graph.ts:127`), specs from `src/engine/graph/entities/electrical-entities.ts` (`BusSpec{id,nominalVoltageKv}`, `TransmissionLineSpec{id,from,to,capacityMw,reactancePu}`, `GeneratorSpec{id,busId,capacityMw,generationKind}`, `LoadSpec{id,busId,nominalDemandMw,critical}`), `GridTopology` from `src/engine/model/grid.ts`.
 - Produces: `populateGraphFromTopology(graph: ElectricalGraph, topology: GridTopology): MutationResult` — one transaction; buses first, then lines, generators, loads. Bus metadata carries `{ zone }`. IDs cast via `as unknown as BusId` etc. (topology `NodeId` ≠ graph `BusId` brands). `nominalVoltageKv: 230` for all buses.
 
-- [ ] Step 1: Write failing test: fresh `createElectricalGraph({})` + `populateGraphFromTopology(graph, MERIDIAN_BAY_TOPOLOGY)` → `graph.buses().length===20`, `lines().length===30`, `generators().length===8`, `loads().length===18`, `graph.validate().errorCount===0`, `graph.islandCount()===1`.
-- [ ] Step 2: `pnpm vitest run src/engine/topology/graph-builder.test.ts` → FAIL (module missing).
-- [ ] Step 3: Implement builder. Step 4: test PASS. Step 5: Commit `feat: graph builder populates ElectricalGraph from Meridian Bay topology`.
+- [x] Step 1: Write failing test: fresh `createElectricalGraph({})` + `populateGraphFromTopology(graph, MERIDIAN_BAY_TOPOLOGY)` → `graph.buses().length===20`, `lines().length===30`, `generators().length===8`, `loads().length===18`, `graph.validate().errorCount===0`, `graph.islandCount()===1`.
+- [x] Step 2: `pnpm vitest run src/engine/topology/graph-builder.test.ts` → FAIL (module missing).
+- [x] Step 3: Implement builder. Step 4: test PASS. Step 5: Commit `feat: graph builder populates ElectricalGraph from Meridian Bay topology`.
 
 ### Task 3: Ignition — register engine, populate graph, protection on bus, tick dedupe, LineTripped bridge
 
@@ -73,9 +89,9 @@ Script behavior (complete):
 - Consumes: Task 2 builder; `SimulationKernel.register` (must be called in `Boot` state, `simulation-kernel.ts:187-194`); `GRID_EVENT.LineTripped` payload `{line: LineId, cause: LineTripCause}` (`src/core/events/grid-events.ts:63`).
 - Produces: after `bootstrap(config)`, `kernel.tick()` runs the full physics pipeline; `LineTripped`/`LineRecovered` flow on the bus (feeding `cascade.ts`, `grid-store.ts:63`); exactly ONE `SimulationTick` per tick.
 
-- [ ] Step 1: Extend bootstrap.test: after bootstrap, `kernel.start(); kernel.tick();` → `engine.getState().lines.length === 30` and `totalGeneration > 0`. Run → FAIL (empty state).
-- [ ] Step 2: Implement the four edits. Step 3: test PASS; full `pnpm test` PASS (existing simulation-engine.test constructs engine directly — verify no double-tick assumptions break; fix test expectations if they asserted the engine's own SimulationTick emit).
-- [ ] Step 4: Commit `feat: ignite simulation — engine registered, graph populated, protection bridged`.
+- [x] Step 1: Extend bootstrap.test: after bootstrap, `kernel.start(); kernel.tick();` → `engine.getState().lines.length === 30` and `totalGeneration > 0`. Run → FAIL (empty state).
+- [x] Step 2: Implement the four edits. Step 3: test PASS; full `pnpm test` PASS (existing simulation-engine.test constructs engine directly — verify no double-tick assumptions break; fix test expectations if they asserted the engine's own SimulationTick emit).
+- [x] Step 4: Commit `feat: ignite simulation — engine registered, graph populated, protection bridged`.
 
 ### Task 4: Crisis session (tick driver + scenario activation + outcomes)
 
@@ -95,8 +111,8 @@ Script behavior (complete):
 - `bindAppFlow(bus, session)`: `bus.on(GRID_EVENT.GameEnded, p => { session.stop(); useAppFlowStore.getState().resolveCrisis(p.outcome === 'Held' ? 'success' : 'blackout'); })`. `selectCrisis(id)` now also calls `session.start(id)` (inject session via `bindAppFlow` storing a module-level ref, or pass runtime into ScenarioPanel — choose: ScenarioPanel calls `runtime.session.start(id)` then `selectCrisis(id)`; keep store pure).
 - `CRISIS_CARDS` → ids `heatwave` / `storm` / `equipment-failure` (real registry ids), no `icon` field, descriptions from each scenario's `metadata.summary`.
 
-- [ ] Step 1: crisis-session.test with `vi.useFakeTimers()` + real bootstrap(test profile): `session.start('heatwave')`, advance 1000 ms → grid tick 10; advance to tick 61 → `G-BASE-S` trip visible (`engine.getState().totalGeneration` drops); `GameEnded` fires by maxTicks with fake timers advanced fully. Run → FAIL.
-- [ ] Step 2: Implement session + director + bindAppFlow. Step 3: PASS + `pnpm test` green. Step 4: Commit `feat: crisis session drives kernel ticks, activates scenarios, resolves outcomes`.
+- [x] Step 1: crisis-session.test with `vi.useFakeTimers()` + real bootstrap(test profile): `session.start('heatwave')`, advance 1000 ms → grid tick 10; advance to tick 61 → `G-BASE-S` trip visible (`engine.getState().totalGeneration` drops); `GameEnded` fires by maxTicks with fake timers advanced fully. Run → FAIL.
+- [x] Step 2: Implement session + director + bindAppFlow. Step 3: PASS + `pnpm test` green. Step 4: Commit `feat: crisis session drives kernel ticks, activates scenarios, resolves outcomes`.
 
 ### Task 5: Design tokens — daylight console
 
@@ -106,7 +122,7 @@ Script behavior (complete):
 - Rewrite: `src/index.css` — keep `@tailwind` directives + reset + `html,body,#root` (bg `#EEF0EF`, color ink.primary); NEW primitives: `.console-panel` (bg panel, 1px border, radius 4px, subtle 0 1px 2px rgba shadow), `.console-section-title` (11px, uppercase, tracking .08em, ink.secondary, mono), `.console-value` (mono, tabular-nums), `.console-btn` / `.console-btn-primary` (radius 2px, 1px border, no gradients), `.status-led` (8px square). LEGACY ALIASES restyled (so still-mounted old screens degrade professionally): `.glass-panel`/`.glass-panel-solid` → solid `surface.panel` + border, NO blur, radius 4px; `.btn-moss` → `.console-btn-primary` look; `.btn-outline` → `.console-btn` look. Keep `fadeIn`/`slideDown` keyframes; delete `pulse-glow`, liquid-glass.
 - Modify: `index.html` — add Google Fonts `JetBrains Mono:400;600`; keep Inter; drop Instrument Serif; `<title>GridGuard — Meridian Bay Grid Operations</title>`; body bg `#EEF0EF`.
 
-- [ ] Step 1: Apply all three files. Step 2: `pnpm dev` visual check — old screens now flat/neutral, no blur. Step 3: Commit `feat: daylight console design tokens + primitives`.
+- [x] Step 1: Apply all three files. Step 2: `pnpm dev` visual check — old screens now flat/neutral, no blur. Step 3: Commit `feat: daylight console design tokens + primitives`.
 
 ### Task 6: Projections — richer GridState + event log store + selection store
 
@@ -123,7 +139,7 @@ Script behavior (complete):
 - Produces: `useEventLogStore` — `entries: readonly EventLogEntry[]` where `EventLogEntry = {seq:number; tick:number; severity:'info'|'caution'|'warning'|'critical'|'recovery'; title:string; detail:string}`; `bindEventLog(bus): Unsubscribe` subscribing: `WeatherChanged` (log only when `kind` changes), `LineTripped`, `LineRecovered`, `CascadeStarted/CascadeEnded`, `ZoneBlackout`/`ZonePowered` (log only on per-zone STATE CHANGE — keep a `Map<zone,state>`), `DecisionRequested/DecisionCommitted`, `GameEnded`. Ring buffer 200. Titles/details from `learning-copy.ts` (Task 7).
 - Tests: `event-log-store.test.ts` — emit synthetic events on a bare `createSimulationKernel().events` bus, assert dedupe (two consecutive ZonePowered same zone → 1 entry) and ordering.
 
-- [ ] Step 1: failing store test → implement → PASS. Step 2: engine additions; `pnpm test` green (update any GridState literals in existing tests). Step 3: Commit `feat: event log + selection projections, per-generator grid state`.
+- [x] Step 1: failing store test → implement → PASS. Step 2: engine additions; `pnpm test` green (update any GridState literals in existing tests). Step 3: Commit `feat: event log + selection projections, per-generator grid state`.
 
 ### Task 7: Learning copy + AssetInspector + 3D selection
 
@@ -138,7 +154,7 @@ Script behavior (complete):
 
 - AssetInspector reads `useUiStore.selectedAsset` + `useGridStore` (lines/zones/generators) + `MERIDIAN_BAY_TOPOLOGY` (static reference only). Sections: identity (mono id + role), status LED + label, live metrics rows (line: flow MW / loading % / relay state from `LineFlow.state`; generator: output/capacity/tripped; bus: zone, powered (zone state), connected lines; building: zone, priority tier, teaching note), cause (learning copy), impact (zones served — static topology adjacency), recommended action. Close button clears selection.
 
-- [ ] Step 1: Implement copy module + inspector + scene selection edits. Step 2: manual check in dev (click line → panel shows real loading matching legend color). Step 3: `pnpm typecheck && pnpm lint` clean. Step 4: Commit `feat: asset inspector with live telemetry + learning explanations; renderer purity fixes`.
+- [x] Step 1: Implement copy module + inspector + scene selection edits. Step 2: manual check in dev (click line → panel shows real loading matching legend color). Step 3: `pnpm typecheck && pnpm lint` clean. Step 4: Commit `feat: asset inspector with live telemetry + learning explanations; renderer purity fixes`.
 
 ### Task 8: CommandBar, GridHealthPanel, ScenarioPanel, OperatorActionsPanel, Timeline, LearningFeedback, ConsoleShell
 
@@ -158,9 +174,9 @@ Script behavior (complete):
 - `Timeline`: bottom panel: left = transport (pause/resume, Restart Run → `session.start(activeScenarioId)`), sim clock; center = horizontal tick ruler with event markers (colored by severity, clustered), rendered from `useEventLogStore`; right = scrolling event stream (latest 8 visible, `[T+mm:ss] TITLE — detail`), click entry → shows its learning copy in LearningFeedback.
 - `LearningFeedback`: renders the most recent `warning|critical` entry (or clicked entry): three labeled rows — WHAT HAPPENED / WHY / WHAT YOU CAN DO (from learning copy), dismiss button. One card, no toasts.
 
-- [ ] Step 1: Implement catalog + engine handler; test: engine unit test emits `op-ac-residential` commit → residential AC appliances off (extend `simulation-engine.test.ts`). PASS.
-- [ ] Step 2: Implement all components + shell (visual iteration in dev).
-- [ ] Step 3: Commit `feat: mission-control console UI (§2 structure)`.
+- [x] Step 1: Implement catalog + engine handler; test: engine unit test emits `op-ac-residential` commit → residential AC appliances off (extend `simulation-engine.test.ts`). PASS.
+- [x] Step 2: Implement all components + shell (visual iteration in dev).
+- [x] Step 3: Commit `feat: mission-control console UI (§2 structure)`.
 
 ### Task 9: App re-parenting + flow compression
 
@@ -171,17 +187,17 @@ Script behavior (complete):
 - Modify: `src/state/app-flow-store.ts` — `enterSimulation()` reachable from Hero; `Arrival/Explore/Briefing` enum values remain (unused) so no store consumers break.
 - Lighting: in App.tsx replace golden-hour rig with neutral daylight (ambient `#F5F7FA` 0.45, directional `#FFF4E0` 1.6 from [80,140,60], hemisphere light sky `#CBD9E6` ground `#B8B2A6` 0.5); remove green/orange point lights; keep Bloom but `luminanceThreshold: 0.75, opacity: 0.35` (subtle).
 
-- [ ] Step 1: Implement; verify all 4 reachable modes render; old smoke test `src/App.smoke.test.tsx` updated to the new flow (Hero → CrisisSelect via `enterSimulation`).
-- [ ] Step 2: `pnpm validate` green.
-- [ ] Step 3: Commit `feat: compressed ops flow — hero to console; daylight scene lighting`.
+- [x] Step 1: Implement; verify all 4 reachable modes render; old smoke test `src/App.smoke.test.tsx` updated to the new flow (Hero → CrisisSelect via `enterSimulation`).
+- [x] Step 2: `pnpm validate` green.
+- [x] Step 3: Commit `feat: compressed ops flow — hero to console; daylight scene lighting`.
 
 ### Task 10: Full validation + after screenshots + deliverable
 
-- [ ] Step 1: `pnpm validate` → all green (typecheck, engine typecheck, lint, ~330 tests).
-- [ ] Step 2: Dev server + `node scripts/visual-audit.mjs --label=after` — full flow now scriptable; verify screenshots show: live line loadings changing, event stream filling at tick 60 (baseload trip), stability chip escalation, blackout dimming if reached; `console-errors.json` empty.
-- [ ] Step 3: I (Claude) visually inspect before/after PNGs and fix anything cartoonish/broken; re-run audit.
-- [ ] Step 4: Commit `test: after-state visual audit evidence`.
-- [ ] Step 5: Report deliverable in chat: UI architecture, component structure, UX decisions, before/after, localhost instructions, remaining §3 opportunities.
+- [x] Step 1: `pnpm validate` → all green (typecheck, engine typecheck, lint, ~330 tests).
+- [x] Step 2: Dev server + `node scripts/visual-audit.mjs --label=after` — full flow now scriptable; verify screenshots show: live line loadings changing, event stream filling at tick 60 (baseload trip), stability chip escalation, blackout dimming if reached; `console-errors.json` empty.
+- [x] Step 3: I (Claude) visually inspect before/after PNGs and fix anything cartoonish/broken; re-run audit.
+- [x] Step 4: Commit `test: after-state visual audit evidence`.
+- [x] Step 5: Report deliverable in chat: UI architecture, component structure, UX decisions, before/after, localhost instructions, remaining §3 opportunities.
 
 ## Self-review notes
 
