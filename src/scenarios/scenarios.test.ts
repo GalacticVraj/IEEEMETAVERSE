@@ -112,28 +112,30 @@ function runScenario(
 // Tests
 // ---------------------------------------------------------------------------
 
-describe('HeatwaveScenario', () => {
-  it('does not throw over 120 ticks', () => {
-    expect(() => runScenario(new HeatwaveScenario())).not.toThrow();
+describe('HeatwaveScenario (C3 demo arc: harbor @300, baseload @600)', () => {
+  it('does not throw over a full arc', () => {
+    expect(() => runScenario(new HeatwaveScenario(), 700)).not.toThrow();
   });
 
-  it('trips G-BASE-S at tick 60', () => {
-    const faults = runScenario(new HeatwaveScenario());
+  it('trips G-GAS-HB at tick 300 (first tension) but not before', () => {
+    const early = runScenario(new HeatwaveScenario(), 299);
+    expect(early._tripCalls).not.toContain(asGeneratorId('G-GAS-HB'));
+    const later = runScenario(new HeatwaveScenario(), 300);
+    expect(later._tripCalls).toContain(asGeneratorId('G-GAS-HB'));
+  });
+
+  it('trips G-BASE-S at tick 600 (the big one)', () => {
+    const faults = runScenario(new HeatwaveScenario(), 600);
     expect(faults._tripCalls).toContain(asGeneratorId('G-BASE-S'));
   });
 
-  it('trips G-GAS-HB at tick 80', () => {
-    const faults = runScenario(new HeatwaveScenario());
-    expect(faults._tripCalls).toContain(asGeneratorId('G-GAS-HB'));
-  });
-
-  it('applies industrial load shedding at tick 100', () => {
-    const faults = runScenario(new HeatwaveScenario());
-    expect(faults._shedCalls.some(([id]) => id === asLoadId('LD-IN-HVY'))).toBe(true);
+  it('performs NO scripted rescue shedding — the outcome belongs to the operator', () => {
+    const faults = runScenario(new HeatwaveScenario(), 700);
+    expect(faults._shedCalls).toHaveLength(0);
   });
 
   it('untrips all generators on teardown', () => {
-    const faults = runScenario(new HeatwaveScenario());
+    const faults = runScenario(new HeatwaveScenario(), 700);
     expect(faults._untripCalls).toContain(asGeneratorId('G-BASE-S'));
     expect(faults._untripCalls).toContain(asGeneratorId('G-GAS-HB'));
   });

@@ -21,10 +21,14 @@ import {
 
 import { useCameraStore } from '../../rendering/camera/camera-store';
 
-/** Fallback ticks if a stress threshold is never reached (still a real run). */
-const FIRST_ACTION_AT_TICK = 400;
-const SECOND_ACTION_AT_TICK = 800;
-const END_SHIFT_AT_TICK = 1200;
+/**
+ * Fallback ticks if a stress threshold is never reached (still a real run).
+ * Tuned to the C3 arc: harbor trip @300, baseload trip @600 — the demo acts
+ * shortly after each shock, and ends the shift at night for the visual.
+ */
+const FIRST_ACTION_AT_TICK = 420;
+const SECOND_ACTION_AT_TICK = 700;
+const END_SHIFT_AT_TICK = 1500;
 
 const commit = (runtime: AppRuntime, actionId: string): void => {
   const { tick } = useGridStore.getState();

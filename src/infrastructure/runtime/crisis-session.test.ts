@@ -35,15 +35,15 @@ describe('crisis session', () => {
     expect(kernel.clock.tick).toBe(10);
   });
 
-  it('activates the scenario — heatwave baseload trip drops generation at tick 60', () => {
+  it('activates the scenario — heatwave harbor trip drops generation at tick 300', () => {
     const engine = runtime.container.resolve(SIMULATION_ENGINE);
 
     runtime.session.start('heatwave');
 
-    vi.advanceTimersByTime(5900); // tick 59
+    vi.advanceTimersByTime(29_900); // tick 299
     const genBefore = engine.getState().totalGeneration;
 
-    vi.advanceTimersByTime(200); // tick 61 — G-BASE-S (400 MW) tripped at 60
+    vi.advanceTimersByTime(200); // tick 301 — G-GAS-HB (60 MW) tripped at 300
     const genAfter = engine.getState().totalGeneration;
 
     expect(genAfter).toBeLessThan(genBefore);
@@ -71,16 +71,16 @@ describe('crisis session', () => {
     const engine = runtime.container.resolve(SIMULATION_ENGINE);
 
     runtime.session.start('heatwave');
-    vi.advanceTimersByTime(6100); // past the tick-60 baseload trip
+    vi.advanceTimersByTime(30_500); // past the tick-300 harbor trip
     const trippedGen = engine.getState().totalGeneration;
 
     runtime.session.start('heatwave'); // restart
     expect(kernel.clock.tick).toBe(0);
 
-    vi.advanceTimersByTime(1000); // tick 10 — trip must NOT be active yet
+    vi.advanceTimersByTime(29_000); // tick 290 — trip must NOT be active yet
     expect(engine.getState().totalGeneration).toBeGreaterThan(trippedGen);
 
-    vi.advanceTimersByTime(5100); // tick 61 — trip re-armed and fired again
+    vi.advanceTimersByTime(1_500); // tick 305 — trip re-armed and fired again
     expect(engine.getState().totalGeneration).toBeLessThanOrEqual(trippedGen + 1);
   });
 
