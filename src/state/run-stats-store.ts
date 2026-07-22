@@ -21,6 +21,8 @@ export interface RunStats {
   /** Σ unserved MW per tick — energy not delivered (MW·ticks). */
   readonly unservedEnergyMwTicks: number;
   readonly peakCorridorStress: number;
+  /** Highest simultaneous unserved demand observed (MW). */
+  readonly peakUnservedMw: number;
   /** Running mean of renewable share of generation. */
   readonly renewableShareAvg: number;
   readonly lineTrips: number;
@@ -42,6 +44,7 @@ const INITIAL: RunStats = {
   worstBalanceMw: 0,
   unservedEnergyMwTicks: 0,
   peakCorridorStress: 0,
+  peakUnservedMw: 0,
   renewableShareAvg: 0,
   lineTrips: 0,
   lineRecoveries: 0,
@@ -113,6 +116,7 @@ export function bindRunStats(bus: GridEventBus, engine: ISimulationEngine): Unsu
         worstBalanceMw: Math.min(state.worstBalanceMw, balance),
         unservedEnergyMwTicks: state.unservedEnergyMwTicks + unserved,
         peakCorridorStress: Math.max(state.peakCorridorStress, maxLoading),
+        peakUnservedMw: Math.max(state.peakUnservedMw, unserved),
         renewableShareAvg: shareSamples > 0 ? shareSum / shareSamples : 0,
         blackoutZoneTicks: state.blackoutZoneTicks + darkZones,
         zonesEverDark: [...everDark],

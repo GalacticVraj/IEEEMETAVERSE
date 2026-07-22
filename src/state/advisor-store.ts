@@ -52,7 +52,7 @@ const DECISION_LABELS: readonly { prefix: string; label: string }[] = [
   { prefix: 'op-shed-harbor', label: 'Emergency harbor shed' },
 ];
 
-const labelForDecision = (decisionId: string): string => {
+export const labelForDecision = (decisionId: string): string => {
   for (const entry of DECISION_LABELS) {
     if (decisionId.startsWith(entry.prefix)) return entry.label;
   }
