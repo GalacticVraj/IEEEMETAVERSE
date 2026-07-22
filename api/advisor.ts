@@ -97,9 +97,11 @@ export default async function handler(req: Request) {
 
   const apiKey = process.env['GEMINI_API_KEY'];
   if (!apiKey) {
+    // 200 with an error body: "no key" is the NORMAL degradation path — the
+    // client falls back to deterministic text without console noise.
     return new Response(
-      JSON.stringify({ error: 'server_misconfigured', message: 'GEMINI_API_KEY not set' }),
-      { status: 500, headers: { 'Content-Type': 'application/json' } }
+      JSON.stringify({ error: 'no_api_key', message: 'GEMINI_API_KEY not set' }),
+      { status: 200, headers: { 'Content-Type': 'application/json' } }
     );
   }
 

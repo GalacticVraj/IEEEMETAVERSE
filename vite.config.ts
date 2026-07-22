@@ -29,7 +29,10 @@ function advisorDevProxy(): Plugin {
             for await (const chunk of req) chunks.push(chunk as Buffer);
             const body = Buffer.concat(chunks).toString('utf-8');
 
-            const { default: handler } = await import('./api/advisor');
+            const module = (await server.ssrLoadModule('/api/advisor.ts')) as {
+              default: (req: Request) => Promise<Response>;
+            };
+            const handler = module.default;
             const init: RequestInit = {
               method: req.method ?? 'POST',
               headers: { 'Content-Type': 'application/json' },

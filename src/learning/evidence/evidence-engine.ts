@@ -242,7 +242,12 @@ export function createEvidenceEngine(deps: EvidenceEngineDeps): IEvidenceEngine 
     start,
     stop,
     reset,
-    records: () => [...finalized],
+    // Finalized records first, then still-pending ones (verdict 'pending') so
+    // the after-action never hides a real decision that hadn't matured yet.
+    records: () => [
+      ...finalized,
+      ...pending.map((entry) => ({ ...entry.evidence, post: null, verdict: 'pending' as const })),
+    ],
     onRecord: (listener) => {
       listeners.add(listener);
       return () => listeners.delete(listener);

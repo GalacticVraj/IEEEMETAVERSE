@@ -8,6 +8,8 @@ import { GRID_EVENT } from '@constants';
 import type { GridEventBus, Unsubscribe } from '@core';
 import { create } from 'zustand';
 
+import { useEventLogStore } from './event-log-store';
+
 export type AdvisorMessageKind = 'question' | 'explanation' | 'reinforcement' | 'feedback';
 
 export interface AdvisorMessage {
@@ -174,7 +176,23 @@ export function bindAdvisor(bus: GridEventBus, deps: AdvisorDeps): Unsubscribe {
     }),
   ];
 
+  // Generator losses surface through the event-log projection (they have no
+  // dedicated bus event) — explain the biggest one-shot supply shocks.
+  let lastSeenSeq = 0;
+  const unsubscribeLog = useEventLogStore.subscribe((state) => {
+    const latest = state.entries[state.entries.length - 1];
+    if (latest === undefined || latest.seq <= lastSeenSeq) return;
+    lastSeenSeq = latest.seq;
+    if (latest.focus?.kind !== 'generator' || latest.severity !== 'critical') return;
+    show(
+      'explanation',
+      `${latest.title.replace('Generator lost: ', '')} disconnected at ${clock(latest.tick)} (${latest.detail}). The remaining fleet must cover that share — watch the supply balance and consider trimming flexible demand.`,
+      now(),
+    );
+  });
+
   return () => {
+    unsubscribeLog();
     for (const unsubscribe of subs) unsubscribe();
   };
 }
