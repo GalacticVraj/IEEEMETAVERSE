@@ -6,11 +6,9 @@
  * AfterAction. The city renders as a DAYLIGHT DIGITAL TWIN; the UI is a
  * mission-control shell that never covers the center.
  */
-import { OrbitControls } from '@react-three/drei';
-import { Canvas, useFrame } from '@react-three/fiber';
+import { Canvas } from '@react-three/fiber';
 import { EffectComposer, Bloom } from '@react-three/postprocessing';
-import { type ReactElement, useRef } from 'react';
-import * as THREE from 'three';
+import { type ReactElement } from 'react';
 
 import type { AppConfig } from '@config';
 import { DebugOverlay } from '@debug';
@@ -21,6 +19,9 @@ import {
   GroundPlane,
   TransmissionLines,
 } from './rendering/grid-scene';
+import { CameraDirector } from './rendering/camera/CameraDirector';
+import { CameraHud } from './rendering/camera/CameraHud';
+import { useCameraStore } from './rendering/camera/camera-store';
 import { CityLayout } from './rendering/city-layout';
 import { ConsoleShell } from './ui/console';
 import { HeroOverlay } from './ui/hero/HeroOverlay';
@@ -32,32 +33,11 @@ export interface AppProps {
 }
 
 // ---------------------------------------------------------------------------
-// AutoOrbitCamera — slow cinematic orbit for Hero mode (~90s/revolution)
-// ---------------------------------------------------------------------------
-function AutoOrbitCamera({ enabled }: { enabled: boolean }) {
-  const angle = useRef(0);
-
-  useFrame(({ camera }, delta) => {
-    if (!enabled) return;
-    angle.current += delta * (2 * Math.PI / 90); // 90 seconds per revolution
-    const radius = 200;
-    const height = 140;
-    camera.position.set(
-      Math.sin(angle.current) * radius,
-      height,
-      Math.cos(angle.current) * radius,
-    );
-    camera.lookAt(new THREE.Vector3(0, 0, 0));
-  });
-
-  return null;
-}
-
-// ---------------------------------------------------------------------------
 // App
 // ---------------------------------------------------------------------------
 export function App({ config }: AppProps): ReactElement {
   const mode = useAppFlowStore((s) => s.mode);
+  const introActive = useCameraStore((s) => s.introActive);
 
   const isHero = mode === AppMode.Hero;
   const isCrisisSelect = mode === AppMode.CrisisSelect;
@@ -100,19 +80,9 @@ export function App({ config }: AppProps): ReactElement {
           <Bloom luminanceThreshold={0.75} luminanceSmoothing={0.9} height={300} opacity={0.35} />
         </EffectComposer>
 
-        {/* Camera behavior depends on mode */}
-        <AutoOrbitCamera enabled={isHero} />
-        {isConsole && (
-          <OrbitControls
-            enablePan={false}
-            minPolarAngle={0.35}
-            maxPolarAngle={1.25}
-            minDistance={80}
-            maxDistance={420}
-            enableDamping
-            dampingFactor={0.08}
-          />
-        )}
+        {/* ALL camera behavior — hero orbit, intro, focus, choreography — is
+            owned by the one CameraDirector. Never mount another camera. */}
+        <CameraDirector />
       </Canvas>
 
       {/* ── DOM Overlays (mode-dependent) ────────────────────────── */}
@@ -120,8 +90,11 @@ export function App({ config }: AppProps): ReactElement {
       {/* Hero mode */}
       {isHero && <HeroOverlay />}
 
-      {/* Mission-control console (CrisisSelect / ActiveCrisis / AfterAction) */}
-      {isConsole && <ConsoleShell mode={mode} />}
+      {/* Camera HUD: intro captions/skip + auto-follow/overview controls */}
+      {isConsole && <CameraHud dev={config.debug.overlay} />}
+
+      {/* Mission-control console — hidden until the intro lands at home */}
+      {isConsole && !introActive && <ConsoleShell mode={mode} />}
 
       {/* After-Action report layered above the console */}
       {isAfterAction && <AfterActionScreen />}

@@ -19,7 +19,16 @@ await page.waitForTimeout(2500);
 await page.screenshot({ path: 'docs/superpowers/audit/console-01-hero.png' });
 
 await page.getByRole('button', { name: 'Begin Shift' }).click({ timeout: 8000, force: true });
-await page.waitForTimeout(1200);
+
+// §3 intro flyover: capture mid-flight, then skip to Operator Home.
+await page.waitForTimeout(3500);
+await page.screenshot({ path: 'docs/superpowers/audit/console-01b-intro.png' });
+const skip = page.getByRole('button', { name: 'Skip intro' });
+if (await skip.count()) {
+  await skip.click({ force: true });
+  console.log('clicked: Skip intro');
+}
+await page.waitForTimeout(1500);
 await page.screenshot({ path: 'docs/superpowers/audit/console-02-select.png' });
 
 // Scenario select → start
