@@ -17,10 +17,13 @@ export interface UiState {
   readonly selectedAsset: SelectedAsset | null;
   readonly debugOverlayVisible: boolean;
   readonly activePanel: string | null;
+  /** Master sound toggle for the synthesized audio layer. */
+  readonly soundMuted: boolean;
   readonly selectZone: (zone: ZoneId | null) => void;
   readonly selectAsset: (asset: SelectedAsset | null) => void;
   readonly toggleDebugOverlay: () => void;
   readonly setActivePanel: (panel: string | null) => void;
+  readonly toggleSound: () => void;
 }
 
 export const useUiStore = create<UiState>()((set) => ({
@@ -28,6 +31,7 @@ export const useUiStore = create<UiState>()((set) => ({
   selectedAsset: null,
   debugOverlayVisible: false,
   activePanel: null,
+  soundMuted: false,
   selectZone: (zone) => {
     set({ selectedZone: zone });
   },
@@ -39,5 +43,8 @@ export const useUiStore = create<UiState>()((set) => ({
   },
   setActivePanel: (panel) => {
     set({ activePanel: panel });
+  },
+  toggleSound: () => {
+    set((state) => ({ soundMuted: !state.soundMuted }));
   },
 }));

@@ -27,6 +27,8 @@ import { CityLayout } from './rendering/city-layout';
 import { AdvisorCard } from './ui/advisor/AdvisorCard';
 import { ConsoleShell } from './ui/console';
 import { HeroOverlay } from './ui/hero/HeroOverlay';
+import { MissionBriefing } from './ui/prefs/MissionBriefing';
+import { QuickControls } from './ui/prefs/QuickControls';
 import { AfterActionScreen } from './ui/after-action/AfterActionScreen';
 import { useAppFlowStore, AppMode } from './state/app-flow-store';
 
@@ -103,6 +105,12 @@ export function App({ config }: AppProps): ReactElement {
 
       {/* In-play advisor: one evidence-grounded message at a time */}
       {isActiveCrisis && !introActive && <AdvisorCard />}
+
+      {/* Preference chips + keyboard shortcuts */}
+      {isConsole && !introActive && <QuickControls />}
+
+      {/* 30-second onboarding at scenario selection */}
+      {isCrisisSelect && !introActive && <MissionBriefing />}
 
       {/* After-Action report layered above the console */}
       {isAfterAction && <AfterActionScreen />}

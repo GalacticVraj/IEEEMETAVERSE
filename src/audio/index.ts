@@ -8,3 +8,4 @@ export * from './music/adaptive-music';
 export * from './ambient/ambient-layer';
 export * from './sfx/sfx-player';
 export * from './mixing/mixer';
+export * from './web-audio-director';

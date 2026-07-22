@@ -14,7 +14,33 @@
     <title>GridGuard — Meridian Bay Grid Operations</title>
   </head>
   <body style="background:#EEF0EF">
-    <div id="root"></div>
+    <style>
+      /* Static splash — replaced the moment React mounts. */
+      #gg-splash {
+        position: fixed; inset: 0; display: flex; flex-direction: column;
+        align-items: center; justify-content: center; gap: 14px;
+        background: #EEF0EF; color: #1C2530;
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+      }
+      #gg-splash .gg-title { font-size: 15px; font-weight: 600; letter-spacing: 0.14em; }
+      #gg-splash .gg-sub { font-size: 11px; color: #5A6774; letter-spacing: 0.08em; }
+      #gg-splash .gg-bar {
+        width: 180px; height: 2px; background: #D3D7D2; overflow: hidden; border-radius: 1px;
+      }
+      #gg-splash .gg-bar::after {
+        content: ''; display: block; width: 60px; height: 2px; background: #22637E;
+        animation: gg-load 1.1s ease-in-out infinite;
+      }
+      @keyframes gg-load { 0% { margin-left: -60px; } 100% { margin-left: 180px; } }
+      @media (prefers-reduced-motion: reduce) { #gg-splash .gg-bar::after { animation: none; } }
+    </style>
+    <div id="root"
+      ><div id="gg-splash"
+        ><div class="gg-title">GRIDGUARD</div
+        ><div class="gg-sub">INITIALIZING MERIDIAN BAY DIGITAL TWIN</div
+        ><div class="gg-bar"></div
+      ></div
+    ></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
