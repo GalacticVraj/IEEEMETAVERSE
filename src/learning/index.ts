@@ -14,3 +14,4 @@ export * from './analytics/analytics-collector';
 export * from './learning-engine';
 export * from './evidence/concepts';
 export * from './evidence/evidence-engine';
+export * from './scoring/run-score';

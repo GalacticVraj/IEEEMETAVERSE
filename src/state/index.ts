@@ -10,6 +10,7 @@ import type { GridEventBus, Unsubscribe } from '@core';
 import type { ISimulationEngine } from '@engine';
 
 import { bindEventLog } from './event-log-store';
+import { bindRunStats } from './run-stats-store';
 import { bindGridStore } from './grid-store';
 import { bindLearningStore } from './learning-store';
 import { bindSimulationStore } from './simulation-store';
@@ -20,6 +21,7 @@ export * from './ui-store';
 export * from './grid-store';
 export * from './app-flow-store';
 export * from './event-log-store';
+export * from './run-stats-store';
 
 /** Bind every event-driven projection to the bus. Returns a combined detach. */
 export function bindStores(
@@ -33,6 +35,7 @@ export function bindStores(
   ];
   if (engine !== undefined) {
     unsubscribers.push(bindGridStore(bus, engine));
+    unsubscribers.push(bindRunStats(bus, engine));
   }
   return () => {
     for (const unsubscribe of unsubscribers) {
