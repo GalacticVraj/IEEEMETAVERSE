@@ -87,14 +87,14 @@ export function bindRunStats(bus: GridEventBus, engine: ISimulationEngine): Unsu
       const balance = generation - demand;
 
       let maxLoading = 0;
-      for (const line of gs.lines) maxLoading = Math.max(maxLoading, line.loading as number);
+      for (const line of gs.lines) maxLoading = Math.max(maxLoading, line.loading);
 
       let darkZones = 0;
       let unserved = 0;
       for (const zone of gs.zones) {
         if ((zone.state as string) === 'Blackout') {
           darkZones += 1;
-          everDark.add(zone.zone as string);
+          everDark.add(zone.zone);
         }
         unserved += zone.unservedLoad as number;
       }
@@ -134,7 +134,7 @@ export function bindRunStats(bus: GridEventBus, engine: ISimulationEngine): Unsu
     }),
 
     bus.on(GRID_EVENT.GameEnded, (p) => {
-      useRunStatsStore.setState({ ended: true, outcome: p.outcome as string });
+      useRunStatsStore.setState({ ended: true, outcome: p.outcome });
     }),
   ];
 
