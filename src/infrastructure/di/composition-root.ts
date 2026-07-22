@@ -57,6 +57,7 @@ import {
   ANALYTICS_COLLECTOR,
   CONCEPT_GRAPH,
   DECISION_SCORER,
+  EVIDENCE_ENGINE,
   KNOWLEDGE_TRACER,
   LEARNER_TWIN,
   LEARNING_ENGINE,
@@ -68,6 +69,7 @@ import {
   PlaceholderLearningEngine,
   PlaceholderReferencePolicy,
   REFERENCE_POLICY,
+  createEvidenceEngine,
 } from '@learning';
 import {
   CALIBRATION_SERVICE,
@@ -240,8 +242,17 @@ export function createCompositionRoot(config: AppConfig): Container {
     return registry;
   });
 
-  // ---- System B: Learning (placeholders) ----
+  // ---- System B: Learning ----
   container.register(LEARNER_TWIN, (c) => new LearnerTwin(c.resolve(EVENT_BUS)));
+  // Real evidence engine: measures decisions against actual before/after
+  // telemetry and feeds the Learner Twin. Started by bootstrap.
+  container.register(EVIDENCE_ENGINE, (c) =>
+    createEvidenceEngine({
+      bus: c.resolve(EVENT_BUS),
+      engine: c.resolve(SIMULATION_ENGINE),
+      twin: c.resolve(LEARNER_TWIN),
+    }),
+  );
   container.register(KNOWLEDGE_TRACER, () => new PlaceholderKnowledgeTracer());
   container.register(CONCEPT_GRAPH, () => new PlaceholderConceptGraph());
   container.register(REFERENCE_POLICY, () => new PlaceholderReferencePolicy());

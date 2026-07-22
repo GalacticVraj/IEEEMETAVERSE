@@ -6,6 +6,7 @@ import { ELECTRICAL_GRAPH, PROTECTION_ENGINE, SIMULATION_ENGINE, TOPOLOGY_SERVIC
 import { populateGraphFromTopology } from '@engine/topology/graph-builder';
 import type { SimulationKernel } from '@kernel';
 import type { GridEventMap } from '@core';
+import { EVIDENCE_ENGINE } from '@learning';
 import { SCENARIO_REGISTRY } from '@scenarios';
 import { bindStores } from '@state';
 
@@ -49,6 +50,11 @@ export function bootstrap(config: AppConfig): AppRuntime {
   kernel.boot();
 
   const unbindStores = bindStores(bus, engine);
+
+  // Learning intelligence: measure decisions against real telemetry and feed
+  // the Learner Twin (evidence-based mastery).
+  const evidenceEngine = container.resolve(EVIDENCE_ENGINE);
+  evidenceEngine.start();
 
   const session = createCrisisSession({
     kernel,
@@ -97,6 +103,7 @@ export function bootstrap(config: AppConfig): AppRuntime {
     kernel,
     session,
     shutdown(): void {
+      evidenceEngine.stop();
       session.stop();
       // Gracefully walk the FSM to Disposed from whatever state we're in.
       const k = kernel;

@@ -13,10 +13,14 @@ export interface DecisionRecord {
   readonly responseTime: Seconds;
 }
 
-/** Estimated mastery of a single concept, 0..1. */
+/** Estimated mastery of a single concept, 0..1, with evidence provenance. */
 export interface ConceptMastery {
   readonly concept: string;
   readonly mastery: Ratio;
+  /** Grows ONLY with evidence count — n/(n+3), monotonic, capped below 1. */
+  readonly confidence: Ratio;
+  /** How many measured observations support this estimate. */
+  readonly evidenceCount: number;
 }
 
 /** The observable state of the Learner Digital Twin. */

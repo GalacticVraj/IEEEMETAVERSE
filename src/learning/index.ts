@@ -12,3 +12,5 @@ export * from './reference-policy/reference-policy';
 export * from './scoring/decision-scorer';
 export * from './analytics/analytics-collector';
 export * from './learning-engine';
+export * from './evidence/concepts';
+export * from './evidence/evidence-engine';
