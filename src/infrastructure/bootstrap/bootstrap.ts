@@ -1,5 +1,6 @@
 import type { BusId } from '@app-types';
 import type { AppConfig } from '@config';
+import { GRID_EVENT } from '@constants';
 import { EVENT_BUS, LOGGER } from '@core';
 import type { Container, SimulationSystem } from '@core';
 import { ELECTRICAL_GRAPH, PROTECTION_ENGINE, SIMULATION_ENGINE, TOPOLOGY_SERVICE } from '@engine';
