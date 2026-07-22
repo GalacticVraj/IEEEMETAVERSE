@@ -36,24 +36,39 @@ export class MeridianBayLoadModel implements ILoadModel, SnapshotableSystem {
   private currentZoneDemands: readonly ZoneDemand[] = [];
   private buildings: BuildingApplianceState[] = [];
 
+  /**
+   * Appliance blocks are DISTRICT AGGREGATES, not single devices: each city
+   * building stands for a whole block, so "Air Conditioning" on one house
+   * model is the AC of ~1,000 homes. Wattage is in aggregate kW (demand()
+   * divides by 1,000 → MW).
+   *
+   * CALIBRATION (winner-mode C1): total flexible appliance load ≈ 186 MW on
+   * top of the ~895 MW topology base → ~1,080 MW nominal against 1,150 MW of
+   * capacity. A heatwave pushes demand past capacity by ~60–130 MW — exactly
+   * the gap the operator's levers (~165 MW of flexible load) can close. The
+   * grid CAN balance, but only if the operator acts.
+   */
   private generateInitialAppliances(topology: GridTopology) {
     this.buildings = [];
     for (const zone of topology.zones) {
       for (const buildingId of zone.buildingIds) {
         const appliances = [];
         if (buildingId.includes('House')) {
-          appliances.push({ id: 'ac', name: 'Air Conditioner', category: 'ac', wattage: 2800, isOn: true });
-          appliances.push({ id: 'ev', name: 'EV Charger', category: 'ev_charger', wattage: 7200, isOn: true });
-          appliances.push({ id: 'heater', name: 'Water Heater', category: 'water_heater', wattage: 1500, isOn: true });
-          appliances.push({ id: 'lights', name: 'Lighting', category: 'lighting', wattage: 400, isOn: true });
-          appliances.push({ id: 'fridge', name: 'Refrigeration', category: 'refrigeration', wattage: 800, isOn: true });
+          // Residential block ≈ 3.6 MW flexible (16 blocks ≈ 57.6 MW)
+          appliances.push({ id: 'ac', name: 'Air Conditioning (block)', category: 'ac', wattage: 1500, isOn: true });
+          appliances.push({ id: 'ev', name: 'EV Charging (block)', category: 'ev_charger', wattage: 1200, isOn: true });
+          appliances.push({ id: 'heater', name: 'Water Heating (block)', category: 'water_heater', wattage: 500, isOn: true });
+          appliances.push({ id: 'lights', name: 'Lighting (block)', category: 'lighting', wattage: 150, isOn: true });
+          appliances.push({ id: 'fridge', name: 'Refrigeration (block)', category: 'refrigeration', wattage: 250, isOn: true });
         } else if (buildingId.includes('Corp') || buildingId.includes('Hosp') || buildingId.includes('Sch') || buildingId.includes('Term')) {
-          appliances.push({ id: 'ac', name: 'HVAC System', category: 'ac', wattage: 15000, isOn: true });
-          appliances.push({ id: 'lights', name: 'Commercial Lighting', category: 'lighting', wattage: 5000, isOn: true });
-          appliances.push({ id: 'servers', name: 'Servers/Computers', category: 'lighting', wattage: 8000, isOn: true });
+          // Commercial campus ≈ 8 MW flexible (9 campuses ≈ 72 MW)
+          appliances.push({ id: 'ac', name: 'HVAC System', category: 'ac', wattage: 4000, isOn: true });
+          appliances.push({ id: 'lights', name: 'Commercial Lighting', category: 'lighting', wattage: 2500, isOn: true });
+          appliances.push({ id: 'servers', name: 'Servers/Computers', category: 'lighting', wattage: 1500, isOn: true });
         } else {
-          appliances.push({ id: 'machinery', name: 'Heavy Machinery', category: 'lighting', wattage: 25000, isOn: true });
-          appliances.push({ id: 'ac', name: 'HVAC', category: 'ac', wattage: 10000, isOn: true });
+          // Industrial / station site ≈ 8 MW flexible (7 sites ≈ 56 MW)
+          appliances.push({ id: 'machinery', name: 'Heavy Machinery', category: 'lighting', wattage: 6000, isOn: true });
+          appliances.push({ id: 'ac', name: 'HVAC', category: 'ac', wattage: 2000, isOn: true });
         }
         this.buildings.push({ buildingId, appliances: appliances as any });
       }
@@ -135,13 +150,15 @@ export class MeridianBayLoadModel implements ILoadModel, SnapshotableSystem {
     }
 
     const temp = weather.temperature;
-    // Temperature multiplier for weather-sensitive loads:
-    // Cool heating below 15C, air-con cooling above 25C.
+    // Temperature multiplier for weather-sensitive loads. Real grids see
+    // roughly 1–2 % demand growth per °C above the cooling threshold — a
+    // 41 °C heatwave lifts residential demand ~32 %, pushing the system just
+    // past capacity so operator action genuinely decides the outcome.
     let residentialMult = 1.0;
     if (temp > 25) {
-      residentialMult = 1.0 + 0.05 * (temp - 25);
+      residentialMult = 1.0 + 0.02 * (temp - 25);
     } else if (temp < 15) {
-      residentialMult = 1.0 + 0.03 * (15 - temp);
+      residentialMult = 1.0 + 0.015 * (15 - temp);
     }
 
     for (const load of topology.loads) {
@@ -151,7 +168,7 @@ export class MeridianBayLoadModel implements ILoadModel, SnapshotableSystem {
         mult = residentialMult;
       } else if (load.id.includes('-COM') || load.id.includes('-RET') || load.id.includes('-MIX')) {
         // Commercial is slightly sensitive to cooling only
-        mult = temp > 25 ? 1.0 + 0.04 * (temp - 25) : 1.0;
+        mult = temp > 25 ? 1.0 + 0.015 * (temp - 25) : 1.0;
       }
 
       // Hospital and water treatment are critical and flat
