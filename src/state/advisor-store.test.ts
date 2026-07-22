@@ -4,7 +4,7 @@ import type { GridEventBus } from '@core';
 import { createSimulationKernel } from '@kernel';
 import { beforeEach, describe, expect, it } from 'vitest';
 
-import { bindAdvisor, pushEvidenceFeedback, useAdvisorStore } from './advisor-store';
+import { bindAdvisor, pushEvidenceFeedback, pushRunOpener, useAdvisorStore } from './advisor-store';
 
 const makeBus = (): GridEventBus =>
   createSimulationKernel({ seed: 1 }).events as unknown as GridEventBus;
@@ -80,6 +80,23 @@ describe('in-play advisor', () => {
     expect(message?.text).toContain('Harbor');
 
     unbind();
+  });
+
+  it('opens later runs with the learner’s real history, never on run 1', () => {
+    pushRunOpener(
+      { attempt: 1, blackouts_caused: 0, weak_concept_tags: [], decisions_made: 0 },
+      now(),
+    );
+    expect(useAdvisorStore.getState().current).toBeNull();
+
+    pushRunOpener(
+      { attempt: 2, blackouts_caused: 1, weak_concept_tags: ['Cascading Failure'], decisions_made: 3 },
+      now(),
+    );
+    const message = useAdvisorStore.getState().current;
+    expect(message?.text).toContain('Shift #2');
+    expect(message?.text).toContain('1 district blackout');
+    expect(message?.text).toContain('Cascading Failure');
   });
 
   it('reports measured decision feedback with the real before/after numbers', () => {

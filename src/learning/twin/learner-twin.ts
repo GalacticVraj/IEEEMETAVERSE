@@ -17,6 +17,8 @@ export interface ILearnerTwin {
   observePassive(concept: string, positive: boolean): void;
   noteBlackout(): void;
   noteZoneSaved(): void;
+  /** A run finished — the next one is a new attempt (mentor memory). */
+  noteRunCompleted(): void;
   masteryOf(concept: string): Ratio;
 }
 
@@ -98,6 +100,10 @@ export class LearnerTwin implements ILearnerTwin {
 
   public noteZoneSaved(): void {
     this._state = { ...this._state, zones_saved: this._state.zones_saved + 1 };
+  }
+
+  public noteRunCompleted(): void {
+    this._state = { ...this._state, attempt: this._state.attempt + 1 };
   }
 
   public masteryOf(concept: string): Ratio {

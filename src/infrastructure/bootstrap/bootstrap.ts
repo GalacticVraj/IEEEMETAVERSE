@@ -6,9 +6,9 @@ import { ELECTRICAL_GRAPH, PROTECTION_ENGINE, SIMULATION_ENGINE, TOPOLOGY_SERVIC
 import { populateGraphFromTopology } from '@engine/topology/graph-builder';
 import type { SimulationKernel } from '@kernel';
 import type { GridEventMap } from '@core';
-import { EVIDENCE_ENGINE } from '@learning';
+import { EVIDENCE_ENGINE, LEARNER_TWIN } from '@learning';
 import { SCENARIO_REGISTRY } from '@scenarios';
-import { bindStores, pushEvidenceFeedback } from '@state';
+import { bindStores, pushEvidenceFeedback, pushRunOpener } from '@state';
 
 import { SCENARIO_CONTEXT, SIMULATION_KERNEL, createCompositionRoot } from '../di/composition-root';
 import { createCrisisSession } from '../runtime/crisis-session';
@@ -60,6 +60,15 @@ export function bootstrap(config: AppConfig): AppRuntime {
     pushEvidenceFeedback(record, performance.now());
   });
 
+  // Mentor memory: when a NEW run starts and the twin has history, open with
+  // a personalized, evidence-grounded note (attempt, blackouts, weak concept).
+  const twin = container.resolve(LEARNER_TWIN);
+  const unbindRunOpener = bus.on(GRID_EVENT.KernelStateChanged, (payload) => {
+    if (payload.from === 'Idle' && payload.to === 'Running') {
+      pushRunOpener(twin.state(), performance.now());
+    }
+  });
+
   const session = createCrisisSession({
     kernel,
     registry: () => container.resolve(SCENARIO_REGISTRY),
@@ -107,6 +116,7 @@ export function bootstrap(config: AppConfig): AppRuntime {
     kernel,
     session,
     shutdown(): void {
+      unbindRunOpener();
       unbindEvidenceFeedback();
       evidenceEngine.stop();
       session.stop();

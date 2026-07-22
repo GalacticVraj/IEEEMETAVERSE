@@ -221,6 +221,7 @@ export function createEvidenceEngine(deps: EvidenceEngineDeps): IEvidenceEngine 
       bus.on(GRID_EVENT.GameEnded, () => {
         if (runScored) return;
         runScored = true;
+        twin.noteRunCompleted();
         // Hospital district stayed powered through the whole run → real
         // evidence of protecting critical infrastructure.
         twin.observePassive(CONCEPT.Equity, !hospitalZoneWentDark);

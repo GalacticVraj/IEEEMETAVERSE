@@ -80,6 +80,35 @@ const show = (kind: AdvisorMessageKind, text: string, now: number): boolean => {
 };
 
 /**
+ * Personalized run opener (bridged by bootstrap on run start, attempt ≥ 2).
+ * Every clause is grounded in the twin's real history — nothing invented.
+ */
+export function pushRunOpener(
+  twin: {
+    readonly attempt: number;
+    readonly blackouts_caused: number;
+    readonly weak_concept_tags: readonly string[];
+    readonly decisions_made: number;
+  },
+  now: number,
+): void {
+  if (twin.attempt < 2) return;
+  const parts: string[] = [`Shift #${twin.attempt}.`];
+  if (twin.blackouts_caused > 0) {
+    parts.push(
+      `Last time ${twin.blackouts_caused} district blackout(s) got past you — protect those feeders before the evening peak.`,
+    );
+  } else if (twin.decisions_made > 0) {
+    parts.push('You held the grid last run — this time, try acting before the stress question even appears.');
+  }
+  const weakest = twin.weak_concept_tags[0];
+  if (weakest !== undefined) {
+    parts.push(`Your weakest concept is still ${weakest}: watch for it this run.`);
+  }
+  show('question', parts.join(' '), now);
+}
+
+/**
  * Measured decision feedback (bridged from the EvidenceEngine by bootstrap).
  * The numbers are the REAL before/after corridor stress readings.
  */
