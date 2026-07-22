@@ -8,7 +8,7 @@ import type { SimulationKernel } from '@kernel';
 import type { GridEventMap } from '@core';
 import { EVIDENCE_ENGINE } from '@learning';
 import { SCENARIO_REGISTRY } from '@scenarios';
-import { bindStores } from '@state';
+import { bindStores, pushEvidenceFeedback } from '@state';
 
 import { SCENARIO_CONTEXT, SIMULATION_KERNEL, createCompositionRoot } from '../di/composition-root';
 import { createCrisisSession } from '../runtime/crisis-session';
@@ -52,9 +52,13 @@ export function bootstrap(config: AppConfig): AppRuntime {
   const unbindStores = bindStores(bus, engine);
 
   // Learning intelligence: measure decisions against real telemetry and feed
-  // the Learner Twin (evidence-based mastery).
+  // the Learner Twin (evidence-based mastery). Finalized records also surface
+  // as in-play advisor feedback with the real before/after numbers.
   const evidenceEngine = container.resolve(EVIDENCE_ENGINE);
   evidenceEngine.start();
+  const unbindEvidenceFeedback = evidenceEngine.onRecord((record) => {
+    pushEvidenceFeedback(record, performance.now());
+  });
 
   const session = createCrisisSession({
     kernel,
@@ -103,6 +107,7 @@ export function bootstrap(config: AppConfig): AppRuntime {
     kernel,
     session,
     shutdown(): void {
+      unbindEvidenceFeedback();
       evidenceEngine.stop();
       session.stop();
       // Gracefully walk the FSM to Disposed from whatever state we're in.

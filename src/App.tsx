@@ -23,6 +23,7 @@ import { CameraDirector } from './rendering/camera/CameraDirector';
 import { CameraHud } from './rendering/camera/CameraHud';
 import { useCameraStore } from './rendering/camera/camera-store';
 import { CityLayout } from './rendering/city-layout';
+import { AdvisorCard } from './ui/advisor/AdvisorCard';
 import { ConsoleShell } from './ui/console';
 import { HeroOverlay } from './ui/hero/HeroOverlay';
 import { AfterActionScreen } from './ui/after-action/AfterActionScreen';
@@ -95,6 +96,9 @@ export function App({ config }: AppProps): ReactElement {
 
       {/* Mission-control console — hidden until the intro lands at home */}
       {isConsole && !introActive && <ConsoleShell mode={mode} />}
+
+      {/* In-play advisor: one evidence-grounded message at a time */}
+      {isActiveCrisis && !introActive && <AdvisorCard />}
 
       {/* After-Action report layered above the console */}
       {isAfterAction && <AfterActionScreen />}
