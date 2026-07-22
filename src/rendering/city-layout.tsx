@@ -7,11 +7,14 @@
  * selection to the ui-store. It never resolves engine services and never
  * emits simulation events.
  */
-import { useEffect, useRef } from 'react';
+import { useFrame } from '@react-three/fiber';
+import { useRef } from 'react';
 import * as THREE from 'three';
 import type { ReactNode } from 'react';
 
 import { useGridStore, useUiStore } from '@state';
+
+import { nightFactor, windowGlow } from './time-of-day';
 
 import { BUILDING_POSITIONS } from './camera/city-positions';
 import {
@@ -26,8 +29,10 @@ const at = (id: string): [number, number, number] => {
 };
 
 /**
- * Wraps a building subtree and visually de-energizes it when its zone is in
- * blackout: emissives to zero, base colors darkened. Restores on re-power.
+ * Wraps a building subtree and drives its light: as night falls the windows
+ * glow (emissives scale with the time-of-day arc); when the zone blacks out
+ * the whole district goes dark — the visual core of the crisis story.
+ * Runs imperatively each frame with saved originals; zero allocations.
  */
 function DimGroup({ dimmed, children }: { dimmed: boolean; children: ReactNode }): JSX.Element {
   const ref = useRef<THREE.Group>(null);
@@ -35,33 +40,33 @@ function DimGroup({ dimmed, children }: { dimmed: boolean; children: ReactNode }
     new Map<THREE.MeshStandardMaterial, { emissiveIntensity: number; color: THREE.Color }>(),
   );
 
-  useEffect(() => {
+  useFrame(() => {
     const group = ref.current;
     if (group === null) return;
+    const glow = windowGlow(nightFactor(useGridStore.getState().tick));
     group.traverse((obj) => {
       if (!(obj instanceof THREE.Mesh)) return;
       const materials = Array.isArray(obj.material) ? obj.material : [obj.material];
       for (const material of materials) {
         if (!(material instanceof THREE.MeshStandardMaterial)) continue;
+        let original = saved.current.get(material);
+        if (original === undefined) {
+          original = {
+            emissiveIntensity: material.emissiveIntensity,
+            color: material.color.clone(),
+          };
+          saved.current.set(material, original);
+        }
         if (dimmed) {
-          if (!saved.current.has(material)) {
-            saved.current.set(material, {
-              emissiveIntensity: material.emissiveIntensity,
-              color: material.color.clone(),
-            });
-          }
           material.emissiveIntensity = 0;
-          material.color.copy(saved.current.get(material)!.color).multiplyScalar(0.3);
+          material.color.copy(original.color).multiplyScalar(0.22);
         } else {
-          const original = saved.current.get(material);
-          if (original) {
-            material.emissiveIntensity = original.emissiveIntensity;
-            material.color.copy(original.color);
-          }
+          material.emissiveIntensity = original.emissiveIntensity * glow;
+          material.color.copy(original.color);
         }
       }
     });
-  }, [dimmed]);
+  });
 
   return <group ref={ref}>{children}</group>;
 }

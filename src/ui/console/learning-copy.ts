@@ -376,13 +376,13 @@ export const HEALTH_MEANINGS = {
   zonesDark: 'Districts currently without power.',
 } as const;
 
-/** Tick → day-phase label (10 ticks/s, 1800-tick run mapped to one day arc). */
+/** Tick → day-phase label (the 1800-tick shift runs afternoon → night). */
 export function dayPhase(tick: number): string {
   const t = tick % 1800;
-  if (t < 450) return 'Morning';
-  if (t < 900) return 'Midday';
-  if (t < 1350) return 'Afternoon';
-  return 'Evening';
+  if (t < 540) return 'Afternoon';
+  if (t < 990) return 'Golden hour';
+  if (t < 1400) return 'Dusk';
+  return 'Night';
 }
 
 /** Simulation clock label: tick at 10 t/s → T+mm:ss. */

@@ -24,6 +24,7 @@ import { CameraHud } from './rendering/camera/CameraHud';
 import { useCameraStore } from './rendering/camera/camera-store';
 import { Atmosphere } from './rendering/atmosphere';
 import { CityLayout } from './rendering/city-layout';
+import { TimeOfDayRig } from './rendering/TimeOfDayRig';
 import { AdvisorCard } from './ui/advisor/AdvisorCard';
 import { ConsoleShell } from './ui/console';
 import { HeroOverlay } from './ui/hero/HeroOverlay';
@@ -57,20 +58,11 @@ export function App({ config }: AppProps): ReactElement {
         style={{ position: 'absolute', inset: 0 }}
         shadows
       >
-        {/* Neutral daylight rig — digital twin, not golden-hour cinematics */}
+        {/* Time-of-day rig: afternoon → dusk → night, driven by the sim tick.
+            The heatwave peaks into the evening — physics and drama align. */}
         <color attach="background" args={['#DDE3E8']} />
-        {/* Distance haze: depth cue that softens the horizon */}
         <fog attach="fog" args={['#DDE3E8', 380, 950]} />
-        <ambientLight intensity={0.45} color="#F5F7FA" />
-        <directionalLight
-          position={[80, 140, 60]}
-          intensity={1.6}
-          color="#FFF4E0"
-          castShadow
-          shadow-mapSize-width={2048}
-          shadow-mapSize-height={2048}
-        />
-        <hemisphereLight args={['#CBD9E6', '#B8B2A6', 0.5]} />
+        <TimeOfDayRig />
 
         {/* Grid infrastructure (always visible) */}
         <GroundPlane />
