@@ -100,10 +100,20 @@ export interface ZoneStatus {
   readonly unservedLoad: MegaWatts;
 }
 
+export interface GeneratorStatus {
+  readonly id: GeneratorId;
+  readonly outputMw: MegaWatts;
+  readonly capacityMw: MegaWatts;
+  readonly tripped: boolean;
+}
+
 export interface GridState {
   readonly frequency: Hertz;
   readonly lines: readonly LineFlow[];
   readonly zones: readonly ZoneStatus[];
   readonly totalGeneration: MegaWatts;
   readonly totalLoad: MegaWatts;
+  /** Output from Solar + Wind + Storage units this tick. */
+  readonly renewableGeneration: MegaWatts;
+  readonly generators: readonly GeneratorStatus[];
 }

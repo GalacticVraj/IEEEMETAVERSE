@@ -17,6 +17,7 @@ export type {
   LineFlow,
   ZoneStatus,
   GridState,
+  GeneratorStatus,
 } from './model/grid';
 export * from './graph';
 export * from './topology/topology';

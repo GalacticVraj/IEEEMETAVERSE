@@ -17,7 +17,7 @@ import type { IDirector } from './director/director';
 import type { IGenerationModel } from './generation/generation';
 import type { ElectricalGraph } from './graph';
 import type { ILoadModel } from './loads/loads';
-import type { GridState, LineFlow, ZoneStatus } from './model/grid';
+import type { GeneratorStatus, GridState, LineFlow, ZoneStatus } from './model/grid';
 import { solveDcPowerFlow } from './powerflow/dc-power-flow';
 import type { ProtectionEngine } from './protection/protection-engine';
 import type { IRestorationController } from './restoration/restoration';
@@ -234,7 +234,20 @@ export class GridSimulationEngine implements ISimulationEngine, SnapshotableSyst
       }
     }
 
-    // 8. Restoration planning
+    // 8. Per-generator status + renewable share (Solar/Wind/Storage output)
+    const RENEWABLE_KINDS = new Set(['Solar', 'Wind', 'Storage']);
+    let renewableMw = 0;
+    const generatorStatuses: GeneratorStatus[] = topology.generators.map((gen) => {
+      const output = this.generation.getGeneratorOutput(gen.id);
+      if (RENEWABLE_KINDS.has(gen.kind as string)) renewableMw += output as number;
+      return {
+        id: gen.id,
+        outputMw: output,
+        capacityMw: gen.capacity,
+        tripped: this.generation.isTripped(gen.id),
+      };
+    });
+
     // Clamped frequency: 60.0 + 0.005 * (generation - load) Hz
     const freq = asHertz(Math.max(55, Math.min(65, 60.0 + 0.005 * (totalGen - totalDemand))));
     this.state = {
@@ -243,6 +256,8 @@ export class GridSimulationEngine implements ISimulationEngine, SnapshotableSyst
       zones: zoneStatuses,
       totalGeneration: totalGen,
       totalLoad: totalDemand,
+      renewableGeneration: asMegaWatts(renewableMw),
+      generators: generatorStatuses,
     };
 
     this.restoration.plan(this.state);
@@ -311,6 +326,8 @@ export class GridSimulationEngine implements ISimulationEngine, SnapshotableSyst
       zones: [],
       totalGeneration: asMegaWatts(0),
       totalLoad: asMegaWatts(0),
+      renewableGeneration: asMegaWatts(0),
+      generators: [],
     };
   }
 }

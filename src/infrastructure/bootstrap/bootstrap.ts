@@ -43,7 +43,7 @@ export function bootstrap(config: AppConfig): AppRuntime {
   const graph = container.resolve(ELECTRICAL_GRAPH);
   const topology = container.resolve(TOPOLOGY_SERVICE).get();
   populateGraphFromTopology(graph, topology);
-  kernel.register(engine as SimulationSystem<GridEventMap>);
+  kernel.register(engine as unknown as SimulationSystem<GridEventMap>);
 
   // Boot the kernel: Boot → Loading → Configuration → Idle
   kernel.boot();

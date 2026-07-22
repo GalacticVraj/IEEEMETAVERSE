@@ -13,7 +13,7 @@
 import { GRID_EVENT } from '@constants';
 import type { GridEventBus, Unsubscribe } from '@core';
 import type { ISimulationEngine } from '@engine';
-import type { LineFlow } from '@engine';
+import type { GeneratorStatus, LineFlow, ZoneStatus } from '@engine';
 import { create } from 'zustand';
 
 export interface GridProjection {
@@ -21,7 +21,10 @@ export interface GridProjection {
   readonly totalGeneration: number;
   readonly totalLoad: number;
   readonly frequency: number;
+  readonly renewableGeneration: number;
   readonly lines: readonly LineFlow[];
+  readonly zones: readonly ZoneStatus[];
+  readonly generators: readonly GeneratorStatus[];
   /** Set of line IDs that are currently open (tripped or commanded open). */
   readonly openLines: ReadonlySet<string>;
   readonly trippedCount: number;
@@ -32,7 +35,10 @@ const INITIAL: GridProjection = {
   totalGeneration: 0,
   totalLoad: 0,
   frequency: 50,
+  renewableGeneration: 0,
   lines: [],
+  zones: [],
+  generators: [],
   openLines: new Set(),
   trippedCount: 0,
 };
@@ -56,7 +62,10 @@ export function bindGridStore(
         totalGeneration: gs.totalGeneration as number,
         totalLoad: gs.totalLoad as number,
         frequency: gs.frequency as number,
+        renewableGeneration: gs.renewableGeneration as number,
         lines: gs.lines as readonly LineFlow[],
+        zones: gs.zones as readonly ZoneStatus[],
+        generators: gs.generators as readonly GeneratorStatus[],
       });
     }),
 

@@ -94,6 +94,8 @@ describe('DeterministicRestorationController', () => {
       zones: [{ zone: 'DT' as any, state: 'Powered', servedLoad: 0 as any, unservedLoad: 0 as any }],
       totalGeneration: 100 as any,
       totalLoad: 100 as any,
+      renewableGeneration: 0 as any,
+      generators: [],
     };
 
     controller.plan(state);
@@ -128,6 +130,8 @@ describe('DeterministicRestorationController', () => {
       zones: [{ zone: 'DT' as any, state: 'Blackout', servedLoad: 0 as any, unservedLoad: 100 as any }],
       totalGeneration: 0 as any,
       totalLoad: 100 as any,
+      renewableGeneration: 0 as any,
+      generators: [],
     };
 
     controller.plan(state);
