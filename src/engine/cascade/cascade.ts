@@ -2,7 +2,14 @@ import { asSystemId } from '@app-types';
 import type { LineId, LineTripCause, SystemId } from '@app-types';
 import { GRID_EVENT } from '@constants';
 import { createToken } from '@core';
-import type { SimulationSystem, SnapshotableSystem, SystemContext, Token } from '@core';
+import type {
+  GridEventMap,
+  SimulationSystem,
+  SnapshotableSystem,
+  SystemContext,
+  Token,
+  TypedEventBus,
+} from '@core';
 
 import type { LineFlow } from '../model/grid';
 
@@ -41,10 +48,15 @@ export class DeterministicCascadeEngine implements ICascadeEngine, SnapshotableS
     this.reset();
 
     // Subscribe to LineTripped events to buffer trips as they happen
-    this.context.events.on(GRID_EVENT.LineTripped, (payload) => {
+    this.domainEvents().on(GRID_EVENT.LineTripped, (payload) => {
       this.trippedThisTick.push(payload.line);
       this.trippedCausesThisTick.set(payload.line, payload.cause);
     });
+  }
+
+  /** The shared bus, viewed through the domain event map. */
+  private domainEvents(): TypedEventBus<GridEventMap> {
+    return this.context.events as unknown as TypedEventBus<GridEventMap>;
   }
 
   public step(): void {
@@ -96,7 +108,7 @@ export class DeterministicCascadeEngine implements ICascadeEngine, SnapshotableS
     return this.active;
   }
 
-  public propagate(flows: readonly LineFlow[]): CascadeState {
+  public propagate(_flows: readonly LineFlow[]): CascadeState {
     const tick = this.context.clock.tick;
 
     // Filter to find overload/cascade trips that occurred this tick
@@ -114,14 +126,14 @@ export class DeterministicCascadeEngine implements ICascadeEngine, SnapshotableS
         this.stepCount = 1;
         this.trippedAll = [...overloadTrips];
 
-        this.context.events.emit(GRID_EVENT.CascadeStarted, {
+        this.domainEvents().emit(GRID_EVENT.CascadeStarted, {
           cascadeId: this.cascadeId,
           originLine: overloadTrips[0] as LineId,
         });
 
         // If multiple lines tripped, emit CascadeStep for the others
         for (let i = 1; i < overloadTrips.length; i++) {
-          this.context.events.emit(GRID_EVENT.CascadeStep, {
+          this.domainEvents().emit(GRID_EVENT.CascadeStep, {
             cascadeId: this.cascadeId,
             step: this.stepCount,
             trippedLine: overloadTrips[i] as LineId,
@@ -133,7 +145,7 @@ export class DeterministicCascadeEngine implements ICascadeEngine, SnapshotableS
         this.trippedAll.push(...overloadTrips);
 
         for (const line of overloadTrips) {
-          this.context.events.emit(GRID_EVENT.CascadeStep, {
+          this.domainEvents().emit(GRID_EVENT.CascadeStep, {
             cascadeId: this.cascadeId,
             step: this.stepCount,
             trippedLine: line,
@@ -144,7 +156,7 @@ export class DeterministicCascadeEngine implements ICascadeEngine, SnapshotableS
       // Check max depth guard (10 steps)
       if (this.stepCount >= 10) {
         this.active = false;
-        this.context.events.emit(GRID_EVENT.CascadeEnded, {
+        this.domainEvents().emit(GRID_EVENT.CascadeEnded, {
           cascadeId: this.cascadeId,
           totalSteps: this.stepCount,
           contained: false,
@@ -155,7 +167,7 @@ export class DeterministicCascadeEngine implements ICascadeEngine, SnapshotableS
       if (this.active) {
         // Cascade ended (contained)
         this.active = false;
-        this.context.events.emit(GRID_EVENT.CascadeEnded, {
+        this.domainEvents().emit(GRID_EVENT.CascadeEnded, {
           cascadeId: this.cascadeId,
           totalSteps: this.stepCount,
           contained: true,

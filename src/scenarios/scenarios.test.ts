@@ -88,8 +88,6 @@ function makeTickContext(tick: number): TickContext {
     tick,
     time: tick as Seconds,
     timestep: 1 as Seconds,
-    events: { emit: vi.fn(), on: vi.fn(), off: vi.fn() } as any,
-    rng: { next: () => 0.5 } as any,
   };
 }
 

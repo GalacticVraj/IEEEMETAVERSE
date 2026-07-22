@@ -32,7 +32,7 @@ export function DebugOverlay({ seed }: DebugOverlayProps): ReactElement {
   const maxLoading = useSimulationStore((state) => state.maxLineLoading);
 
   return (
-    <aside className="pointer-events-none fixed bottom-3 left-3 z-50 w-64 select-none rounded-instrument border border-surface-border bg-surface-panel/95 p-3 font-mono text-[11px] leading-relaxed text-ink-secondary shadow-lg">
+    <aside className="pointer-events-none fixed top-14 right-[336px] z-50 w-64 select-none rounded-instrument border border-surface-border bg-surface-panel/95 p-3 font-mono text-[11px] leading-relaxed text-ink-secondary shadow-lg">
       <div className="mb-2 flex items-center justify-between border-b border-surface-border pb-1 text-instrument">
         <span className="uppercase tracking-widest">GridGuard · Debug</span>
         <span className="text-status-nominal">●</span>

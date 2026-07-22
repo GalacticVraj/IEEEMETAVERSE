@@ -1,4 +1,4 @@
-import { asHertz, asMegaWatts, asPerUnit, asSystemId } from '@app-types';
+import { asHertz, asMegaWatts, asPerUnit } from '@app-types';
 import { GRID_EVENT } from '@constants';
 import { createEventBus } from '@core';
 import { describe, expect, it, vi } from 'vitest';
@@ -45,6 +45,8 @@ describe('GridDirector', () => {
     ],
     totalGeneration: asMegaWatts(50),
     totalLoad: asMegaWatts(50),
+    renewableGeneration: asMegaWatts(0),
+    generators: [],
   });
 
   it('determines normal/warning/critical severity', () => {

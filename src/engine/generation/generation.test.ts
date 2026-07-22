@@ -30,15 +30,15 @@ describe('MeridianBayGenerationModel', () => {
     const ctx = makeMockContext();
     model.init(ctx);
 
-    const weather = { kind: 'Clear', temperature: asCelsius(25), wind: asRatio(0.5), irradiance: asRatio(1.0) };
+    const weather = { kind: 'Clear' as const, temperature: asCelsius(25), wind: asRatio(0.5), irradiance: asRatio(1.0) };
     // Demand = 600 MW
-    let dispatch = model.dispatch(MERIDIAN_BAY_TOPOLOGY, weather, asMegaWatts(600));
+    model.dispatch(MERIDIAN_BAY_TOPOLOGY, weather, asMegaWatts(600));
     expect(model.totalOutput()).toBeCloseTo(575, 0); // restricted by G-IMPORT ramp limit of 10
 
     // Dispatch a few more times to let it ramp up
     model.dispatch(MERIDIAN_BAY_TOPOLOGY, weather, asMegaWatts(600));
     model.dispatch(MERIDIAN_BAY_TOPOLOGY, weather, asMegaWatts(600));
-    dispatch = model.dispatch(MERIDIAN_BAY_TOPOLOGY, weather, asMegaWatts(600));
+    model.dispatch(MERIDIAN_BAY_TOPOLOGY, weather, asMegaWatts(600));
 
     const total = model.totalOutput();
     expect(total).toBeCloseTo(600, 0);
@@ -64,7 +64,7 @@ describe('MeridianBayGenerationModel', () => {
     const model = new MeridianBayGenerationModel();
     model.init(makeMockContext());
 
-    const weather = { kind: 'Clear', temperature: asCelsius(25), wind: asRatio(0), irradiance: asRatio(0) };
+    const weather = { kind: 'Clear' as const, temperature: asCelsius(25), wind: asRatio(0), irradiance: asRatio(0) };
 
     // Tick 1: Target = 600 MW, base load = 400 MW, import needed = 200 MW.
     // Import limit is 10 MW/tick. It should ramp from 0 to 10 MW.
@@ -80,7 +80,7 @@ describe('MeridianBayGenerationModel', () => {
     const model = new MeridianBayGenerationModel();
     model.init(makeMockContext());
 
-    const weather = { kind: 'Clear', temperature: asCelsius(25), wind: asRatio(0.5), irradiance: asRatio(1.0) };
+    const weather = { kind: 'Clear' as const, temperature: asCelsius(25), wind: asRatio(0.5), irradiance: asRatio(1.0) };
 
     model.tripGenerator(asGeneratorId('G-BASE-S'));
     model.dispatch(MERIDIAN_BAY_TOPOLOGY, weather, asMegaWatts(600));

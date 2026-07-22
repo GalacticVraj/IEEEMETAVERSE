@@ -1,4 +1,4 @@
-import { asCelsius, asGeneratorId, asHertz, asLineId, asMegaWatts, asRatio, asSystemId } from '@app-types';
+import { asCelsius, asGeneratorId, asLineId, asMegaWatts, asRatio, asSystemId } from '@app-types';
 import { GRID_EVENT } from '@constants';
 import { createEventBus } from '@core';
 import { describe, expect, it, vi } from 'vitest';
@@ -165,11 +165,11 @@ describe('GridSimulationEngine', () => {
     expect(state.totalLoad).toBe(50);
     expect(state.frequency).toBe(60);
     expect(state.lines).toHaveLength(1);
-    expect(state.lines[0].line).toBe('l1');
-    expect(state.lines[0].state).toBe('Nominal');
+    expect(state.lines[0]?.line).toBe('l1');
+    expect(state.lines[0]?.state).toBe('Nominal');
     expect(state.zones).toHaveLength(1);
-    expect(state.zones[0].zone).toBe('Z1');
-    expect(state.zones[0].state).toBe('Powered');
+    expect(state.zones[0]?.zone).toBe('Z1');
+    expect(state.zones[0]?.state).toBe('Powered');
 
     // The kernel emits the single authoritative SimulationTick after all
     // systems have stepped — the engine must NOT emit its own duplicate.

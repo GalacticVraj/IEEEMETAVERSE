@@ -2,7 +2,7 @@ import { asMegaWatts, asSystemId } from '@app-types';
 import type { GeneratorId, MegaWatts, SystemId } from '@app-types';
 import { GRID_EVENT } from '@constants';
 import { createToken } from '@core';
-import type { SimulationSystem, SnapshotableSystem, SystemContext, Token } from '@core';
+import type { GridEventMap, SimulationSystem, SnapshotableSystem, SystemContext, Token, TypedEventBus } from '@core';
 
 import type { GridTopology } from '../model/grid';
 import type { WeatherState } from '../weather/weather';
@@ -96,7 +96,7 @@ export class MeridianBayGenerationModel implements IGenerationModel, Snapshotabl
     targetDemand: MegaWatts = 895 as MegaWatts,
   ): readonly GenerationDispatch[] {
     const results: GenerationDispatch[] = [];
-    let remainingDemand = targetDemand;
+    let remainingDemand: number = targetDemand as number;
 
     // 1. Calculate maximum available capacity for each generator under current weather
     const availabilities = new Map<GeneratorId, number>();
@@ -106,7 +106,7 @@ export class MeridianBayGenerationModel implements IGenerationModel, Snapshotabl
         continue;
       }
 
-      let avail = gen.capacity;
+      let avail: number = gen.capacity as number;
       if (gen.kind === 'Solar') {
         avail = gen.capacity * weather.irradiance;
       } else if (gen.kind === 'Wind') {
@@ -207,7 +207,7 @@ export class MeridianBayGenerationModel implements IGenerationModel, Snapshotabl
       results.push({ generator: gen.id, output: asMegaWatts(actual) });
 
       // Emit GenerationChanged when output changes
-      this.context.events.emit(GRID_EVENT.GenerationChanged, {
+      (this.context.events as unknown as TypedEventBus<GridEventMap>).emit(GRID_EVENT.GenerationChanged, {
         generator: gen.id,
         output: asMegaWatts(actual),
       });

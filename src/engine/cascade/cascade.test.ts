@@ -1,4 +1,4 @@
-import { asLineId, asSystemId } from '@app-types';
+import { asLineId } from '@app-types';
 import { GRID_EVENT } from '@constants';
 import { createEventBus } from '@core';
 import { describe, expect, it, vi } from 'vitest';

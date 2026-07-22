@@ -1,10 +1,10 @@
-import { asBusId, asGeneratorId, asLineId, asLoadId, asMegaWatts, asSystemId } from '@app-types';
+import { asBusId, asGeneratorId, asLineId, asMegaWatts } from '@app-types';
 import { GRID_EVENT } from '@constants';
 import { createEventBus } from '@core';
 import { describe, expect, it, vi } from 'vitest';
 
 import { createElectricalGraph } from '../graph';
-import type { GridState } from '../model/grid';
+import type { GridState, GridTopology } from '../model/grid';
 import { createProtectionEngine } from '../protection/protection-engine';
 import { DeterministicRestorationController } from './restoration';
 
@@ -29,17 +29,18 @@ describe('DeterministicRestorationController', () => {
 
   const makeMockTopologyService = () => {
     return {
-      get: () => ({
-        nodes: [{ id: asBusId('b1'), zone: 'DT' as any }, { id: asBusId('b2'), zone: 'DT' as any }],
-        lines: [
-          { id: asLineId('l1'), from: asBusId('b1'), to: asBusId('b2'), capacity: asMegaWatts(100), reactance: 0.1 as any },
-        ],
-        generators: [
-          { id: asGeneratorId('G-GAS-HB'), node: asBusId('b1'), kind: 'Peaker' as any, capacity: asMegaWatts(60) },
-        ],
-        loads: [],
-        zones: [{ id: 'DT' as any, name: 'Downtown' }],
-      }),
+      get: () =>
+        ({
+          nodes: [{ id: asBusId('b1'), zone: 'DT' as any }, { id: asBusId('b2'), zone: 'DT' as any }],
+          lines: [
+            { id: asLineId('l1'), from: asBusId('b1'), to: asBusId('b2'), capacity: asMegaWatts(100), reactance: 0.1 as any },
+          ],
+          generators: [
+            { id: asGeneratorId('G-GAS-HB'), node: asBusId('b1'), kind: 'Peaker' as any, capacity: asMegaWatts(60) },
+          ],
+          loads: [],
+          zones: [{ id: 'DT' as any, name: 'Downtown', buildingIds: [] }],
+        }) as unknown as GridTopology,
     };
   };
 

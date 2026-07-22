@@ -30,7 +30,7 @@ describe('MeridianBayLoadModel', () => {
     const ctx = makeMockContext();
     model.init(ctx);
 
-    const weather = { kind: 'Clear', temperature: asCelsius(25), wind: asRatio(0.2), irradiance: asRatio(0.5) };
+    const weather = { kind: 'Clear' as const, temperature: asCelsius(25), wind: asRatio(0.2), irradiance: asRatio(0.5) };
     const demands = model.demand(MERIDIAN_BAY_TOPOLOGY, weather);
 
     // Sum of nominal demands should equal total demand
@@ -44,11 +44,11 @@ describe('MeridianBayLoadModel', () => {
     const model = new MeridianBayLoadModel();
     model.init(makeMockContext());
 
-    const weather25 = { kind: 'Clear', temperature: asCelsius(25), wind: asRatio(0.2), irradiance: asRatio(0.5) };
+    const weather25 = { kind: 'Clear' as const, temperature: asCelsius(25), wind: asRatio(0.2), irradiance: asRatio(0.5) };
     model.demand(MERIDIAN_BAY_TOPOLOGY, weather25);
     const demand25 = model.totalDemand();
 
-    const weather40 = { kind: 'Heatwave', temperature: asCelsius(40), wind: asRatio(0.2), irradiance: asRatio(0.5) };
+    const weather40 = { kind: 'Heatwave' as const, temperature: asCelsius(40), wind: asRatio(0.2), irradiance: asRatio(0.5) };
     model.demand(MERIDIAN_BAY_TOPOLOGY, weather40);
     const demand40 = model.totalDemand();
 
@@ -59,11 +59,11 @@ describe('MeridianBayLoadModel', () => {
     const model = new MeridianBayLoadModel();
     model.init(makeMockContext());
 
-    const weather20 = { kind: 'Clear', temperature: asCelsius(20), wind: asRatio(0.2), irradiance: asRatio(0.5) };
+    const weather20 = { kind: 'Clear' as const, temperature: asCelsius(20), wind: asRatio(0.2), irradiance: asRatio(0.5) };
     model.demand(MERIDIAN_BAY_TOPOLOGY, weather20);
     const demand20 = model.totalDemand();
 
-    const weather5 = { kind: 'Cold', temperature: asCelsius(5), wind: asRatio(0.2), irradiance: asRatio(0.5) };
+    const weather5 = { kind: 'Cold' as const, temperature: asCelsius(5), wind: asRatio(0.2), irradiance: asRatio(0.5) };
     model.demand(MERIDIAN_BAY_TOPOLOGY, weather5);
     const demand5 = model.totalDemand();
 
@@ -78,7 +78,7 @@ describe('MeridianBayLoadModel', () => {
     model.shedLoad(asLoadId('LD-RN-A'), 0.5);
     model.shedLoad(asLoadId('LD-DT-HOSP'), 0.5);
 
-    const weather = { kind: 'Clear', temperature: asCelsius(25), wind: asRatio(0.2), irradiance: asRatio(0.5) };
+    const weather = { kind: 'Clear' as const, temperature: asCelsius(25), wind: asRatio(0.2), irradiance: asRatio(0.5) };
     model.demand(MERIDIAN_BAY_TOPOLOGY, weather);
 
     // Hospital is critical, should stay at 20 MW (100% load)
