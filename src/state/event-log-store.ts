@@ -15,6 +15,15 @@ import { useGridStore } from './grid-store';
 
 export type EventSeverity = 'info' | 'caution' | 'warning' | 'critical' | 'recovery';
 
+/**
+ * Optional camera-focus target for an entry — which asset the event is
+ * about. Additive metadata: no existing consumer changes behavior.
+ */
+export interface EventLogFocus {
+  readonly kind: 'line' | 'generator' | 'zone' | 'city' | 'decision';
+  readonly id: string;
+}
+
 export interface EventLogEntry {
   readonly seq: number;
   readonly tick: number;
@@ -25,6 +34,7 @@ export interface EventLogEntry {
   readonly what: string;
   readonly why: string;
   readonly action: string;
+  readonly focus?: EventLogFocus | undefined;
 }
 
 const RING_CAPACITY = 200;
@@ -123,6 +133,7 @@ export function bindEventLog(bus: GridEventBus): Unsubscribe {
         push(state.tick, {
           severity: 'critical',
           title: `Generator lost: ${name}`,
+          focus: { kind: 'generator', id },
           detail: `−${capacity} MW capacity`,
           what: `${name} disconnected — ${capacity} MW of generating capacity is suddenly gone.`,
           why: 'A unit fault (or scripted scenario event) forced the generator offline; the remaining fleet must cover its share.',
@@ -132,6 +143,7 @@ export function bindEventLog(bus: GridEventBus): Unsubscribe {
         push(state.tick, {
           severity: 'recovery',
           title: `Generator back: ${name}`,
+          focus: { kind: 'generator', id },
           detail: `+${capacity} MW capacity`,
           what: `${name} reconnected and can generate again.`,
           why: 'The unit cleared its fault or was black-started by the restoration plan.',
@@ -165,6 +177,7 @@ export function bindEventLog(bus: GridEventBus): Unsubscribe {
       push(currentTick, {
         severity: 'critical',
         title: `Line ${String(p.line)} tripped`,
+        focus: { kind: 'line', id: String(p.line) },
         detail: `cause: ${String(p.cause)}`,
         what: `Transmission line ${String(p.line)} opened and stopped carrying power.`,
         why:
@@ -179,6 +192,7 @@ export function bindEventLog(bus: GridEventBus): Unsubscribe {
       push(currentTick, {
         severity: 'recovery',
         title: `Line ${String(p.line)} reclosing`,
+        focus: { kind: 'line', id: String(p.line) },
         detail: 'conductor cooled below limit',
         what: `Line ${String(p.line)} cooled down and its breaker is closing again.`,
         why: 'Once conductor temperature falls back under the warning threshold, the line can safely carry power again.',
@@ -190,6 +204,7 @@ export function bindEventLog(bus: GridEventBus): Unsubscribe {
       push(currentTick, {
         severity: 'critical',
         title: 'Cascade risk',
+        focus: { kind: 'line', id: String(p.originLine) },
         detail: `origin: ${String(p.originLine)}`,
         what: `A chain of overloads is spreading from line ${String(p.originLine)}.`,
         why: 'Each trip pushes its power onto neighbors, which can overload and trip in turn — the classic blackout mechanism.',
@@ -217,6 +232,7 @@ export function bindEventLog(bus: GridEventBus): Unsubscribe {
       push(currentTick, {
         severity: 'critical',
         title: `Blackout: ${zone}`,
+        focus: { kind: 'zone', id: zone },
         detail: `${Math.round(p.unservedLoad)} MW unserved`,
         what: `Zone ${zone} lost power — ${Math.round(p.unservedLoad)} MW of demand is unserved.`,
         why: 'Every energized path into the zone was lost, so its buses are de-energized.',
@@ -232,6 +248,7 @@ export function bindEventLog(bus: GridEventBus): Unsubscribe {
       push(currentTick, {
         severity: 'recovery',
         title: `Power restored: ${zone}`,
+        focus: { kind: 'zone', id: zone },
         detail: 'zone re-energized',
         what: `Zone ${zone} is receiving power again.`,
         why: 'A transmission path into the zone was re-established.',
@@ -254,6 +271,7 @@ export function bindEventLog(bus: GridEventBus): Unsubscribe {
       push(currentTick, {
         severity: 'info',
         title: 'Decision committed',
+        focus: { kind: 'decision', id: String(p.decisionId) },
         detail: String(p.decisionId),
         what: 'Your intervention was dispatched to the grid.',
         why: 'Operator actions change load or topology on the next solver pass.',

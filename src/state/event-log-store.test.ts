@@ -25,8 +25,19 @@ describe('event log store', () => {
     expect(entries).toHaveLength(2);
     expect(entries[0]?.severity).toBe('critical');
     expect(entries[0]?.title).toContain('DT1-DT2');
+    expect(entries[0]?.focus).toEqual({ kind: 'line', id: 'DT1-DT2' });
     expect(entries[1]?.severity).toBe('recovery');
     expect(entries[1]?.seq).toBeGreaterThan(entries[0]?.seq ?? 0);
+
+    unbind();
+  });
+
+  it('carries a zone focus target on blackout entries (camera choreography)', () => {
+    const bus = makeBus();
+    const unbind = bindEventLog(bus);
+
+    bus.emit(GRID_EVENT.ZoneBlackout, { zone: 'HB' as never, unservedLoad: asMegaWatts(60) });
+    expect(useEventLogStore.getState().entries[0]?.focus).toEqual({ kind: 'zone', id: 'HB' });
 
     unbind();
   });
