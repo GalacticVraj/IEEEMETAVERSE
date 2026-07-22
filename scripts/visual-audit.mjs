@@ -49,7 +49,13 @@ try {
 } catch {
   await page.getByRole('button', { name: /Enter|Start|Begin/ }).first().click({ timeout: 8000, force: true });
 }
-await page.waitForTimeout(1500);
+
+// §3 intro flyover — capture two mid-flight frames, let it land naturally.
+await page.waitForTimeout(3000);
+await shot('02a-intro-early');
+await page.waitForTimeout(4000);
+await shot('02b-intro-late');
+await page.waitForTimeout(5000); // intro (9.5 s) fully complete → console visible
 await shot('02-crisis-select');
 
 // Start the selected (default heatwave) scenario
