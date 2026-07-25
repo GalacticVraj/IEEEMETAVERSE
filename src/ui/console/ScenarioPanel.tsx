@@ -8,6 +8,7 @@ import { useState } from 'react';
 import type { ReactElement } from 'react';
 
 import { useRuntime } from '../../runtime-context';
+import { Tooltip } from '../common/Tooltip';
 import { PanelHeader } from './PanelHeader';
 
 function CompassIcon(): ReactElement {
@@ -56,6 +57,25 @@ export function ScenarioPanel(): ReactElement {
         subtitle="Choose grid crisis scenario"
         icon={<CompassIcon />}
       />
+
+      {/* Next expected action banner */}
+      <div
+        style={{
+          background: 'rgba(34, 99, 126, 0.08)',
+          borderLeft: '3px solid #22637E',
+          padding: '6px 10px',
+          borderRadius: 4,
+          fontSize: 11,
+          fontWeight: 600,
+          color: '#22637E',
+          display: 'flex',
+          alignItems: 'center',
+          gap: 6,
+        }}
+      >
+        <span>👈</span>
+        <span>STEP 1: Select a scenario to launch shift</span>
+      </div>
 
       {CRISIS_CARDS.map((card) => {
         const isSelected = card.id === selected;
@@ -115,14 +135,21 @@ export function ScenarioPanel(): ReactElement {
           </button>
         );
       })}
-      <button
-        className="console-btn-primary"
-        style={{ width: '100%', marginTop: 2 }}
-        onClick={start}
-        disabled={selected === null}
+
+      <Tooltip
+        title="Launch Selected Scenario"
+        content="Ignites real-time physics ticking and scenario events for Meridian Bay."
+        position="top"
       >
-        Start Scenario
-      </button>
+        <button
+          className="console-btn-primary"
+          style={{ width: '100%', marginTop: 2, minHeight: 36 }}
+          onClick={start}
+          disabled={selected === null}
+        >
+          Start Scenario ▸
+        </button>
+      </Tooltip>
     </div>
   );
 }

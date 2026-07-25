@@ -8,7 +8,7 @@ export interface SelectedAsset {
 }
 
 /**
- * UI-ONLY state (selection, panel visibility). The UI legitimately OWNS this —
+ * UI-ONLY state (selection, panel visibility, onboarding tour). The UI legitimately OWNS this —
  * it is not simulation state and never feeds back into the engine. Keeping it
  * separate from the simulation projection preserves the ownership boundary.
  */
@@ -19,11 +19,19 @@ export interface UiState {
   readonly activePanel: string | null;
   /** Master sound toggle for the synthesized audio layer. */
   readonly soundMuted: boolean;
+  /** Progressive onboarding guided tour state. */
+  readonly onboardingActive: boolean;
+  readonly onboardingStep: number;
   readonly selectZone: (zone: ZoneId | null) => void;
   readonly selectAsset: (asset: SelectedAsset | null) => void;
   readonly toggleDebugOverlay: () => void;
   readonly setActivePanel: (panel: string | null) => void;
   readonly toggleSound: () => void;
+  readonly startOnboarding: () => void;
+  readonly nextOnboardingStep: () => void;
+  readonly prevOnboardingStep: () => void;
+  readonly setOnboardingStep: (step: number) => void;
+  readonly endOnboarding: () => void;
 }
 
 export const useUiStore = create<UiState>()((set) => ({
@@ -32,6 +40,8 @@ export const useUiStore = create<UiState>()((set) => ({
   debugOverlayVisible: false,
   activePanel: null,
   soundMuted: false,
+  onboardingActive: false,
+  onboardingStep: 1,
   selectZone: (zone) => {
     set({ selectedZone: zone });
   },
@@ -46,5 +56,25 @@ export const useUiStore = create<UiState>()((set) => ({
   },
   toggleSound: () => {
     set((state) => ({ soundMuted: !state.soundMuted }));
+  },
+  startOnboarding: () => {
+    set({ onboardingActive: true, onboardingStep: 1 });
+  },
+  nextOnboardingStep: () => {
+    set((state) => {
+      if (state.onboardingStep >= 7) {
+        return { onboardingActive: false, onboardingStep: 1 };
+      }
+      return { onboardingStep: state.onboardingStep + 1 };
+    });
+  },
+  prevOnboardingStep: () => {
+    set((state) => ({ onboardingStep: Math.max(1, state.onboardingStep - 1) }));
+  },
+  setOnboardingStep: (step) => {
+    set({ onboardingStep: step });
+  },
+  endOnboarding: () => {
+    set({ onboardingActive: false, onboardingStep: 1 });
   },
 }));

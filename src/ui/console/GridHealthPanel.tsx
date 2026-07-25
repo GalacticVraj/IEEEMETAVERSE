@@ -7,6 +7,7 @@ import type { ReactElement } from 'react';
 
 import { HEALTH_MEANINGS, estimateHouseholdsAffected } from './learning-copy';
 import { PanelHeader } from './PanelHeader';
+import { Tooltip } from '../common/Tooltip';
 
 function ActivityIcon(): ReactElement {
   return (
@@ -31,34 +32,42 @@ function Row({
   meaning,
   tone,
   isCritical,
+  tooltipTitle,
+  tooltipContent,
 }: {
   label: string;
   value: string;
   meaning: string;
   tone?: string | undefined;
   isCritical?: boolean | undefined;
+  tooltipTitle: string;
+  tooltipContent: string;
 }): ReactElement {
   return (
-    <div
-      style={{
-        padding: '7px 0',
-        borderBottom: '1px solid rgba(231, 233, 230, 0.7)',
-        background: isCritical ? 'rgba(179, 38, 30, 0.04)' : 'transparent',
-        borderRadius: isCritical ? 4 : 0,
-        paddingLeft: isCritical ? 6 : 0,
-        paddingRight: isCritical ? 6 : 0,
-      }}
-    >
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
-        <span className="metric-label">{label}</span>
-        <span className="metric-value" style={{ color: tone ?? '#1C2530' }}>
-          {value}
-        </span>
+    <Tooltip title={tooltipTitle} content={tooltipContent} position="right">
+      <div
+        style={{
+          width: '100%',
+          padding: '7px 0',
+          borderBottom: '1px solid rgba(231, 233, 230, 0.7)',
+          background: isCritical ? 'rgba(179, 38, 30, 0.04)' : 'transparent',
+          borderRadius: isCritical ? 4 : 0,
+          paddingLeft: isCritical ? 6 : 0,
+          paddingRight: isCritical ? 6 : 0,
+          cursor: 'help',
+        }}
+      >
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+          <span className="metric-label">{label}</span>
+          <span className="metric-value" style={{ color: tone ?? '#1C2530' }}>
+            {value}
+          </span>
+        </div>
+        <div style={{ fontSize: 10.5, color: '#8B97A3', marginTop: 2, lineHeight: 1.2 }}>
+          {meaning}
+        </div>
       </div>
-      <div style={{ fontSize: 10.5, color: '#8B97A3', marginTop: 2, lineHeight: 1.2 }}>
-        {meaning}
-      </div>
-    </div>
+    </Tooltip>
   );
 }
 
@@ -94,11 +103,19 @@ export function GridHealthPanel(): ReactElement {
         icon={<ActivityIcon />}
       />
 
-      <Row label="Demand" value={`${Math.round(totalLoad)} MW`} meaning={HEALTH_MEANINGS.demand} />
+      <Row
+        label="Demand"
+        value={`${Math.round(totalLoad)} MW`}
+        meaning={HEALTH_MEANINGS.demand}
+        tooltipTitle="Total Electrical Demand"
+        tooltipContent="Sum of all residential, commercial, industrial, and municipal loads across Meridian Bay."
+      />
       <Row
         label="Generation"
         value={`${Math.round(totalGeneration)} MW`}
         meaning={HEALTH_MEANINGS.generation}
+        tooltipTitle="Total Fleet Generation"
+        tooltipContent="Combined real-time output from solar, wind, battery, gas peakers, and baseload power plants."
       />
       <Row
         label="Balance"
@@ -106,16 +123,22 @@ export function GridHealthPanel(): ReactElement {
         meaning={HEALTH_MEANINGS.balance}
         tone={balanceTone}
         isCritical={balance < -50}
+        tooltipTitle="Supply-Demand Balance"
+        tooltipContent="Negative balance causes frequency drops and risks cascade trips if reserve generators cannot ramp."
       />
       <Row
         label="Frequency"
         value={`${frequency.toFixed(2)} Hz`}
         meaning={HEALTH_MEANINGS.frequency}
+        tooltipTitle="AC Network Frequency"
+        tooltipContent="60.00 Hz nominal. Below 59.5 Hz triggers under-frequency load shedding relays."
       />
       <Row
         label="Renewables"
         value={`${Math.round(renewablePct)} %`}
         meaning={HEALTH_MEANINGS.renewables}
+        tooltipTitle="Renewable Generation Share"
+        tooltipContent="Percentage of total load currently powered by clean wind, solar, and battery storage."
       />
       <Row
         label="Corridor stress"
@@ -123,6 +146,8 @@ export function GridHealthPanel(): ReactElement {
         meaning={HEALTH_MEANINGS.corridorStress}
         tone={stressTone}
         isCritical={stressPct >= 90}
+        tooltipTitle="Max Corridor Thermal Stress"
+        tooltipContent="Highest loading percentage on any transmission corridor. Relays automatically open line breakers at 100%!"
       />
       <Row
         label="Zones dark"
@@ -134,6 +159,8 @@ export function GridHealthPanel(): ReactElement {
         meaning={HEALTH_MEANINGS.zonesDark}
         tone={darkZones.length > 0 ? '#B3261E' : undefined}
         isCritical={darkZones.length > 0}
+        tooltipTitle="Blackout Districts"
+        tooltipContent="Number of city districts currently de-energized. Restore transmission corridors to re-power affected homes."
       />
     </div>
   );

@@ -30,6 +30,7 @@ import { ConsoleShell } from './ui/console';
 import { HeroOverlay } from './ui/hero/HeroOverlay';
 import { MissionBriefing } from './ui/prefs/MissionBriefing';
 import { QuickControls } from './ui/prefs/QuickControls';
+import { OnboardingTour } from './ui/onboarding/OnboardingTour';
 import { AfterActionScreen } from './ui/after-action/AfterActionScreen';
 import { useAppFlowStore, AppMode } from './state/app-flow-store';
 
@@ -103,6 +104,9 @@ export function App({ config }: AppProps): ReactElement {
 
       {/* 30-second onboarding at scenario selection */}
       {isCrisisSelect && !introActive && <MissionBriefing />}
+
+      {/* Progressive Step-by-Step Onboarding Tour */}
+      {isConsole && !introActive && <OnboardingTour />}
 
       {/* After-Action report layered above the console */}
       {isAfterAction && <AfterActionScreen />}

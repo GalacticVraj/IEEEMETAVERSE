@@ -7,7 +7,7 @@ import { AppMode, CRISIS_CARDS, useAppFlowStore, useGridStore, useSimulationStor
 import type { ReactElement } from 'react';
 
 import { useRuntime } from '../../runtime-context';
-
+import { Tooltip } from '../common/Tooltip';
 import { dayPhase, simClock } from './learning-copy';
 
 type Stability = 'NORMAL' | 'ELEVATED' | 'EMERGENCY' | 'BLACKOUT';
@@ -17,6 +17,13 @@ const STABILITY_STYLE: Record<Stability, { color: string; bg: string }> = {
   ELEVATED: { color: '#9A6B15', bg: 'rgba(154, 107, 21, 0.10)' },
   EMERGENCY: { color: '#B4531F', bg: 'rgba(180, 83, 31, 0.12)' },
   BLACKOUT: { color: '#B3261E', bg: 'rgba(179, 38, 30, 0.12)' },
+};
+
+const STABILITY_TOOLTIP: Record<Stability, string> = {
+  NORMAL: 'Grid is operating within safe voltage and thermal line limits.',
+  ELEVATED: 'Corridor loading exceeds 80% or supply deficit exceeds 40 MW.',
+  EMERGENCY: 'Line tripped or corridor loading at 100%. High risk of cascade blackout!',
+  BLACKOUT: 'One or more city zones have lost power. Immediate restoration required.',
 };
 
 /** Pure display mapping — reads telemetry, renders a label. */
@@ -130,50 +137,79 @@ export function CommandBar(): ReactElement {
       </div>
 
       {/* Sim clock */}
-      <div
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: 12,
-          background: 'rgba(28, 37, 48, 0.04)',
-          padding: '4px 12px',
-          borderRadius: 6,
-        }}
+      <Tooltip
+        title="Simulation Time & Day Phase"
+        content="Tracks real physics elapsed time and heatwave diurnal curve."
+        position="bottom"
       >
-        <span className="console-value" style={{ fontSize: 14, fontWeight: 700, color: '#1C2530' }}>
-          {simClock(tick)}
-        </span>
-        <span style={{ fontSize: 11, color: '#5A6774', fontWeight: 500 }}>{dayPhase(tick)}</span>
-      </div>
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 12,
+            background: 'rgba(28, 37, 48, 0.04)',
+            padding: '4px 12px',
+            borderRadius: 6,
+            cursor: 'help',
+          }}
+        >
+          <span
+            className="console-value"
+            style={{ fontSize: 14, fontWeight: 700, color: '#1C2530' }}
+          >
+            {simClock(tick)}
+          </span>
+          <span style={{ fontSize: 11, color: '#5A6774', fontWeight: 500 }}>{dayPhase(tick)}</span>
+        </div>
+      </Tooltip>
 
       {/* Status + controls */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-        <span
-          className="console-value"
-          style={{
-            fontSize: 11,
-            fontWeight: 700,
-            color: style.color,
-            background: style.bg,
-            border: `1px solid ${style.color}`,
-            borderRadius: 6,
-            padding: '4px 12px',
-            letterSpacing: '0.06em',
-          }}
+        <Tooltip
+          title={`Grid State: ${stability}`}
+          content={STABILITY_TOOLTIP[stability]}
+          position="bottom"
         >
-          ● {active ? stability : 'STANDBY'}
-        </span>
+          <span
+            className="console-value"
+            style={{
+              fontSize: 11,
+              fontWeight: 700,
+              color: style.color,
+              background: style.bg,
+              border: `1px solid ${style.color}`,
+              borderRadius: 6,
+              padding: '4px 12px',
+              letterSpacing: '0.06em',
+              cursor: 'help',
+            }}
+          >
+            ● {active ? stability : 'STANDBY'}
+          </span>
+        </Tooltip>
         {active && (
           <>
-            <button
-              className="console-btn"
-              onClick={() => (paused ? runtime.session.resume() : runtime.session.pause())}
+            <Tooltip
+              title="Pause or Resume Simulation"
+              content="Toggle kernel ticking. Shortcut: SPACE"
+              position="bottom"
             >
-              {paused ? '▶ Resume' : '⏸ Pause'}
-            </button>
-            <button className="console-btn" onClick={endShift}>
-              End Shift
-            </button>
+              <button
+                className="console-btn"
+                onClick={() => (paused ? runtime.session.resume() : runtime.session.pause())}
+              >
+                {paused ? '▶ Resume' : '⏸ Pause'}
+              </button>
+            </Tooltip>
+            <Tooltip
+              title="End Shift Early"
+              content="Stops the run and opens After-Action review with measured score."
+              position="bottom"
+            >
+              <button className="console-btn" onClick={endShift}>
+                End Shift
+              </button>
+            </Tooltip>
           </>
         )}
       </div>

@@ -15,7 +15,7 @@ import type { ReactElement } from 'react';
 import type { AppRuntime } from '@infra';
 
 import { useRuntime } from '../../runtime-context';
-
+import { Tooltip } from '../common/Tooltip';
 import { simClock } from './learning-copy';
 import { OPERATOR_ACTIONS } from './operator-actions';
 import type { OperatorAction } from './operator-actions';
@@ -111,14 +111,25 @@ function DirectorPrompt(): ReactElement | null {
       </div>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
         {activeDecision.options.map((option, index) => (
-          <button
+          <Tooltip
             key={option}
-            className="console-btn-primary"
-            style={{ textAlign: 'left', fontSize: 11.5, justifyContent: 'flex-start' }}
-            onClick={() => commitDecision(runtime, activeDecision.decisionId, index, option)}
+            title="Commit Option"
+            content={`Commit "${option}" to rebalance grid parameters.`}
+            position="top"
           >
-            {option}
-          </button>
+            <button
+              className="console-btn-primary"
+              style={{
+                textAlign: 'left',
+                fontSize: 11.5,
+                justifyContent: 'flex-start',
+                width: '100%',
+              }}
+              onClick={() => commitDecision(runtime, activeDecision.decisionId, index, option)}
+            >
+              {option}
+            </button>
+          </Tooltip>
         ))}
       </div>
     </div>
@@ -159,13 +170,19 @@ function ActionRow({
             COMMITTED · {simClock(committedAtTick)}
           </span>
         ) : (
-          <button
-            className="console-btn"
-            style={{ padding: '4px 12px', fontSize: 11, minHeight: 28 }}
-            onClick={onExecute}
+          <Tooltip
+            title={`Execute ${action.label}`}
+            content={`Dispatches "${action.plainEffect}" intervention to the grid.`}
+            position="top"
           >
-            Execute
-          </button>
+            <button
+              className="console-btn"
+              style={{ padding: '4px 12px', fontSize: 11, minHeight: 28 }}
+              onClick={onExecute}
+            >
+              Execute
+            </button>
+          </Tooltip>
         )}
       </div>
       <div style={{ fontSize: 10.5, color: '#5A6774', marginTop: 3 }}>{action.plainEffect}</div>

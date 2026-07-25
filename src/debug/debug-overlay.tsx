@@ -1,7 +1,7 @@
 import { useState, useRef } from 'react';
 import type { ReactElement, PointerEvent } from 'react';
 
-import { useSimulationStore } from '@state';
+import { useSimulationStore, useUiStore } from '@state';
 
 export interface DebugOverlayProps {
   readonly seed: number;
@@ -35,7 +35,7 @@ function MetricRow({ label, value }: MetricRowProps): ReactElement {
  * Developer overlay — compact, secondary floating widget docked in the screen corner.
  * Can be collapsed into a floating pill or expanded on click. Draggable around screen.
  */
-export function DebugOverlay({ seed }: DebugOverlayProps): ReactElement {
+export function DebugOverlay({ seed }: DebugOverlayProps): ReactElement | null {
   const [expanded, setExpanded] = useState(false);
   const [position, setPosition] = useState<{ x: number; y: number } | null>(null);
   const isDraggingRef = useRef(false);
@@ -50,6 +50,14 @@ export function DebugOverlay({ seed }: DebugOverlayProps): ReactElement {
   const simTime = useSimulationStore((state) => state.simTime);
   const lifecycle = useSimulationStore((state) => state.lifecycle);
   const maxLoading = useSimulationStore((state) => state.maxLineLoading);
+
+  const onboardingActive = useUiStore((s) => s.onboardingActive);
+  const onboardingStep = useUiStore((s) => s.onboardingStep);
+
+  // Keep debug hidden during onboarding steps 1-6 to avoid visual clutter
+  if (onboardingActive && onboardingStep < 7) {
+    return null;
+  }
 
   const handlePointerDown = (e: PointerEvent<HTMLDivElement>): void => {
     isDraggingRef.current = true;
