@@ -8,6 +8,25 @@ import { useState } from 'react';
 import type { ReactElement } from 'react';
 
 import { useRuntime } from '../../runtime-context';
+import { PanelHeader } from './PanelHeader';
+
+function CompassIcon(): ReactElement {
+  return (
+    <svg
+      width="15"
+      height="15"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <circle cx="12" cy="12" r="10" />
+      <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76" />
+    </svg>
+  );
+}
 
 const DIFFICULTY_COLOR: Record<string, string> = {
   Warning: '#9A6B15',
@@ -28,8 +47,16 @@ export function ScenarioPanel(): ReactElement {
   };
 
   return (
-    <div className="console-panel" style={{ padding: '10px 14px', display: 'flex', flexDirection: 'column', gap: 8 }}>
-      <div className="console-section-title">Select Scenario</div>
+    <div
+      className="console-panel animate-slide-in-left"
+      style={{ padding: '12px 14px', display: 'flex', flexDirection: 'column', gap: 10 }}
+    >
+      <PanelHeader
+        title="SELECT SCENARIO"
+        subtitle="Choose grid crisis scenario"
+        icon={<CompassIcon />}
+      />
+
       {CRISIS_CARDS.map((card) => {
         const isSelected = card.id === selected;
         return (
@@ -39,34 +66,61 @@ export function ScenarioPanel(): ReactElement {
             onClick={() => setSelected(card.id)}
             style={{
               textAlign: 'left',
-              background: isSelected ? '#F0F4F6' : '#FFFFFF',
-              border: `1px solid ${isSelected ? '#22637E' : '#D3D7D2'}`,
-              borderRadius: 2,
-              padding: '8px 10px',
+              background: isSelected ? 'rgba(34, 99, 126, 0.06)' : '#FFFFFF',
+              border: `1.5px solid ${isSelected ? '#22637E' : '#D3D7D2'}`,
+              borderRadius: 6,
+              padding: '10px 12px',
               cursor: 'pointer',
+              transition: 'all 150ms ease',
+              boxShadow: isSelected
+                ? '0 2px 8px rgba(34, 99, 126, 0.12)'
+                : '0 1px 2px rgba(28, 37, 48, 0.04)',
             }}
           >
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
-              <span style={{ fontSize: 12, fontWeight: 600, color: '#1C2530' }}>{card.label}</span>
+            <div
+              style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}
+            >
+              <span style={{ fontSize: 12.5, fontWeight: 700, color: '#1C2530' }}>
+                {card.label}
+              </span>
               <span
                 className="console-value"
-                style={{ fontSize: 10, fontWeight: 600, color: DIFFICULTY_COLOR[card.difficulty] ?? '#5A6774' }}
+                style={{
+                  fontSize: 10,
+                  fontWeight: 700,
+                  color: DIFFICULTY_COLOR[card.difficulty] ?? '#5A6774',
+                  letterSpacing: '0.04em',
+                }}
               >
                 {card.difficulty.toUpperCase()}
               </span>
             </div>
-            <div style={{ fontSize: 11, color: '#5A6774', marginTop: 3, lineHeight: 1.45 }}>
+            <div style={{ fontSize: 11, color: '#5A6774', marginTop: 4, lineHeight: 1.45 }}>
               {card.description}
             </div>
             {card.recommended === true && (
-              <div className="console-value" style={{ fontSize: 10, color: '#22637E', marginTop: 4 }}>
-                RECOMMENDED FIRST RUN
+              <div
+                className="console-value"
+                style={{
+                  fontSize: 10,
+                  color: '#22637E',
+                  marginTop: 6,
+                  fontWeight: 600,
+                  letterSpacing: '0.04em',
+                }}
+              >
+                ★ RECOMMENDED FIRST RUN
               </div>
             )}
           </button>
         );
       })}
-      <button className="console-btn-primary" onClick={start} disabled={selected === null}>
+      <button
+        className="console-btn-primary"
+        style={{ width: '100%', marginTop: 2 }}
+        onClick={start}
+        disabled={selected === null}
+      >
         Start Scenario
       </button>
     </div>

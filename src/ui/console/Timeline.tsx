@@ -3,7 +3,13 @@
  * markers, and the scrolling event stream. Every marker/entry comes from the
  * EventBus via the event-log store — no fabricated timeline entries.
  */
-import { AppMode, useAppFlowStore, useEventLogStore, useGridStore, useSimulationStore } from '@state';
+import {
+  AppMode,
+  useAppFlowStore,
+  useEventLogStore,
+  useGridStore,
+  useSimulationStore,
+} from '@state';
 import { useEffect, useRef } from 'react';
 import type { ReactElement } from 'react';
 
@@ -21,6 +27,24 @@ const SEVERITY_COLOR: Record<string, string> = {
   critical: '#B3261E',
   recovery: '#217A56',
 };
+
+function ClockIcon(): ReactElement {
+  return (
+    <svg
+      width="14"
+      height="14"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <circle cx="12" cy="12" r="10" />
+      <polyline points="12 6 12 12 16 14" />
+    </svg>
+  );
+}
 
 export function Timeline(): ReactElement {
   const runtime = useRuntime();
@@ -54,49 +78,77 @@ export function Timeline(): ReactElement {
 
   return (
     <div
-      className="console-panel"
+      className="console-panel animate-slide-down"
       style={{
         display: 'grid',
-        gridTemplateColumns: '170px 1fr 340px',
-        gap: 14,
-        padding: '10px 14px',
-        borderRadius: 0,
+        gridTemplateColumns: '190px 1fr 340px',
+        gap: 16,
+        padding: '10px 16px',
+        borderRadius: '8px 8px 0 0',
         borderLeft: 'none',
         borderRight: 'none',
         borderBottom: 'none',
         minHeight: 0,
       }}
     >
-      {/* Transport */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-        <div className="console-section-title">Timeline</div>
-        <div className="console-value" style={{ fontSize: 16, fontWeight: 600 }}>{simClock(tick)}</div>
+      {/* Transport & Identity */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          <span style={{ color: '#22637E', display: 'flex', alignItems: 'center' }}>
+            <ClockIcon />
+          </span>
+          <span className="console-section-title" style={{ fontSize: 11, fontWeight: 700 }}>
+            TIMELINE
+          </span>
+        </div>
+        <div style={{ fontSize: 10.5, color: '#8B97A3', lineHeight: 1.1 }}>Simulation progress</div>
+
+        <div
+          className="metric-large"
+          style={{ fontSize: 18, fontWeight: 700, color: '#1C2530', marginTop: 2 }}
+        >
+          {simClock(tick)}
+        </div>
+
         {active && (
-          <div style={{ display: 'flex', gap: 6 }}>
+          <div style={{ display: 'flex', gap: 6, marginTop: 4 }}>
             <button
               className="console-btn"
-              style={{ padding: '3px 10px', fontSize: 11 }}
+              style={{ padding: '3px 10px', fontSize: 11, minHeight: 26 }}
               onClick={() => (paused ? runtime.session.resume() : runtime.session.pause())}
             >
               {paused ? 'Resume' : 'Pause'}
             </button>
-            <button className="console-btn" style={{ padding: '3px 10px', fontSize: 11 }} onClick={restart}>
-              Restart Run
+            <button
+              className="console-btn"
+              style={{ padding: '3px 10px', fontSize: 11, minHeight: 26 }}
+              onClick={restart}
+            >
+              Restart
             </button>
           </div>
         )}
       </div>
 
       {/* Ruler with event markers */}
-      <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 6, minWidth: 0 }}>
+      <div
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'center',
+          gap: 6,
+          minWidth: 0,
+        }}
+      >
         <div
           style={{
             position: 'relative',
-            height: 26,
-            background: '#F1F3F1',
+            height: 28,
+            background: 'rgba(241, 243, 241, 0.8)',
             border: '1px solid #D3D7D2',
-            borderRadius: 2,
+            borderRadius: 6,
             overflow: 'hidden',
+            boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.04)',
           }}
         >
           {/* Elapsed portion */}
@@ -105,7 +157,8 @@ export function Timeline(): ReactElement {
               position: 'absolute',
               inset: 0,
               width: `${progress * 100}%`,
-              background: 'rgba(34, 99, 126, 0.10)',
+              background: 'rgba(34, 99, 126, 0.12)',
+              transition: 'width 0.2s linear',
             }}
           />
           {/* Event markers */}
@@ -117,14 +170,15 @@ export function Timeline(): ReactElement {
               style={{
                 position: 'absolute',
                 left: `${Math.min(99.2, (entry.tick / RUN_TICKS) * 100)}%`,
-                top: entry.severity === 'critical' ? 2 : 6,
+                top: entry.severity === 'critical' ? 2 : 5,
                 width: entry.severity === 'critical' ? 5 : 4,
-                height: entry.severity === 'critical' ? 22 : 14,
+                height: entry.severity === 'critical' ? 24 : 16,
                 background: SEVERITY_COLOR[entry.severity] ?? '#8B97A3',
                 border: 'none',
-                borderRadius: 1,
+                borderRadius: 2,
                 cursor: 'pointer',
                 padding: 0,
+                zIndex: 2,
               }}
             />
           ))}
@@ -137,19 +191,39 @@ export function Timeline(): ReactElement {
               bottom: 0,
               width: 2,
               background: '#22637E',
+              boxShadow: '0 0 4px rgba(34, 99, 126, 0.5)',
+              zIndex: 3,
             }}
           />
         </div>
-        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 10, color: '#8B97A3' }}>
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            fontSize: 10,
+            color: '#8B97A3',
+            fontWeight: 600,
+          }}
+        >
           <span className="console-value">T+00:00</span>
           <span className="console-value">T+03:00</span>
         </div>
       </div>
 
       {/* Event stream */}
-      <div ref={streamRef} style={{ overflowY: 'auto', minHeight: 0, paddingRight: 4 }}>
+      <div
+        ref={streamRef}
+        style={{
+          overflowY: 'auto',
+          minHeight: 0,
+          paddingRight: 4,
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 3,
+        }}
+      >
         {entries.length === 0 ? (
-          <div style={{ fontSize: 11, color: '#8B97A3', paddingTop: 8 }}>
+          <div style={{ fontSize: 11, color: '#8B97A3', paddingTop: 12, textAlign: 'center' }}>
             Events will appear here as the crisis unfolds.
           </div>
         ) : (
@@ -162,22 +236,29 @@ export function Timeline(): ReactElement {
                 gap: 8,
                 width: '100%',
                 textAlign: 'left',
-                background: focusedSeq === entry.seq ? '#F0F4F6' : 'transparent',
-                border: 'none',
-                borderRadius: 2,
-                padding: '2px 4px',
+                background: focusedSeq === entry.seq ? 'rgba(34, 99, 126, 0.1)' : 'transparent',
+                border:
+                  focusedSeq === entry.seq
+                    ? '1px solid rgba(34, 99, 126, 0.2)'
+                    : '1px solid transparent',
+                borderRadius: 4,
+                padding: '3px 6px',
                 cursor: 'pointer',
                 alignItems: 'baseline',
+                transition: 'background 120ms ease',
               }}
             >
-              <span className="console-value" style={{ fontSize: 10, color: '#8B97A3', whiteSpace: 'nowrap' }}>
+              <span
+                className="console-value"
+                style={{ fontSize: 10, color: '#8B97A3', whiteSpace: 'nowrap', fontWeight: 600 }}
+              >
                 {simClock(entry.tick)}
               </span>
               <span
                 className="console-value"
                 style={{
                   fontSize: 10.5,
-                  fontWeight: 600,
+                  fontWeight: 700,
                   color: SEVERITY_COLOR[entry.severity] ?? '#1C2530',
                   whiteSpace: 'nowrap',
                 }}

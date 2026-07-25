@@ -6,7 +6,7 @@
  * it), 320px right rail. The container ignores pointer events; only panels
  * receive them, so the 3D scene stays fully interactive through the center.
  */
-import { AppMode } from '@state';
+import { AppMode, useEventLogStore, useUiStore } from '@state';
 import type { ReactElement } from 'react';
 
 import { AssetInspector } from './AssetInspector';
@@ -19,6 +19,15 @@ import { Timeline } from './Timeline';
 
 export function ConsoleShell({ mode }: { mode: AppMode }): ReactElement {
   const selecting = mode === AppMode.CrisisSelect;
+  const selectedAsset = useUiStore((s) => s.selectedAsset);
+  const entries = useEventLogStore((s) => s.entries);
+  const focusedSeq = useEventLogStore((s) => s.focusedSeq);
+
+  const hasFocusedEvent = focusedSeq !== null;
+  const hasWarningOrCritical = entries.some(
+    (e) => e.severity === 'warning' || e.severity === 'critical',
+  );
+  const showRightRail = selectedAsset !== null || hasFocusedEvent || hasWarningOrCritical;
 
   return (
     <div
@@ -27,7 +36,8 @@ export function ConsoleShell({ mode }: { mode: AppMode }): ReactElement {
         inset: 0,
         display: 'grid',
         gridTemplateRows: '48px 1fr 176px',
-        gridTemplateColumns: '300px 1fr 320px',
+        gridTemplateColumns: showRightRail ? '310px 1fr 330px' : '310px 1fr 0px',
+        transition: 'grid-template-columns 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
         pointerEvents: 'none',
         zIndex: 20,
       }}
@@ -42,8 +52,8 @@ export function ConsoleShell({ mode }: { mode: AppMode }): ReactElement {
         style={{
           display: 'flex',
           flexDirection: 'column',
-          gap: 10,
-          padding: 10,
+          gap: 12,
+          padding: 12,
           overflowY: 'auto',
           pointerEvents: 'auto',
           minHeight: 0,
@@ -56,16 +66,18 @@ export function ConsoleShell({ mode }: { mode: AppMode }): ReactElement {
       {/* Center — intentionally empty: the city IS the interface here */}
       <div />
 
-      {/* Right rail: inspector + learning feedback */}
+      {/* Right rail: progressive reveal (inspector + learning feedback) */}
       <div
         style={{
           display: 'flex',
           flexDirection: 'column',
-          gap: 10,
-          padding: 10,
+          gap: 12,
+          padding: showRightRail ? 12 : 0,
           overflowY: 'auto',
           pointerEvents: 'auto',
           minHeight: 0,
+          opacity: showRightRail ? 1 : 0,
+          transition: 'opacity 0.3s ease, padding 0.3s ease',
         }}
       >
         <AssetInspector />

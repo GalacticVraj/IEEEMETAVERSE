@@ -8,11 +8,7 @@
  */
 import { asDecisionId, asSeconds } from '@app-types';
 import { GRID_EVENT } from '@constants';
-import {
-  useAppFlowStore,
-  useGridStore,
-  useSimulationStore,
-} from '@state';
+import { useAppFlowStore, useGridStore, useSimulationStore } from '@state';
 import { useEffect, useState } from 'react';
 import type { ReactElement } from 'react';
 
@@ -23,6 +19,24 @@ import { useRuntime } from '../../runtime-context';
 import { simClock } from './learning-copy';
 import { OPERATOR_ACTIONS } from './operator-actions';
 import type { OperatorAction } from './operator-actions';
+import { PanelHeader } from './PanelHeader';
+
+function ZapIcon(): ReactElement {
+  return (
+    <svg
+      width="15"
+      height="15"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+    </svg>
+  );
+}
 
 /** Emit a DecisionCommitted with REAL tick + telemetry, and journal it. */
 function commitDecision(
@@ -32,18 +46,24 @@ function commitDecision(
   label: string,
 ): void {
   const { tick, simTime, maxLineLoading } = useSimulationStore.getState();
-  (runtime.kernel.events as { emit(n: string, p: unknown): void }).emit(GRID_EVENT.DecisionCommitted, {
-    decisionId: asDecisionId(decisionId),
-    optionIndex,
-    simTime: asSeconds(simTime),
-  });
+  (runtime.kernel.events as { emit(n: string, p: unknown): void }).emit(
+    GRID_EVENT.DecisionCommitted,
+    {
+      decisionId: asDecisionId(decisionId),
+      optionIndex,
+      simTime: asSeconds(simTime),
+    },
+  );
   useAppFlowStore.getState().logDecision({
     tick,
     action: { type: decisionId, label },
     zoneId: 'grid',
     zoneIncomeTier: null,
     alternativesConsidered: [
-      { action: { type: 'no-action', label: 'Do nothing' }, projectedMaxLineLoading: maxLineLoading },
+      {
+        action: { type: 'no-action', label: 'Do nothing' },
+        projectedMaxLineLoading: maxLineLoading,
+      },
     ],
   });
 }
@@ -63,25 +83,38 @@ function DirectorPrompt(): ReactElement | null {
 
   return (
     <div
+      className="animate-scale-in"
       style={{
-        border: '1px solid #B4531F',
-        borderRadius: 2,
-        padding: '8px 10px',
-        background: 'rgba(180, 83, 31, 0.06)',
+        border: '1.5px solid #B4531F',
+        borderRadius: 8,
+        padding: '10px 12px',
+        background: 'rgba(180, 83, 31, 0.08)',
+        marginBottom: 8,
       }}
     >
-      <div className="console-section-title" style={{ color: '#B4531F', marginBottom: 4 }}>
-        Decision Required
+      <div
+        className="console-section-title"
+        style={{ color: '#B4531F', marginBottom: 4, fontSize: 11, fontWeight: 700 }}
+      >
+        ⚡ URGENT DECISION REQUIRED
       </div>
-      <div style={{ fontSize: 11.5, lineHeight: 1.45, color: '#1C2530', marginBottom: 6 }}>
+      <div
+        style={{
+          fontSize: 12,
+          lineHeight: 1.45,
+          color: '#1C2530',
+          marginBottom: 8,
+          fontWeight: 500,
+        }}
+      >
         {activeDecision.prompt}
       </div>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
         {activeDecision.options.map((option, index) => (
           <button
             key={option}
-            className="console-btn"
-            style={{ textAlign: 'left', fontSize: 11.5 }}
+            className="console-btn-primary"
+            style={{ textAlign: 'left', fontSize: 11.5, justifyContent: 'flex-start' }}
             onClick={() => commitDecision(runtime, activeDecision.decisionId, index, option)}
           >
             {option}
@@ -103,30 +136,49 @@ function ActionRow({
 }): ReactElement {
   const committed = committedAtTick !== undefined;
   return (
-    <div style={{ borderBottom: '1px solid #E7E9E6', padding: '7px 0' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8 }}>
+    <div style={{ borderBottom: '1px solid rgba(231, 233, 230, 0.7)', padding: '8px 0' }}>
+      <div
+        style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8 }}
+      >
         <span style={{ fontSize: 12, fontWeight: 600, color: committed ? '#8B97A3' : '#1C2530' }}>
           {action.label}
         </span>
         {committed ? (
-          <span className="console-value" style={{ fontSize: 10, color: '#217A56', whiteSpace: 'nowrap' }}>
+          <span
+            className="console-value"
+            style={{
+              fontSize: 10,
+              color: '#217A56',
+              whiteSpace: 'nowrap',
+              fontWeight: 600,
+              background: 'rgba(33, 122, 86, 0.1)',
+              padding: '2px 6px',
+              borderRadius: 4,
+            }}
+          >
             COMMITTED · {simClock(committedAtTick)}
           </span>
         ) : (
-          <button className="console-btn" style={{ padding: '3px 10px', fontSize: 11 }} onClick={onExecute}>
+          <button
+            className="console-btn"
+            style={{ padding: '4px 12px', fontSize: 11, minHeight: 28 }}
+            onClick={onExecute}
+          >
             Execute
           </button>
         )}
       </div>
-      <div style={{ fontSize: 10.5, color: '#5A6774', marginTop: 2 }}>{action.plainEffect}</div>
-      <div style={{ display: 'flex', gap: 10, marginTop: 3, fontSize: 10, color: '#8B97A3' }}>
-        <span>Cost: {action.cost}</span>
-      </div>
-      <div style={{ display: 'flex', gap: 10, fontSize: 10, color: '#8B97A3' }}>
-        <span style={{ color: '#217A56' }}>Benefit: {action.benefit}</span>
-      </div>
-      <div style={{ display: 'flex', gap: 10, fontSize: 10, color: '#8B97A3' }}>
-        <span style={{ color: '#9A6B15' }}>Risk: {action.risk}</span>
+      <div style={{ fontSize: 10.5, color: '#5A6774', marginTop: 3 }}>{action.plainEffect}</div>
+      <div style={{ display: 'flex', gap: 12, marginTop: 4, fontSize: 10, color: '#8B97A3' }}>
+        <span>
+          Cost: <strong style={{ color: '#5A6774' }}>{action.cost}</strong>
+        </span>
+        <span style={{ color: '#217A56' }}>
+          Benefit: <strong>{action.benefit}</strong>
+        </span>
+        <span style={{ color: '#9A6B15' }}>
+          Risk: <strong>{action.risk}</strong>
+        </span>
       </div>
     </div>
   );
@@ -150,10 +202,16 @@ export function OperatorActionsPanel(): ReactElement {
 
   return (
     <div
-      className="console-panel"
-      style={{ padding: '10px 14px', display: 'flex', flexDirection: 'column', gap: 8, overflowY: 'auto' }}
+      className="console-panel animate-slide-in-left"
+      style={{
+        padding: '12px 14px',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 8,
+        overflowY: 'auto',
+      }}
     >
-      <div className="console-section-title">Operator Actions</div>
+      <PanelHeader title="DECISION" subtitle="Your available response" icon={<ZapIcon />} />
       <DirectorPrompt />
       <div>
         {OPERATOR_ACTIONS.map((action) => (

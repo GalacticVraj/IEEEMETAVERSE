@@ -43,25 +43,36 @@ export function QuickControls(): ReactElement {
     <div
       style={{
         position: 'absolute',
-        bottom: 190,
-        right: 12,
+        bottom: 192,
+        right: 16,
         zIndex: 25,
         display: 'flex',
-        gap: 6,
+        alignItems: 'center',
+        gap: 10,
         pointerEvents: 'auto',
       }}
     >
       <button
         className="console-btn"
-        style={{ padding: '3px 10px', fontSize: 11 }}
+        style={{ padding: '4px 12px', fontSize: 11, minHeight: 28, borderRadius: 6 }}
         onClick={toggleSound}
         title="Toggle the ambient + cue audio layer (shortcut: M)"
       >
-        Sound: {soundMuted ? 'OFF' : 'ON'}
+        <span>{soundMuted ? '🔇' : '🔊'}</span>
+        <span>Sound: {soundMuted ? 'OFF' : 'ON'}</span>
       </button>
       <span
         className="console-value"
-        style={{ fontSize: 10, color: '#8B97A3', alignSelf: 'center' }}
+        style={{
+          fontSize: 10.5,
+          color: '#5A6774',
+          background: 'rgba(250, 250, 247, 0.85)',
+          backdropFilter: 'blur(6px)',
+          border: '1px solid rgba(211, 215, 210, 0.7)',
+          padding: '4px 10px',
+          borderRadius: 6,
+          fontWeight: 500,
+        }}
         title="Keyboard shortcuts"
       >
         SPACE pause · O overview · M sound · ESC skip

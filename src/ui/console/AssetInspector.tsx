@@ -17,6 +17,7 @@ import {
   zoneDisplayName,
   zoneOfBuilding,
 } from './learning-copy';
+import { PanelHeader } from './PanelHeader';
 
 const TONE_COLOR: Record<string, string> = {
   nominal: '#217A56',
@@ -27,20 +28,58 @@ const TONE_COLOR: Record<string, string> = {
   recovery: '#217A56',
 };
 
+function TargetIcon(): ReactElement {
+  return (
+    <svg
+      width="15"
+      height="15"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <circle cx="12" cy="12" r="10" />
+      <line x1="12" y1="2" x2="12" y2="6" />
+      <line x1="12" y1="18" x2="12" y2="22" />
+      <line x1="2" y1="12" x2="6" y2="12" />
+      <line x1="18" y1="12" x2="22" y2="12" />
+    </svg>
+  );
+}
+
 function Section({ title, children }: { title: string; children: React.ReactNode }): ReactElement {
   return (
     <div style={{ marginBottom: 12 }}>
-      <div className="console-section-title" style={{ marginBottom: 4 }}>{title}</div>
+      <div className="console-section-title" style={{ marginBottom: 4, fontSize: 10 }}>
+        {title}
+      </div>
       <div style={{ fontSize: 12, lineHeight: 1.5, color: '#1C2530' }}>{children}</div>
     </div>
   );
 }
 
-function MetricRow({ label, value, tone }: { label: string; value: string; tone?: string | undefined }): ReactElement {
+function MetricRow({
+  label,
+  value,
+  tone,
+}: {
+  label: string;
+  value: string;
+  tone?: string | undefined;
+}): ReactElement {
   return (
-    <div style={{ display: 'flex', justifyContent: 'space-between', padding: '3px 0' }}>
-      <span style={{ fontSize: 12, color: '#5A6774' }}>{label}</span>
-      <span className="console-value" style={{ fontSize: 12, color: tone ?? '#1C2530', fontWeight: 600 }}>
+    <div
+      style={{
+        display: 'flex',
+        justifyContent: 'space-between',
+        padding: '4px 0',
+        borderBottom: '1px solid rgba(231, 233, 230, 0.5)',
+      }}
+    >
+      <span className="metric-label">{label}</span>
+      <span className="metric-value" style={{ color: tone ?? '#1C2530' }}>
         {value}
       </span>
     </div>
@@ -50,9 +89,24 @@ function MetricRow({ label, value, tone }: { label: string; value: string; tone?
 function StatusRow({ label, tone }: { label: string; tone: string }): ReactElement {
   const color = TONE_COLOR[tone] ?? TONE_COLOR['offline']!;
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 8, margin: '2px 0 12px' }}>
+    <div
+      style={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: 8,
+        margin: '6px 0 12px',
+        padding: '4px 8px',
+        background: `${color}10`,
+        borderRadius: 4,
+      }}
+    >
       <span className="status-led" style={{ background: color }} />
-      <span className="console-value" style={{ fontSize: 12, fontWeight: 600, color }}>{label}</span>
+      <span
+        className="console-value"
+        style={{ fontSize: 11, fontWeight: 700, color, letterSpacing: '0.04em' }}
+      >
+        {label}
+      </span>
     </div>
   );
 }
@@ -65,15 +119,7 @@ export function AssetInspector(): ReactElement | null {
   const generators = useGridStore((s) => s.generators);
 
   if (selected === null) {
-    return (
-      <div className="console-panel" style={{ padding: 14 }}>
-        <div className="console-section-title" style={{ marginBottom: 6 }}>Asset Inspector</div>
-        <div style={{ fontSize: 12, color: '#8B97A3', lineHeight: 1.5 }}>
-          Select a transmission line, substation, generator, or building in the
-          city to see its live status and what it means.
-        </div>
-      </div>
-    );
+    return null;
   }
 
   const close = (): void => selectAsset(null);
@@ -155,7 +201,11 @@ export function AssetInspector(): ReactElement | null {
     const explanation = explainBus(zoneId, zoneStatus);
     subtitle = `Substation bus · ${zoneDisplayName(zoneId)}`;
     const tone =
-      zoneStatus?.state === 'Blackout' ? 'critical' : zoneStatus?.state === 'Degraded' ? 'warning' : 'nominal';
+      zoneStatus?.state === 'Blackout'
+        ? 'critical'
+        : zoneStatus?.state === 'Degraded'
+          ? 'warning'
+          : 'nominal';
     body = (
       <>
         <StatusRow label={zoneStatus?.state?.toUpperCase() ?? 'POWERED'} tone={tone} />
@@ -167,7 +217,11 @@ export function AssetInspector(): ReactElement | null {
           <MetricRow
             label="Zone unserved"
             value={zoneStatus ? `${Math.round(zoneStatus.unservedLoad)} MW` : '—'}
-            tone={zoneStatus && (zoneStatus.unservedLoad as number) > 0 ? TONE_COLOR['critical'] : undefined}
+            tone={
+              zoneStatus && (zoneStatus.unservedLoad as number) > 0
+                ? TONE_COLOR['critical']
+                : undefined
+            }
           />
           <MetricRow label="Connected lines" value={String(connected.length)} />
         </Section>
@@ -201,23 +255,28 @@ export function AssetInspector(): ReactElement | null {
     );
   }
 
+  const closeButton = (
+    <button
+      className="console-btn"
+      style={{ padding: '2px 8px', fontSize: 11, minHeight: 24, borderRadius: 4 }}
+      onClick={close}
+      aria-label="Close inspector"
+    >
+      ✕
+    </button>
+  );
+
   return (
-    <div className="console-panel" style={{ padding: 14, overflowY: 'auto', maxHeight: '100%' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 2 }}>
-        <div>
-          <div className="console-value" style={{ fontSize: 13, fontWeight: 600 }}>{title}</div>
-          <div style={{ fontSize: 11, color: '#8B97A3' }}>{subtitle}</div>
-        </div>
-        <button
-          className="console-btn"
-          style={{ padding: '2px 8px', fontSize: 11, lineHeight: 1.4 }}
-          onClick={close}
-          aria-label="Close inspector"
-        >
-          ✕
-        </button>
-      </div>
-      <div style={{ borderTop: '1px solid #D3D7D2', margin: '8px 0 10px' }} />
+    <div
+      className="console-panel animate-slide-in-right"
+      style={{ padding: '12px 14px', overflowY: 'auto', maxHeight: '100%' }}
+    >
+      <PanelHeader
+        title={title}
+        subtitle={subtitle || 'Information about the selected infrastructure'}
+        icon={<TargetIcon />}
+        action={closeButton}
+      />
       {body}
     </div>
   );

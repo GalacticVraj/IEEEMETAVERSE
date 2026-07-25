@@ -44,7 +44,7 @@ export function AdvisorCard(): ReactElement | null {
     <div
       style={{
         position: 'absolute',
-        top: 58,
+        top: 60,
         left: '50%',
         transform: 'translateX(-50%)',
         zIndex: 26,
@@ -55,21 +55,36 @@ export function AdvisorCard(): ReactElement | null {
       }}
       className="animate-slide-down"
     >
-      <div className="console-panel" style={{ padding: '10px 14px', borderLeft: `3px solid ${accent}` }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
-          <span className="console-section-title" style={{ color: accent, fontSize: 10 }}>
+      <div
+        className="console-panel"
+        style={{ padding: '12px 16px', borderLeft: `4px solid ${accent}` }}
+      >
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            marginBottom: 6,
+          }}
+        >
+          <span
+            className="console-section-title"
+            style={{ color: accent, fontSize: 11, fontWeight: 700 }}
+          >
             {KIND_LABEL[message.kind] ?? 'ADVISOR'}
           </span>
           <button
             className="console-btn"
-            style={{ padding: '1px 7px', fontSize: 10, lineHeight: 1.5 }}
+            style={{ padding: '2px 8px', fontSize: 11, minHeight: 24, borderRadius: 4 }}
             onClick={dismiss}
             aria-label="Dismiss advisor message"
           >
             ✕
           </button>
         </div>
-        <div style={{ fontSize: 12, lineHeight: 1.5, color: '#1C2530' }}>{message.text}</div>
+        <div style={{ fontSize: 12.5, lineHeight: 1.5, color: '#1C2530', fontWeight: 500 }}>
+          {message.text}
+        </div>
       </div>
     </div>
   );
