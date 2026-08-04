@@ -67,6 +67,14 @@ const TOUR_STEPS: readonly StepInfo[] = [
     tip: 'Click 🛠 DEBUG anytime to inspect seed, tick timing, and solver performance.',
     position: { top: '80px', right: '20px' },
   },
+  {
+    step: 8,
+    title: 'OUTCOMES PRIMER',
+    targetName: 'Measured After-Action Scorecard',
+    body: 'Every decision you make here is measured, not graded on vibes. When your shift ends, you will see how well you kept the grid stable, how sound your trade-offs were, and how equitably the outcome landed across districts — the same numbers, run after run, so you can see yourself get better.',
+    tip: 'Scorecard dimensions: Operational Performance, System Stability, Decision Quality, Resilience, and Equity & Critical Infrastructure.',
+    position: { top: '50%', left: '50%', transform: 'translate(-50%, -50%)' },
+  },
 ];
 
 function ShieldIcon(): ReactElement {
@@ -102,6 +110,7 @@ export function OnboardingTour(): ReactElement | null {
       } else if (
         e.key === 'Enter' ||
         e.key === ' ' ||
+        e.code === 'Space' ||
         e.key === 'ArrowRight' ||
         e.key === 'ArrowDown'
       ) {

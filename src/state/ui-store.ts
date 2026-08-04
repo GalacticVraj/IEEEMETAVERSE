@@ -62,7 +62,7 @@ export const useUiStore = create<UiState>()((set) => ({
   },
   nextOnboardingStep: () => {
     set((state) => {
-      if (state.onboardingStep >= 7) {
+      if (state.onboardingStep >= 8) {
         return { onboardingActive: false, onboardingStep: 1 };
       }
       return { onboardingStep: state.onboardingStep + 1 };
