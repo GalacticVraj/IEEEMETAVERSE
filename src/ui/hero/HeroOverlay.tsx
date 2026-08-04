@@ -110,6 +110,7 @@ export function HeroOverlay(): ReactElement {
       } else if (
         e.key === 'Enter' ||
         e.key === ' ' ||
+        e.code === 'Space' ||
         e.key === 'ArrowRight' ||
         e.key === 'ArrowDown'
       ) {

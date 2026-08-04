@@ -1,5 +1,5 @@
 import { useUiStore } from '@state';
-import type { ReactElement } from 'react';
+import { useEffect, type ReactElement } from 'react';
 
 interface StepInfo {
   readonly step: number;
@@ -92,6 +92,30 @@ export function OnboardingTour(): ReactElement | null {
   const nextStep = useUiStore((s) => s.nextOnboardingStep);
   const prevStep = useUiStore((s) => s.prevOnboardingStep);
   const endTour = useUiStore((s) => s.endOnboarding);
+
+  useEffect(() => {
+    if (!onboardingActive) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        endTour();
+      } else if (
+        e.key === 'Enter' ||
+        e.key === ' ' ||
+        e.key === 'ArrowRight' ||
+        e.key === 'ArrowDown'
+      ) {
+        e.preventDefault();
+        nextStep();
+      } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+        e.preventDefault();
+        prevStep();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [onboardingActive, endTour, nextStep, prevStep]);
 
   if (!onboardingActive) return null;
 
