@@ -377,8 +377,8 @@ export function TransmissionLines(): JSX.Element {
 export function GroundPlane(): JSX.Element {
   return (
     <group name="ground-terrain">
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.5, 0]} receiveShadow>
-        <planeGeometry args={[260, 260]} />
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[-20, -0.05, 0]} receiveShadow>
+        <planeGeometry args={[220, 260]} />
         <meshStandardMaterial color="#2d4a3e" roughness={0.92} metalness={0.0} />
       </mesh>
       {/* Tightly-proportioned 180x180 grid helper */}

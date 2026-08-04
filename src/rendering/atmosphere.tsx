@@ -4,7 +4,7 @@
  * coastal rock outcrops, and shoreline vegetation.
  */
 import { useFrame } from '@react-three/fiber';
-import { useMemo, useRef } from 'react';
+import { useRef } from 'react';
 import * as THREE from 'three';
 
 // ---------------------------------------------------------------------------
@@ -53,96 +53,23 @@ function Clouds(): JSX.Element {
 }
 
 // ---------------------------------------------------------------------------
-// Natural Coastal Ocean & Shoreline — organic curved shape & smooth terrain transition
+// Rectangular Coastal Sea — clean straight coastline at map boundary X = +90
 // ---------------------------------------------------------------------------
 
 function CoastalSea(): JSX.Element {
-  const shallowRef = useRef<THREE.MeshStandardMaterial>(null);
-  const deepRef = useRef<THREE.MeshStandardMaterial>(null);
-
-  // Organic curved shoreline geometry
-  const shorelineShape = useMemo(() => {
-    const s = new THREE.Shape();
-    s.moveTo(85, -180);
-    s.bezierCurveTo(110, -100, 95, -20, 105, 40);
-    s.bezierCurveTo(115, 100, 90, 140, 110, 180);
-    s.lineTo(300, 180);
-    s.lineTo(300, -180);
-    s.closePath();
-    return s;
-  }, []);
-
-  const shallowShape = useMemo(() => {
-    const s = new THREE.Shape();
-    s.moveTo(95, -180);
-    s.bezierCurveTo(120, -100, 105, -20, 115, 40);
-    s.bezierCurveTo(125, 100, 100, 140, 120, 180);
-    s.lineTo(320, 180);
-    s.lineTo(320, -180);
-    s.closePath();
-    return s;
-  }, []);
-
-  useFrame(({ clock }) => {
-    const t = clock.elapsedTime;
-    if (shallowRef.current !== null) {
-      shallowRef.current.emissiveIntensity = 0.08 + Math.sin(t * 0.6) * 0.03;
-    }
-    if (deepRef.current !== null) {
-      deepRef.current.emissiveIntensity = 0.04 + Math.cos(t * 0.4) * 0.02;
-    }
-  });
-
   return (
     <group name="coastal-sea">
-      {/* 1. Sandy Beach dune shoreline shape */}
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.44, 0]}>
-        <shapeGeometry args={[shorelineShape]} />
-        <meshStandardMaterial color="#c2b280" roughness={0.9} transparent opacity={0.75} />
-      </mesh>
-
-      {/* 2. Shallow coastal aqua littoral zone with curved organic boundary */}
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[5, -0.36, 0]}>
-        <shapeGeometry args={[shallowShape]} />
+      {/* Rectangular ocean plane flush with the eastern map boundary (X = +90) */}
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[240, -0.15, 0]}>
+        <planeGeometry args={[300, 260]} />
         <meshStandardMaterial
-          ref={shallowRef}
-          color="#0284c7"
-          emissive="#38bdf8"
-          emissiveIntensity={0.08}
-          roughness={0.2}
-          metalness={0.4}
-          transparent
-          opacity={0.84}
-        />
-      </mesh>
-
-      {/* 3. Deep ocean basin core extending outward */}
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[160, -0.28, 0]}>
-        <planeGeometry args={[260, 400]} />
-        <meshStandardMaterial
-          ref={deepRef}
           color="#0f172a"
-          emissive="#1e3a8a"
-          emissiveIntensity={0.04}
-          metalness={0.75}
-          roughness={0.12}
+          roughness={0.4}
+          metalness={0.2}
           transparent
-          opacity={0.96}
+          opacity={0.98}
         />
       </mesh>
-
-      {/* 4. Coastal Rock Formations framing the shoreline curve */}
-      {[
-        { pos: [102, 1, 60] as const, scale: [4, 3, 5] as const },
-        { pos: [108, 0.8, -40] as const, scale: [5, 2.5, 4] as const },
-        { pos: [98, 1.2, -85] as const, scale: [3.5, 3.5, 4.5] as const },
-        { pos: [115, 0.6, 110] as const, scale: [6, 2, 6] as const },
-      ].map((rock, i) => (
-        <mesh key={i} position={rock.pos} scale={rock.scale}>
-          <dodecahedronGeometry args={[1, 1]} />
-          <meshStandardMaterial color="#475569" roughness={0.95} />
-        </mesh>
-      ))}
     </group>
   );
 }
