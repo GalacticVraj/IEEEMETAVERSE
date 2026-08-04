@@ -63,11 +63,13 @@ function CoastalSea(): JSX.Element {
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[240, -0.15, 0]}>
         <planeGeometry args={[300, 260]} />
         <meshStandardMaterial
-          color="#0f172a"
-          roughness={0.4}
-          metalness={0.2}
+          color="#0284c7"
+          emissive="#38bdf8"
+          emissiveIntensity={0.12}
+          roughness={0.25}
+          metalness={0.3}
           transparent
-          opacity={0.98}
+          opacity={0.92}
         />
       </mesh>
     </group>
