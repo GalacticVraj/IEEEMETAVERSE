@@ -132,7 +132,7 @@ export function HeroOverlay(): ReactElement {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [prologueStep]);
 
-  const currentBeat = prologueStep < 3 ? PROLOGUE_BEATS[prologueStep] : null;
+  const currentBeat = prologueStep < 3 ? (PROLOGUE_BEATS[prologueStep] ?? null) : null;
 
   return (
     <div
@@ -211,31 +211,34 @@ export function HeroOverlay(): ReactElement {
               </button>
             </div>
 
-            {/* Subtitle / Beat Title */}
-            <div
-              className="console-section-title"
-              style={{ fontSize: 11, color: '#22637E', marginBottom: 6, fontWeight: 700 }}
-            >
-              {currentBeat?.subtitle.toUpperCase()}
-            </div>
-
-            {/* Content Body */}
-            <div style={{ marginTop: 6, marginBottom: 16 }}>
-              {currentBeat?.lines.map((line, idx) => (
-                <p
-                  key={idx}
-                  style={{
-                    fontSize: idx === 0 ? 15 : 13.5,
-                    fontWeight: idx === 0 ? 600 : 400,
-                    lineHeight: 1.55,
-                    color: idx === 0 ? '#1C2530' : '#5A6774',
-                    marginTop: idx > 0 ? 10 : 0,
-                  }}
+            {/* Subtitle / Beat Title & Content Body */}
+            {currentBeat !== null && (
+              <>
+                <div
+                  className="console-section-title"
+                  style={{ fontSize: 11, color: '#22637E', marginBottom: 6, fontWeight: 700 }}
                 >
-                  {line}
-                </p>
-              ))}
-            </div>
+                  {currentBeat.subtitle.toUpperCase()}
+                </div>
+
+                <div style={{ marginTop: 6, marginBottom: 16 }}>
+                  {currentBeat.lines.map((line, idx) => (
+                    <p
+                      key={idx}
+                      style={{
+                        fontSize: idx === 0 ? 15 : 13.5,
+                        fontWeight: idx === 0 ? 600 : 400,
+                        lineHeight: 1.55,
+                        color: idx === 0 ? '#1C2530' : '#5A6774',
+                        marginTop: idx > 0 ? 10 : 0,
+                      }}
+                    >
+                      {line}
+                    </p>
+                  ))}
+                </div>
+              </>
+            )}
 
             {/* Indicator dots + Footer buttons */}
             <div
