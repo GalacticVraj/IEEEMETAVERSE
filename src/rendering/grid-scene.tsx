@@ -290,12 +290,13 @@ function AnimatedLineCorridor({
   const length = Math.sqrt(dx * dx + dz * dz);
   const angle = Math.atan2(dx, dz);
 
+  // Path A: Power flow pulses move horizontally along line corridors (z-axis) as live renewable/load flow indicators.
   useFrame(({ clock }) => {
     if (pulseRef.current && !isOpen) {
       const speed = 0.4 + loading * 1.8;
       const progress = (clock.elapsedTime * speed) % 1;
       const offset = (progress - 0.5) * length;
-      pulseRef.current.position.y = offset;
+      pulseRef.current.position.set(0, 0, offset);
     }
   });
 
