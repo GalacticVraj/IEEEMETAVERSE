@@ -149,6 +149,7 @@ export function OnboardingTour(): ReactElement | null {
           position: 'absolute',
           ...current.position,
           width: 380,
+          maxWidth: 'calc(100vw - 32px)',
           padding: '16px 18px',
           background: 'rgba(250, 250, 247, 0.98)',
           border: '1.5px solid #22637E',

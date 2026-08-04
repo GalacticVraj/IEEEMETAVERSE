@@ -10,7 +10,7 @@ import { useAppFlowStore } from '../../state/app-flow-store';
 import { useRuntime } from '../../runtime-context';
 import { startDemo } from '../prefs/demo-driver';
 import { useCameraStore } from '../../rendering/camera/camera-store';
-import { frameCity, OPERATOR_HOME, INTRO_LEGS } from '../../rendering/camera/shots';
+import { OPERATOR_HOME, INTRO_LEGS } from '../../rendering/camera/shots';
 
 const PROLOGUE_STORAGE_KEY = 'gridguard_has_seen_prologue';
 
@@ -216,12 +216,12 @@ export function HeroOverlay(): ReactElement {
               className="console-section-title"
               style={{ fontSize: 11, color: '#22637E', marginBottom: 6, fontWeight: 700 }}
             >
-              {currentBeat.subtitle.toUpperCase()}
+              {currentBeat?.subtitle.toUpperCase()}
             </div>
 
             {/* Content Body */}
             <div style={{ marginTop: 6, marginBottom: 16 }}>
-              {currentBeat.lines.map((line, idx) => (
+              {currentBeat?.lines.map((line, idx) => (
                 <p
                   key={idx}
                   style={{
