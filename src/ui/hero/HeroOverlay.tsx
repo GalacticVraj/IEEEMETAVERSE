@@ -72,7 +72,7 @@ export function HeroOverlay(): ReactElement {
     setPrologueStep(3);
   };
 
-  // Camera drift choreography during Prologue beats
+  // Camera drift choreography during Prologue beats with authored timing presets
   useEffect(() => {
     const store = useCameraStore.getState();
     if (prologueStep < 3) {
@@ -80,9 +80,15 @@ export function HeroOverlay(): ReactElement {
       if (beat !== undefined) {
         const leg = INTRO_LEGS[beat.shotIndex];
         if (leg !== undefined) {
+          const timingPresets: readonly ('CINEMATIC' | 'SLOW' | 'NORMAL')[] = [
+            'CINEMATIC',
+            'SLOW',
+            'NORMAL',
+          ];
+          const timing = timingPresets[prologueStep] ?? 'NORMAL';
           store.requestShot(
             { name: `Prologue_${prologueStep}`, pose: { position: leg.position, target: leg.target } },
-            { priority: 80, timing: 'NORMAL' },
+            { priority: 80, timing },
           );
         }
       }
