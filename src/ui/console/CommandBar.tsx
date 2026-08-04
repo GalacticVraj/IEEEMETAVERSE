@@ -20,10 +20,10 @@ const STABILITY_STYLE: Record<Stability, { color: string; bg: string }> = {
 };
 
 const STABILITY_TOOLTIP: Record<Stability, string> = {
-  NORMAL: 'Grid is operating within safe voltage and thermal line limits.',
-  ELEVATED: 'Corridor loading exceeds 80% or supply deficit exceeds 40 MW.',
-  EMERGENCY: 'Line tripped or corridor loading at 100%. High risk of cascade blackout!',
-  BLACKOUT: 'One or more city zones have lost power. Immediate restoration required.',
+  NORMAL: 'Grid operating within safe limits. Corridor loading is below 80% and frequency is nominal at 60.00 Hz.',
+  ELEVATED: 'Corridor loading exceeds 80% or supply deficit exceeds 40 MW. Monitor corridors closely for trip risks.',
+  EMERGENCY: 'Critical overload! Line tripped or corridor at 100%. Execute operator actions immediately to avoid cascade blackout.',
+  BLACKOUT: 'One or more city districts have lost power. Reconnect transmission lines to restore power to affected homes.',
 };
 
 /** Pure display mapping — reads telemetry, renders a label. */
@@ -190,8 +190,12 @@ export function CommandBar(): ReactElement {
         {active && (
           <>
             <Tooltip
-              title="Pause or Resume Simulation"
-              content="Toggle kernel ticking. Shortcut: SPACE"
+              title={paused ? 'Resume Simulation Engine' : 'Pause Simulation Engine'}
+              content={
+                paused
+                  ? 'Resumes real-time clock advancement and physics solver. Shortcut: SPACE'
+                  : 'Freezes simulation clock and physics ticks. Allows inspecting network status without time pressure. Shortcut: SPACE'
+              }
               position="bottom"
             >
               <button
@@ -203,7 +207,7 @@ export function CommandBar(): ReactElement {
             </Tooltip>
             <Tooltip
               title="End Shift Early"
-              content="Stops the run and opens After-Action review with measured score."
+              content="Concludes the active scenario run and opens the evidence-based After-Action review with measured score."
               position="bottom"
             >
               <button className="console-btn" onClick={endShift}>

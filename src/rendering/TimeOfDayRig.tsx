@@ -70,6 +70,13 @@ export function TimeOfDayRig(): ReactElement {
         castShadow
         shadow-mapSize-width={2048}
         shadow-mapSize-height={2048}
+        shadow-bias={-0.0001}
+        shadow-camera-near={10}
+        shadow-camera-far={450}
+        shadow-camera-left={-200}
+        shadow-camera-right={200}
+        shadow-camera-top={200}
+        shadow-camera-bottom={-200}
       />
       <ambientLight ref={ambientRef} intensity={0.45} color="#F5F7FA" />
       <hemisphereLight ref={hemiRef} args={['#CBD9E6', '#B8B2A6', 0.5]} />

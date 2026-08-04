@@ -62,7 +62,7 @@ export function App({ config }: AppProps): ReactElement {
         {/* Time-of-day rig: afternoon → dusk → night, driven by the sim tick.
             The heatwave peaks into the evening — physics and drama align. */}
         <color attach="background" args={['#DDE3E8']} />
-        <fog attach="fog" args={['#DDE3E8', 380, 950]} />
+        <fog attach="fog" args={['#DDE3E8', 420, 1100]} />
         <TimeOfDayRig />
 
         {/* Grid infrastructure (always visible) */}

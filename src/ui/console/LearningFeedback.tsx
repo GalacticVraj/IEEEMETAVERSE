@@ -56,6 +56,7 @@ export function LearningFeedback(): ReactElement | null {
       style={{ padding: '2px 8px', fontSize: 11, minHeight: 24, borderRadius: 4 }}
       onClick={dismiss}
       aria-label="Dismiss explanation"
+      title="Dismiss explanation card until next event"
     >
       ✕
     </button>
@@ -65,7 +66,7 @@ export function LearningFeedback(): ReactElement | null {
     <div className="console-panel animate-slide-in-right" style={{ padding: '12px 14px' }}>
       <PanelHeader
         title="UNDERSTANDING"
-        subtitle="What happened and why"
+        subtitle="Evidence-based insights explaining grid events"
         icon={<InfoIcon />}
         action={closeButton}
       />

@@ -372,7 +372,7 @@ export function CameraDirector(): ReactElement {
           minDistance={80}
           maxDistance={420}
           enableDamping
-          dampingFactor={0.08}
+          dampingFactor={0.05}
           target={orbitTarget}
           onStart={() => useCameraStore.getState().noteUserInput(performance.now())}
         />

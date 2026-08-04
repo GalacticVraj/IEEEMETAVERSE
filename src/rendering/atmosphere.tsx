@@ -1,26 +1,23 @@
 /**
- * atmosphere.tsx — lightweight environmental life: drifting clouds, animated
- * harbor water, and district identity tints. Fully procedural (no textures),
- * no per-frame allocations, and every element supports comprehension — the
- * tints teach district boundaries, the water anchors the harbor narrative.
+ * atmosphere.tsx — environmental presentation layer: drifting clouds,
+ * expansive organic curved coastline ocean water, shoreline terrain blending,
+ * coastal rock outcrops, and shoreline vegetation.
  */
 import { useFrame } from '@react-three/fiber';
 import { useMemo, useRef } from 'react';
 import * as THREE from 'three';
 
-import { ZONE_COLOR } from './layout';
-import { zoneCentroid, zoneRadius } from './camera/shots';
-
 // ---------------------------------------------------------------------------
-// Drifting clouds — flat translucent discs high above the city
+// Drifting clouds — translucent organic layers high above the city
 // ---------------------------------------------------------------------------
 
 const CLOUDS: readonly { x: number; z: number; scale: number; speed: number }[] = [
-  { x: -160, z: 60, scale: 34, speed: 1.6 },
-  { x: -40, z: -140, scale: 26, speed: 1.1 },
-  { x: 90, z: 130, scale: 40, speed: 1.3 },
-  { x: 180, z: -60, scale: 30, speed: 1.8 },
-  { x: 0, z: 40, scale: 22, speed: 0.9 },
+  { x: -160, z: 60, scale: 42, speed: 1.4 },
+  { x: -40, z: -140, scale: 32, speed: 1.1 },
+  { x: 90, z: 130, scale: 48, speed: 1.2 },
+  { x: 180, z: -60, scale: 38, speed: 1.6 },
+  { x: 0, z: 40, scale: 28, speed: 0.9 },
+  { x: -110, z: -80, scale: 35, speed: 1.3 },
 ];
 
 function Clouds(): JSX.Element {
@@ -34,7 +31,7 @@ function Clouds(): JSX.Element {
       const spec = CLOUDS[i];
       if (cloud === undefined || spec === undefined) continue;
       cloud.position.x += delta * spec.speed;
-      if (cloud.position.x > 320) cloud.position.x = -320;
+      if (cloud.position.x > 340) cloud.position.x = -340;
     }
   });
 
@@ -43,12 +40,12 @@ function Clouds(): JSX.Element {
       {CLOUDS.map((cloud, index) => (
         <mesh
           key={index}
-          position={[cloud.x, 150 + index * 7, cloud.z]}
+          position={[cloud.x, 150 + index * 6, cloud.z]}
           rotation={[-Math.PI / 2, 0, 0]}
           scale={[cloud.scale, cloud.scale * 0.55, 1]}
         >
-          <circleGeometry args={[1, 18]} />
-          <meshBasicMaterial color="#FFFFFF" transparent opacity={0.35} depthWrite={false} />
+          <circleGeometry args={[1, 24]} />
+          <meshBasicMaterial color="#FFFFFF" transparent opacity={0.32} depthWrite={false} />
         </mesh>
       ))}
     </group>
@@ -56,61 +53,94 @@ function Clouds(): JSX.Element {
 }
 
 // ---------------------------------------------------------------------------
-// Harbor water — animated shimmer anchoring the port district
+// Natural Coastal Ocean & Shoreline — organic curved shape & smooth terrain transition
 // ---------------------------------------------------------------------------
 
-function HarborWater(): JSX.Element {
-  const materialRef = useRef<THREE.MeshStandardMaterial>(null);
+function CoastalSea(): JSX.Element {
+  const shallowRef = useRef<THREE.MeshStandardMaterial>(null);
+  const deepRef = useRef<THREE.MeshStandardMaterial>(null);
+
+  // Organic curved shoreline geometry
+  const shorelineShape = useMemo(() => {
+    const s = new THREE.Shape();
+    s.moveTo(85, -180);
+    s.bezierCurveTo(110, -100, 95, -20, 105, 40);
+    s.bezierCurveTo(115, 100, 90, 140, 110, 180);
+    s.lineTo(300, 180);
+    s.lineTo(300, -180);
+    s.closePath();
+    return s;
+  }, []);
+
+  const shallowShape = useMemo(() => {
+    const s = new THREE.Shape();
+    s.moveTo(95, -180);
+    s.bezierCurveTo(120, -100, 105, -20, 115, 40);
+    s.bezierCurveTo(125, 100, 100, 140, 120, 180);
+    s.lineTo(320, 180);
+    s.lineTo(320, -180);
+    s.closePath();
+    return s;
+  }, []);
 
   useFrame(({ clock }) => {
-    if (materialRef.current !== null) {
-      materialRef.current.emissiveIntensity = 0.08 + Math.sin(clock.elapsedTime * 0.7) * 0.04;
+    const t = clock.elapsedTime;
+    if (shallowRef.current !== null) {
+      shallowRef.current.emissiveIntensity = 0.08 + Math.sin(t * 0.6) * 0.03;
+    }
+    if (deepRef.current !== null) {
+      deepRef.current.emissiveIntensity = 0.04 + Math.cos(t * 0.4) * 0.02;
     }
   });
 
   return (
-    <mesh rotation={[-Math.PI / 2, 0, 0]} position={[92, -0.35, -70]}>
-      <planeGeometry args={[120, 90]} />
-      <meshStandardMaterial
-        ref={materialRef}
-        color="#5B84A0"
-        emissive="#7FA6B8"
-        emissiveIntensity={0.08}
-        metalness={0.35}
-        roughness={0.25}
-        transparent
-        opacity={0.9}
-      />
-    </mesh>
-  );
-}
+    <group name="coastal-sea">
+      {/* 1. Sandy Beach dune shoreline shape */}
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.44, 0]}>
+        <shapeGeometry args={[shorelineShape]} />
+        <meshStandardMaterial color="#c2b280" roughness={0.9} transparent opacity={0.75} />
+      </mesh>
 
-// ---------------------------------------------------------------------------
-// District identity tints — faint zone-colored ground washes
-// ---------------------------------------------------------------------------
+      {/* 2. Shallow coastal aqua littoral zone with curved organic boundary */}
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[5, -0.36, 0]}>
+        <shapeGeometry args={[shallowShape]} />
+        <meshStandardMaterial
+          ref={shallowRef}
+          color="#0284c7"
+          emissive="#38bdf8"
+          emissiveIntensity={0.08}
+          roughness={0.2}
+          metalness={0.4}
+          transparent
+          opacity={0.84}
+        />
+      </mesh>
 
-function DistrictTints(): JSX.Element {
-  const zones = useMemo(
-    () =>
-      Object.keys(ZONE_COLOR).map((zoneId) => ({
-        zoneId,
-        centroid: zoneCentroid(zoneId),
-        radius: zoneRadius(zoneId),
-        color: ZONE_COLOR[zoneId] ?? '#888888',
-      })),
-    [],
-  );
+      {/* 3. Deep ocean basin core extending outward */}
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[160, -0.28, 0]}>
+        <planeGeometry args={[260, 400]} />
+        <meshStandardMaterial
+          ref={deepRef}
+          color="#0f172a"
+          emissive="#1e3a8a"
+          emissiveIntensity={0.04}
+          metalness={0.75}
+          roughness={0.12}
+          transparent
+          opacity={0.96}
+        />
+      </mesh>
 
-  return (
-    <group>
-      {zones.map((zone) => (
-        <mesh
-          key={zone.zoneId}
-          rotation={[-Math.PI / 2, 0, 0]}
-          position={[zone.centroid[0], -0.2, zone.centroid[1]]}
-        >
-          <circleGeometry args={[zone.radius, 28]} />
-          <meshBasicMaterial color={zone.color} transparent opacity={0.06} depthWrite={false} />
+      {/* 4. Coastal Rock Formations framing the shoreline curve */}
+      {[
+        { pos: [102, 1, 60] as const, scale: [4, 3, 5] as const },
+        { pos: [108, 0.8, -40] as const, scale: [5, 2.5, 4] as const },
+        { pos: [98, 1.2, -85] as const, scale: [3.5, 3.5, 4.5] as const },
+        { pos: [115, 0.6, 110] as const, scale: [6, 2, 6] as const },
+      ].map((rock, i) => (
+        <mesh key={i} position={rock.pos} scale={rock.scale}>
+          <dodecahedronGeometry args={[1, 1]} />
+          <meshStandardMaterial color="#475569" roughness={0.95} />
         </mesh>
       ))}
     </group>
@@ -122,8 +152,7 @@ export function Atmosphere(): JSX.Element {
   return (
     <group name="atmosphere">
       <Clouds />
-      <HarborWater />
-      <DistrictTints />
+      <CoastalSea />
     </group>
   );
 }

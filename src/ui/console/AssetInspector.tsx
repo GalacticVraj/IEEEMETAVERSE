@@ -18,6 +18,7 @@ import {
   zoneOfBuilding,
 } from './learning-copy';
 import { PanelHeader } from './PanelHeader';
+import { Tooltip } from '../common/Tooltip';
 
 const TONE_COLOR: Record<string, string> = {
   nominal: '#217A56',
@@ -64,18 +65,23 @@ function MetricRow({
   label,
   value,
   tone,
+  tooltipTitle,
+  tooltipContent,
 }: {
   label: string;
   value: string;
   tone?: string | undefined;
+  tooltipTitle?: string | undefined;
+  tooltipContent?: string | undefined;
 }): ReactElement {
-  return (
+  const content = (
     <div
       style={{
         display: 'flex',
         justifyContent: 'space-between',
         padding: '4px 0',
         borderBottom: '1px solid rgba(231, 233, 230, 0.5)',
+        width: '100%',
       }}
     >
       <span className="metric-label">{label}</span>
@@ -84,6 +90,16 @@ function MetricRow({
       </span>
     </div>
   );
+
+  if (tooltipTitle && tooltipContent) {
+    return (
+      <Tooltip title={tooltipTitle} content={tooltipContent} position="left">
+        {content}
+      </Tooltip>
+    );
+  }
+
+  return content;
 }
 
 function StatusRow({ label, tone }: { label: string; tone: string }): ReactElement {
@@ -119,7 +135,32 @@ export function AssetInspector(): ReactElement | null {
   const generators = useGridStore((s) => s.generators);
 
   if (selected === null) {
-    return null;
+    return (
+      <div className="console-panel animate-fade-in-up" style={{ padding: '12px 14px' }}>
+        <PanelHeader
+          title="ASSET INSPECTOR"
+          subtitle="Select an asset to inspect its status and behaviour"
+          icon={<TargetIcon />}
+        />
+        <div
+          style={{
+            padding: '18px 14px',
+            textAlign: 'center',
+            background: 'rgba(34, 99, 126, 0.04)',
+            borderRadius: 6,
+            border: '1px dashed rgba(34, 99, 126, 0.2)',
+          }}
+        >
+          <div style={{ fontSize: 22, marginBottom: 6 }}>🔍</div>
+          <div style={{ fontSize: 12, fontWeight: 700, color: '#1C2530', marginBottom: 4 }}>
+            No Asset Selected
+          </div>
+          <div style={{ fontSize: 11, color: '#5A6774', lineHeight: 1.45 }}>
+            Select a transmission line, generator, or substation bus on the 3D map to inspect live status and telemetry.
+          </div>
+        </div>
+      </div>
+    );
   }
 
   const close = (): void => selectAsset(null);
@@ -146,14 +187,31 @@ export function AssetInspector(): ReactElement | null {
       <>
         <StatusRow label={explanation.statusLabel} tone={explanation.statusTone} />
         <Section title="Live telemetry">
-          <MetricRow label="Flow" value={flow ? `${Math.abs(Math.round(flow.flow))} MW` : '—'} />
+          <MetricRow
+            label="Flow"
+            value={flow ? `${Math.abs(Math.round(flow.flow))} MW` : '—'}
+            tooltipTitle="Active Power Flow"
+            tooltipContent="Real-time power transfer across this 230 kV transmission line."
+          />
           <MetricRow
             label="Loading"
             value={flow ? `${Math.round((flow.loading as number) * 100)} %` : '—'}
             tone={TONE_COLOR[explanation.statusTone]}
+            tooltipTitle="Thermal Loading Percentage"
+            tooltipContent="Percentage of max capacity. Reaching 100% triggers automatic breaker trips!"
           />
-          <MetricRow label="Capacity" value={topo ? `${topo.capacity} MW` : '—'} />
-          <MetricRow label="Corridor" value={topo ? `${topo.from} → ${topo.to}` : '—'} />
+          <MetricRow
+            label="Capacity"
+            value={topo ? `${topo.capacity} MW` : '—'}
+            tooltipTitle="Thermal Rating Limit"
+            tooltipContent="Maximum continuous power this transmission conductor can carry safely."
+          />
+          <MetricRow
+            label="Corridor"
+            value={topo ? `${topo.from} → ${topo.to}` : '—'}
+            tooltipTitle="Substation Terminal Nodes"
+            tooltipContent="Origin and destination substations connected by this corridor."
+          />
         </Section>
         <Section title="Why">{explanation.cause}</Section>
         <Section title="Impact">{explanation.impact}</Section>
@@ -175,8 +233,18 @@ export function AssetInspector(): ReactElement | null {
       <>
         <StatusRow label={explanation.statusLabel} tone={explanation.statusTone} />
         <Section title="Live telemetry">
-          <MetricRow label="Output" value={live ? `${Math.round(live.outputMw)} MW` : '—'} />
-          <MetricRow label="Capacity" value={topo ? `${topo.capacity} MW` : '—'} />
+          <MetricRow
+            label="Output"
+            value={live ? `${Math.round(live.outputMw)} MW` : '—'}
+            tooltipTitle="Current Electric Output"
+            tooltipContent="Active electrical power generated and dispatched to the grid."
+          />
+          <MetricRow
+            label="Capacity"
+            value={topo ? `${topo.capacity} MW` : '—'}
+            tooltipTitle="Nameplate Name Rating"
+            tooltipContent="Maximum generation capacity of this power plant unit."
+          />
           <MetricRow
             label="Utilization"
             value={
@@ -184,6 +252,8 @@ export function AssetInspector(): ReactElement | null {
                 ? `${Math.round(((live.outputMw as number) / (topo.capacity as number)) * 100)} %`
                 : '—'
             }
+            tooltipTitle="Plant Utilization"
+            tooltipContent="Current output relative to full rated generating capacity."
           />
         </Section>
         <Section title="Why">{explanation.cause}</Section>
@@ -213,6 +283,8 @@ export function AssetInspector(): ReactElement | null {
           <MetricRow
             label="Zone served"
             value={zoneStatus ? `${Math.round(zoneStatus.servedLoad)} MW` : '—'}
+            tooltipTitle="Energized Zone Load"
+            tooltipContent="Active power currently delivered to loads in this district."
           />
           <MetricRow
             label="Zone unserved"
@@ -222,8 +294,15 @@ export function AssetInspector(): ReactElement | null {
                 ? TONE_COLOR['critical']
                 : undefined
             }
+            tooltipTitle="Unserved Load Deficit"
+            tooltipContent="Power demand currently blacked out due to lost transmission paths."
           />
-          <MetricRow label="Connected lines" value={String(connected.length)} />
+          <MetricRow
+            label="Connected lines"
+            value={String(connected.length)}
+            tooltipTitle="Corridor Connections"
+            tooltipContent="Number of 230 kV transmission lines terminating at this substation bus."
+          />
         </Section>
         <Section title="Why">{explanation.cause}</Section>
         <Section title="Impact">{explanation.impact}</Section>
@@ -242,7 +321,12 @@ export function AssetInspector(): ReactElement | null {
       <>
         <StatusRow label={dark ? 'BLACKOUT' : 'POWERED'} tone={dark ? 'critical' : 'nominal'} />
         <Section title="Priority">
-          <MetricRow label="Tier" value={`${info.priorityTier} — ${info.priorityLabel}`} />
+          <MetricRow
+            label="Tier"
+            value={`${info.priorityTier} — ${info.priorityLabel}`}
+            tooltipTitle="Critical Infrastructure Tier"
+            tooltipContent="Tier 1 = Hospitals & Emergency. Tier 2 = Municipal Water. Tier 3 = Commercial."
+          />
         </Section>
         <Section title="What this teaches">{info.teachingNote}</Section>
         {info.equityNote ? <Section title="Equity">{info.equityNote}</Section> : null}

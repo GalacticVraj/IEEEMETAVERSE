@@ -1,9 +1,9 @@
 /**
  * ConsoleShell — the mission-control frame around the 3D city.
  *
- * Grid: 48px command bar / flexible center / 176px timeline; 300px left rail,
+ * Grid: 48px command bar / flexible center / 176px timeline; 300px-360px left rail,
  * open center (the CITY is the primary experience — the shell never covers
- * it), 320px right rail. The container ignores pointer events; only panels
+ * it), 300px-360px right rail. The container ignores pointer events; only panels
  * receive them, so the 3D scene stays fully interactive through the center.
  */
 import { AppMode, useEventLogStore, useUiStore } from '@state';
@@ -36,10 +36,14 @@ export function ConsoleShell({ mode }: { mode: AppMode }): ReactElement {
         inset: 0,
         display: 'grid',
         gridTemplateRows: '48px 1fr 176px',
-        gridTemplateColumns: showRightRail ? '310px 1fr 330px' : '310px 1fr 0px',
+        gridTemplateColumns: showRightRail
+          ? 'clamp(300px, 22vw, 360px) 1fr clamp(300px, 22vw, 360px)'
+          : 'clamp(300px, 22vw, 360px) 1fr 0px',
         transition: 'grid-template-columns 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
         pointerEvents: 'none',
         zIndex: 20,
+        boxSizing: 'border-box',
+        overflow: 'hidden',
       }}
     >
       {/* Top command bar — spans all columns */}
@@ -49,14 +53,19 @@ export function ConsoleShell({ mode }: { mode: AppMode }): ReactElement {
 
       {/* Left rail: health + (scenario select | operator actions) */}
       <div
+        className="console-rail-scroll"
         style={{
           display: 'flex',
           flexDirection: 'column',
           gap: 12,
           padding: 12,
           overflowY: 'auto',
+          overflowX: 'hidden',
           pointerEvents: 'auto',
           minHeight: 0,
+          maxHeight: '100%',
+          width: '100%',
+          boxSizing: 'border-box',
         }}
       >
         <GridHealthPanel />
@@ -68,14 +77,19 @@ export function ConsoleShell({ mode }: { mode: AppMode }): ReactElement {
 
       {/* Right rail: progressive reveal (inspector + learning feedback) */}
       <div
+        className="console-rail-scroll"
         style={{
           display: 'flex',
           flexDirection: 'column',
           gap: 12,
           padding: showRightRail ? 12 : 0,
           overflowY: 'auto',
+          overflowX: 'hidden',
           pointerEvents: 'auto',
           minHeight: 0,
+          maxHeight: '100%',
+          width: '100%',
+          boxSizing: 'border-box',
           opacity: showRightRail ? 1 : 0,
           transition: 'opacity 0.3s ease, padding 0.3s ease',
         }}

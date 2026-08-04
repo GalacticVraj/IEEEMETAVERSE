@@ -113,8 +113,8 @@ function DirectorPrompt(): ReactElement | null {
         {activeDecision.options.map((option, index) => (
           <Tooltip
             key={option}
-            title="Commit Option"
-            content={`Commit "${option}" to rebalance grid parameters.`}
+            title="Commit Urgent Decision"
+            content={`Commits "${option}" to address the crisis prompt. Impact is measured in After-Action review.`}
             position="top"
           >
             <button
@@ -225,10 +225,9 @@ export function OperatorActionsPanel(): ReactElement {
         display: 'flex',
         flexDirection: 'column',
         gap: 8,
-        overflowY: 'auto',
       }}
     >
-      <PanelHeader title="DECISION" subtitle="Your available response" icon={<ZapIcon />} />
+      <PanelHeader title="DECISION" subtitle="Available operator interventions to stabilize network" icon={<ZapIcon />} />
       <DirectorPrompt />
       <div>
         {OPERATOR_ACTIONS.map((action) => (

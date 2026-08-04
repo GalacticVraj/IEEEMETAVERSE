@@ -14,7 +14,7 @@ import { useEffect, useRef } from 'react';
 import type { ReactElement } from 'react';
 
 import { useRuntime } from '../../runtime-context';
-
+import { Tooltip } from '../common/Tooltip';
 import { simClock } from './learning-copy';
 
 /** Run length used to place markers on the ruler (session default). */
@@ -101,31 +101,53 @@ export function Timeline(): ReactElement {
             TIMELINE
           </span>
         </div>
-        <div style={{ fontSize: 10.5, color: '#8B97A3', lineHeight: 1.1 }}>Simulation progress</div>
+        <div style={{ fontSize: 10.5, color: '#8B97A3', lineHeight: 1.1 }}>Major events that occurred during this simulation</div>
 
-        <div
-          className="metric-large"
-          style={{ fontSize: 18, fontWeight: 700, color: '#1C2530', marginTop: 2 }}
+        <Tooltip
+          title="Elapsed Physics Time"
+          content="Tracks real simulation time (T+00:00 to T+03:00) driving heatwave load curves and scheduled scenario events."
+          position="top"
         >
-          {simClock(tick)}
-        </div>
+          <div
+            className="metric-large"
+            style={{ fontSize: 18, fontWeight: 700, color: '#1C2530', marginTop: 2, cursor: 'help' }}
+          >
+            {simClock(tick)}
+          </div>
+        </Tooltip>
 
         {active && (
           <div style={{ display: 'flex', gap: 6, marginTop: 4 }}>
-            <button
-              className="console-btn"
-              style={{ padding: '3px 10px', fontSize: 11, minHeight: 26 }}
-              onClick={() => (paused ? runtime.session.resume() : runtime.session.pause())}
+            <Tooltip
+              title={paused ? 'Resume Simulation Engine' : 'Pause Simulation Engine'}
+              content={
+                paused
+                  ? 'Resumes real-time clock advancement and physics solver. Shortcut: SPACE'
+                  : 'Freezes simulation clock and physics ticks. Allows inspecting corridor loading without time pressure. Shortcut: SPACE'
+              }
+              position="top"
             >
-              {paused ? 'Resume' : 'Pause'}
-            </button>
-            <button
-              className="console-btn"
-              style={{ padding: '3px 10px', fontSize: 11, minHeight: 26 }}
-              onClick={restart}
+              <button
+                className="console-btn"
+                style={{ padding: '3px 10px', fontSize: 11, minHeight: 26 }}
+                onClick={() => (paused ? runtime.session.resume() : runtime.session.pause())}
+              >
+                {paused ? '▶ Resume Run' : '⏸ Pause Run'}
+              </button>
+            </Tooltip>
+            <Tooltip
+              title="Restart Crisis Scenario"
+              content="Resets clock to T+00:00, clears event log, and re-arms initial scenario faults. Use to test alternative operator strategies."
+              position="top"
             >
-              Restart
-            </button>
+              <button
+                className="console-btn"
+                style={{ padding: '3px 10px', fontSize: 11, minHeight: 26 }}
+                onClick={restart}
+              >
+                🔄 Restart Run
+              </button>
+            </Tooltip>
           </div>
         )}
       </div>
@@ -205,8 +227,8 @@ export function Timeline(): ReactElement {
             fontWeight: 600,
           }}
         >
-          <span className="console-value">T+00:00</span>
-          <span className="console-value">T+03:00</span>
+          <span className="console-value">T+00:00 (Start)</span>
+          <span className="console-value">T+03:00 (End)</span>
         </div>
       </div>
 
@@ -228,55 +250,61 @@ export function Timeline(): ReactElement {
           </div>
         ) : (
           entries.slice(-40).map((entry) => (
-            <button
+            <Tooltip
               key={entry.seq}
-              onClick={() => focusEntry(entry.seq)}
-              style={{
-                display: 'flex',
-                gap: 8,
-                width: '100%',
-                textAlign: 'left',
-                background: focusedSeq === entry.seq ? 'rgba(34, 99, 126, 0.1)' : 'transparent',
-                border:
-                  focusedSeq === entry.seq
-                    ? '1px solid rgba(34, 99, 126, 0.2)'
-                    : '1px solid transparent',
-                borderRadius: 4,
-                padding: '3px 6px',
-                cursor: 'pointer',
-                alignItems: 'baseline',
-                transition: 'background 120ms ease',
-              }}
+              title={`Inspect Event: ${entry.title}`}
+              content="Opens mentor card in the Understanding panel detailing root cause, grid impact, and recommended mitigation."
+              position="left"
             >
-              <span
-                className="console-value"
-                style={{ fontSize: 10, color: '#8B97A3', whiteSpace: 'nowrap', fontWeight: 600 }}
-              >
-                {simClock(entry.tick)}
-              </span>
-              <span
-                className="console-value"
+              <button
+                onClick={() => focusEntry(entry.seq)}
                 style={{
-                  fontSize: 10.5,
-                  fontWeight: 700,
-                  color: SEVERITY_COLOR[entry.severity] ?? '#1C2530',
-                  whiteSpace: 'nowrap',
+                  display: 'flex',
+                  gap: 8,
+                  width: '100%',
+                  textAlign: 'left',
+                  background: focusedSeq === entry.seq ? 'rgba(34, 99, 126, 0.1)' : 'transparent',
+                  border:
+                    focusedSeq === entry.seq
+                      ? '1px solid rgba(34, 99, 126, 0.2)'
+                      : '1px solid transparent',
+                  borderRadius: 4,
+                  padding: '3px 6px',
+                  cursor: 'pointer',
+                  alignItems: 'baseline',
+                  transition: 'background 120ms ease',
                 }}
               >
-                {entry.title}
-              </span>
-              <span
-                style={{
-                  fontSize: 10.5,
-                  color: '#5A6774',
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
-                  whiteSpace: 'nowrap',
-                }}
-              >
-                {entry.detail}
-              </span>
-            </button>
+                <span
+                  className="console-value"
+                  style={{ fontSize: 10, color: '#8B97A3', whiteSpace: 'nowrap', fontWeight: 600 }}
+                >
+                  {simClock(entry.tick)}
+                </span>
+                <span
+                  className="console-value"
+                  style={{
+                    fontSize: 10.5,
+                    fontWeight: 700,
+                    color: SEVERITY_COLOR[entry.severity] ?? '#1C2530',
+                    whiteSpace: 'nowrap',
+                  }}
+                >
+                  {entry.title}
+                </span>
+                <span
+                  style={{
+                    fontSize: 10.5,
+                    color: '#5A6774',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap',
+                  }}
+                >
+                  {entry.detail}
+                </span>
+              </button>
+            </Tooltip>
           ))
         )}
       </div>

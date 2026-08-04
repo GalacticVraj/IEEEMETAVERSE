@@ -55,6 +55,7 @@ function Row({
           paddingLeft: isCritical ? 6 : 0,
           paddingRight: isCritical ? 6 : 0,
           cursor: 'help',
+          transition: 'background 0.15s ease',
         }}
       >
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
@@ -99,7 +100,7 @@ export function GridHealthPanel(): ReactElement {
     <div className="console-panel animate-fade-in-up" style={{ padding: '12px 14px' }}>
       <PanelHeader
         title="GRID HEALTH"
-        subtitle="Live health of the electrical network"
+        subtitle="Live status of the electrical grid"
         icon={<ActivityIcon />}
       />
 
@@ -107,15 +108,15 @@ export function GridHealthPanel(): ReactElement {
         label="Demand"
         value={`${Math.round(totalLoad)} MW`}
         meaning={HEALTH_MEANINGS.demand}
-        tooltipTitle="Total Electrical Demand"
-        tooltipContent="Sum of all residential, commercial, industrial, and municipal loads across Meridian Bay."
+        tooltipTitle="Total Power Demand"
+        tooltipContent="Instantaneous electric load consumed across all 6 city districts. High demand during heatwaves stresses power corridors. Watch to prevent supply deficits."
       />
       <Row
         label="Generation"
         value={`${Math.round(totalGeneration)} MW`}
         meaning={HEALTH_MEANINGS.generation}
-        tooltipTitle="Total Fleet Generation"
-        tooltipContent="Combined real-time output from solar, wind, battery, gas peakers, and baseload power plants."
+        tooltipTitle="Total Grid Generation"
+        tooltipContent="Active power produced by solar, wind, gas, and storage plants. Must continuously balance demand to maintain 60.00 Hz frequency. Dispatch reserves if demand exceeds generation."
       />
       <Row
         label="Balance"
@@ -124,21 +125,21 @@ export function GridHealthPanel(): ReactElement {
         tone={balanceTone}
         isCritical={balance < -50}
         tooltipTitle="Supply-Demand Balance"
-        tooltipContent="Negative balance causes frequency drops and risks cascade trips if reserve generators cannot ramp."
+        tooltipContent="Net difference between grid generation and total load. Deficits drop frequency and risk cascade trips. Rebalance generation or execute load interventions immediately."
       />
       <Row
         label="Frequency"
         value={`${frequency.toFixed(2)} Hz`}
         meaning={HEALTH_MEANINGS.frequency}
-        tooltipTitle="AC Network Frequency"
-        tooltipContent="60.00 Hz nominal. Below 59.5 Hz triggers under-frequency load shedding relays."
+        tooltipTitle="AC Grid Frequency"
+        tooltipContent="System frequency operating at 60.00 Hz nominal. Below 59.50 Hz triggers under-frequency load shedding relays. Monitor closely during sudden generator trips."
       />
       <Row
         label="Renewables"
         value={`${Math.round(renewablePct)} %`}
         meaning={HEALTH_MEANINGS.renewables}
-        tooltipTitle="Renewable Generation Share"
-        tooltipContent="Percentage of total load currently powered by clean wind, solar, and battery storage."
+        tooltipTitle="Renewable Power Share"
+        tooltipContent="Percentage of city load powered by clean wind, solar, and battery storage. Solar output drops at sunset. Dispatch gas peakers when renewable generation declines."
       />
       <Row
         label="Corridor stress"
@@ -146,8 +147,8 @@ export function GridHealthPanel(): ReactElement {
         meaning={HEALTH_MEANINGS.corridorStress}
         tone={stressTone}
         isCritical={stressPct >= 90}
-        tooltipTitle="Max Corridor Thermal Stress"
-        tooltipContent="Highest loading percentage on any transmission corridor. Relays automatically open line breakers at 100%!"
+        tooltipTitle="Peak Corridor Stress"
+        tooltipContent="Highest thermal loading on any transmission line. Overcurrent relays automatically trip line breakers at 100%. Reroute or shed load before stress reaches 100%!"
       />
       <Row
         label="Zones dark"
@@ -159,8 +160,8 @@ export function GridHealthPanel(): ReactElement {
         meaning={HEALTH_MEANINGS.zonesDark}
         tone={darkZones.length > 0 ? '#B3261E' : undefined}
         isCritical={darkZones.length > 0}
-        tooltipTitle="Blackout Districts"
-        tooltipContent="Number of city districts currently de-energized. Restore transmission corridors to re-power affected homes."
+        tooltipTitle="Blackout District Count"
+        tooltipContent="Number of city districts currently de-energized. Deprives homes and emergency services of power. Reconnect transmission lines to restore electricity."
       />
     </div>
   );

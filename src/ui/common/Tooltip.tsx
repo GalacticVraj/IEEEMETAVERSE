@@ -26,7 +26,7 @@ export function Tooltip({
   const handleMouseEnter = (): void => {
     timeoutRef.current = setTimeout(() => {
       setVisible(true);
-    }, 150);
+    }, 100);
   };
 
   const handleMouseLeave = (): void => {
@@ -62,22 +62,23 @@ export function Tooltip({
       {visible && (
         <div
           className="animate-scale-in"
+          role="tooltip"
           style={{
             position: 'absolute',
             ...getPositionStyle(),
             zIndex: 100,
             pointerEvents: 'none',
-            background: 'rgba(24, 32, 42, 0.95)',
-            backdropFilter: 'blur(8px)',
+            background: 'rgba(20, 27, 38, 0.96)',
+            backdropFilter: 'blur(10px)',
             color: '#FAFAF7',
-            padding: '6px 10px',
+            padding: '7px 11px',
             borderRadius: 6,
-            border: '1px solid rgba(255, 255, 255, 0.15)',
-            boxShadow: '0 4px 16px rgba(0, 0, 0, 0.25)',
+            border: '1px solid rgba(255, 255, 255, 0.18)',
+            boxShadow: '0 6px 20px rgba(0, 0, 0, 0.3)',
             whiteSpace: 'nowrap',
             fontSize: 11,
-            lineHeight: 1.35,
-            maxWidth: 260,
+            lineHeight: 1.4,
+            maxWidth: 270,
           }}
         >
           {title && (
@@ -85,16 +86,16 @@ export function Tooltip({
               style={{
                 fontWeight: 700,
                 color: '#38BDF8',
-                marginBottom: 2,
+                marginBottom: 3,
                 fontSize: 10,
-                letterSpacing: '0.04em',
+                letterSpacing: '0.06em',
                 textTransform: 'uppercase',
               }}
             >
               {title}
             </div>
           )}
-          <div style={{ color: '#E2E8F0', whiteSpace: 'normal' }}>{content}</div>
+          <div style={{ color: '#E2E8F0', whiteSpace: 'normal', fontWeight: 400 }}>{content}</div>
         </div>
       )}
     </div>

@@ -8,6 +8,7 @@ import type { ReactElement } from 'react';
 
 import { useCameraStore } from './camera-store';
 import { OPERATOR_HOME } from './shots';
+import { Tooltip } from '../../ui/common/Tooltip';
 
 const skipIntro = (): void => {
   const store = useCameraStore.getState();
@@ -70,20 +71,22 @@ export function CameraHud({ dev = false }: { dev?: boolean }): ReactElement {
           </div>
         </div>
         {/* Skip */}
-        <button
-          className="console-btn-primary"
-          style={{
-            position: 'absolute',
-            bottom: 24,
-            right: 24,
-            pointerEvents: 'auto',
-            minHeight: 36,
-            padding: '8px 18px',
-          }}
-          onClick={skipIntro}
-        >
-          Skip intro ▸
-        </button>
+        <Tooltip title="Skip Cinematic Flythrough" content="Jumps directly to the active mission control console interface. Shortcut: ESC" position="top">
+          <button
+            className="console-btn-primary"
+            style={{
+              position: 'absolute',
+              bottom: 24,
+              right: 24,
+              pointerEvents: 'auto',
+              minHeight: 36,
+              padding: '8px 18px',
+            }}
+            onClick={skipIntro}
+          >
+            Skip intro ▸
+          </button>
+        </Tooltip>
       </div>
     );
   }
@@ -102,21 +105,34 @@ export function CameraHud({ dev = false }: { dev?: boolean }): ReactElement {
         pointerEvents: 'auto',
       }}
     >
-      <button
-        className="console-btn"
-        style={{ padding: '4px 14px', fontSize: 11, minHeight: 28, borderRadius: 6 }}
-        onClick={() => setAutoFollow(!autoFollow)}
-        title="When on, the camera gently follows major grid events unless you are steering"
+      <Tooltip
+        title="Auto-Follow Grid Disturbances"
+        content="Automatically pans 3D camera to active line trips and cascade events across Meridian Bay. Keeps critical faults in view during fast-moving crises."
+        position="top"
       >
-        Auto-follow: {autoFollow ? 'ON' : 'OFF'}
-      </button>
-      <button
-        className="console-btn"
-        style={{ padding: '4px 14px', fontSize: 11, minHeight: 28, borderRadius: 6 }}
-        onClick={goOverview}
+        <button
+          className="console-btn"
+          style={{ padding: '4px 14px', fontSize: 11, minHeight: 28, borderRadius: 6 }}
+          onClick={() => setAutoFollow(!autoFollow)}
+        >
+          📹 Auto-Follow: {autoFollow ? 'ON' : 'OFF'}
+        </button>
+      </Tooltip>
+
+      <Tooltip
+        title="Reset Camera Viewpoint"
+        content="Smoothly re-centers 3D camera to a top-down overview of all 6 Meridian Bay grid districts. Shortcut: O"
+        position="top"
       >
-        Overview Camera
-      </button>
+        <button
+          className="console-btn"
+          style={{ padding: '4px 14px', fontSize: 11, minHeight: 28, borderRadius: 6 }}
+          onClick={goOverview}
+        >
+          🎥 Overview Viewpoint
+        </button>
+      </Tooltip>
+
       {dev && scripted && currentShotName !== null && (
         <span
           className="console-value"

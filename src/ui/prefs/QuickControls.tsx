@@ -56,7 +56,7 @@ export function QuickControls(): ReactElement {
     >
       <Tooltip
         title="Interactive Guided Tour"
-        content="Launch the step-by-step 30-second onboarding walkthrough."
+        content="Launches a step-by-step 30-second walkthrough highlighting key Mission Control panels and controls."
         position="top"
       >
         <button
@@ -70,8 +70,8 @@ export function QuickControls(): ReactElement {
       </Tooltip>
 
       <Tooltip
-        title="Synthesized Audio Layer"
-        content="Toggle ambient background hum and crisis audio cues. Shortcut: M"
+        title="Audio Telemetry Cues"
+        content="Toggles real-time ambient grid hum and crisis alarm audio cues. Shortcut: M"
         position="top"
       >
         <button
@@ -85,8 +85,8 @@ export function QuickControls(): ReactElement {
       </Tooltip>
 
       <Tooltip
-        title="Keyboard Shortcuts"
-        content="Quick controls: Space (Pause/Resume), O (Overview camera), M (Mute), ESC (Skip)"
+        title="Keyboard Hotkeys"
+        content="Quick control hotkeys: Space (Pause/Resume run), O (Overview camera viewpoint), M (Mute/Unmute audio), ESC (Skip intro/Cancel)."
         position="top"
       >
         <span

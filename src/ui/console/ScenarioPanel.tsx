@@ -54,7 +54,7 @@ export function ScenarioPanel(): ReactElement {
     >
       <PanelHeader
         title="SELECT SCENARIO"
-        subtitle="Choose grid crisis scenario"
+        subtitle="Mission summary and crisis selection"
         icon={<CompassIcon />}
       />
 
@@ -80,65 +80,72 @@ export function ScenarioPanel(): ReactElement {
       {CRISIS_CARDS.map((card) => {
         const isSelected = card.id === selected;
         return (
-          <button
+          <Tooltip
             key={card.id}
-            data-scenario={card.id}
-            onClick={() => setSelected(card.id)}
-            style={{
-              textAlign: 'left',
-              background: isSelected ? 'rgba(34, 99, 126, 0.06)' : '#FFFFFF',
-              border: `1.5px solid ${isSelected ? '#22637E' : '#D3D7D2'}`,
-              borderRadius: 6,
-              padding: '10px 12px',
-              cursor: 'pointer',
-              transition: 'all 150ms ease',
-              boxShadow: isSelected
-                ? '0 2px 8px rgba(34, 99, 126, 0.12)'
-                : '0 1px 2px rgba(28, 37, 48, 0.04)',
-            }}
+            title={`Select ${card.label}`}
+            content={`Sets up ${card.label} (${card.difficulty} difficulty). Click to select, then click Start Scenario to begin.`}
+            position="right"
           >
-            <div
-              style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}
+            <button
+              data-scenario={card.id}
+              onClick={() => setSelected(card.id)}
+              style={{
+                width: '100%',
+                textAlign: 'left',
+                background: isSelected ? 'rgba(34, 99, 126, 0.06)' : '#FFFFFF',
+                border: `1.5px solid ${isSelected ? '#22637E' : '#D3D7D2'}`,
+                borderRadius: 6,
+                padding: '10px 12px',
+                cursor: 'pointer',
+                transition: 'all 150ms ease',
+                boxShadow: isSelected
+                  ? '0 2px 8px rgba(34, 99, 126, 0.12)'
+                  : '0 1px 2px rgba(28, 37, 48, 0.04)',
+              }}
             >
-              <span style={{ fontSize: 12.5, fontWeight: 700, color: '#1C2530' }}>
-                {card.label}
-              </span>
-              <span
-                className="console-value"
-                style={{
-                  fontSize: 10,
-                  fontWeight: 700,
-                  color: DIFFICULTY_COLOR[card.difficulty] ?? '#5A6774',
-                  letterSpacing: '0.04em',
-                }}
-              >
-                {card.difficulty.toUpperCase()}
-              </span>
-            </div>
-            <div style={{ fontSize: 11, color: '#5A6774', marginTop: 4, lineHeight: 1.45 }}>
-              {card.description}
-            </div>
-            {card.recommended === true && (
               <div
-                className="console-value"
-                style={{
-                  fontSize: 10,
-                  color: '#22637E',
-                  marginTop: 6,
-                  fontWeight: 600,
-                  letterSpacing: '0.04em',
-                }}
+                style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}
               >
-                ★ RECOMMENDED FIRST RUN
+                <span style={{ fontSize: 12.5, fontWeight: 700, color: '#1C2530' }}>
+                  {card.label}
+                </span>
+                <span
+                  className="console-value"
+                  style={{
+                    fontSize: 10,
+                    fontWeight: 700,
+                    color: DIFFICULTY_COLOR[card.difficulty] ?? '#5A6774',
+                    letterSpacing: '0.04em',
+                  }}
+                >
+                  {card.difficulty.toUpperCase()}
+                </span>
               </div>
-            )}
-          </button>
+              <div style={{ fontSize: 11, color: '#5A6774', marginTop: 4, lineHeight: 1.45 }}>
+                {card.description}
+              </div>
+              {card.recommended === true && (
+                <div
+                  className="console-value"
+                  style={{
+                    fontSize: 10,
+                    color: '#22637E',
+                    marginTop: 6,
+                    fontWeight: 600,
+                    letterSpacing: '0.04em',
+                  }}
+                >
+                  ★ RECOMMENDED FIRST RUN
+                </div>
+              )}
+            </button>
+          </Tooltip>
         );
       })}
 
       <Tooltip
-        title="Launch Selected Scenario"
-        content="Ignites real-time physics ticking and scenario events for Meridian Bay."
+        title="Start Mission Run"
+        content="Launches real-time grid physics simulation, enables operator levers, and begins score measurement."
         position="top"
       >
         <button
