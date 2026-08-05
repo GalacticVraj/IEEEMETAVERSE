@@ -12,6 +12,7 @@ build/
 # Test / coverage
 coverage/
 .vitest/
+.vite/
 
 # Logs
 logs/
