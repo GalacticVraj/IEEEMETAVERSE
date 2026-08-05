@@ -36,7 +36,9 @@ const checks = {
   scenarioAutoStarted: /Record Heatwave/.test(body ?? ''),
   consoleLive: /GRID HEALTH/i.test(body ?? ''),
   demandLive: /Demand\s*[1-9][\d,]*\s*MW/.test(body ?? ''),
-  briefingOrAdvisorPresent: /Your Mission|ADVISOR/i.test(body ?? '') || true, // briefing may be auto-passed
+  // ?demo stands the persona tutorial down for the session, so the console
+  // arrives whole; Davis still appears in play via the advisor card.
+  tutorialBypassed: !/SHIFT HANDOVER/.test(body ?? ''),
   soundToggle: /Sound: (ON|OFF)/.test(body ?? ''),
 };
 await page.screenshot({ path: 'docs/superpowers/audit/demo-02-live.png' });

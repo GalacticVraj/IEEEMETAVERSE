@@ -11,7 +11,7 @@ import { useRuntime } from '../../runtime-context';
 import { startDemo } from '../prefs/demo-driver';
 
 export function HeroOverlay(): ReactElement {
-  const enterSimulation = useAppFlowStore((s) => s.enterSimulation);
+  const beginShift = useAppFlowStore((s) => s.beginShift);
   const runtime = useRuntime();
 
   return (
@@ -34,7 +34,10 @@ export function HeroOverlay(): ReactElement {
 
       {/* Mission framing */}
       <div className="flex-1 flex flex-col items-center justify-center text-center px-6">
-        <div className="console-panel pointer-events-auto animate-fade-in-up" style={{ padding: '28px 36px', maxWidth: 560 }}>
+        <div
+          className="console-panel pointer-events-auto animate-fade-in-up"
+          style={{ padding: '28px 36px', maxWidth: 560 }}
+        >
           <div className="console-section-title" style={{ marginBottom: 10 }}>
             Meridian Bay Grid Operations
           </div>
@@ -52,15 +55,15 @@ export function HeroOverlay(): ReactElement {
             Keep the city powered through the crisis.
           </h1>
           <p style={{ marginTop: 14, fontSize: 13.5, lineHeight: 1.6, color: '#5A6774' }}>
-            A record heatwave is bearing down on Meridian Bay. Every decision —
-            cutting AC, pausing EV charging, shedding industry — has a visible,
-            physical consequence in the live simulation below.
+            A record heatwave is bearing down on Meridian Bay. Every decision — cutting AC, pausing
+            EV charging, shedding industry — has a visible, physical consequence in the live
+            simulation below.
           </p>
           <div style={{ display: 'flex', gap: 10, justifyContent: 'center', marginTop: 20 }}>
             <button
               className="console-btn-primary"
               style={{ fontSize: 14, padding: '10px 32px' }}
-              onClick={enterSimulation}
+              onClick={beginShift}
             >
               Begin Shift
             </button>

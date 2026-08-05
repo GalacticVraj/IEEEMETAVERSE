@@ -19,6 +19,7 @@ import { bindSimulationStore } from './simulation-store';
 export * from './simulation-store';
 export * from './learning-store';
 export * from './ui-store';
+export * from './tutorial-store';
 export * from './grid-store';
 export * from './app-flow-store';
 export * from './event-log-store';
@@ -26,10 +27,7 @@ export * from './run-stats-store';
 export * from './advisor-store';
 
 /** Bind every event-driven projection to the bus. Returns a combined detach. */
-export function bindStores(
-  bus: GridEventBus,
-  engine?: ISimulationEngine,
-): Unsubscribe {
+export function bindStores(bus: GridEventBus, engine?: ISimulationEngine): Unsubscribe {
   const unsubscribers: Unsubscribe[] = [
     bindSimulationStore(bus),
     bindLearningStore(bus),

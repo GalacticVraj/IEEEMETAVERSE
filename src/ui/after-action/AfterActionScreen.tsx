@@ -23,6 +23,8 @@ import {
 import { useRuntime } from '../../runtime-context';
 import { estimateHouseholdsAffected, simClock } from '../console/learning-copy';
 
+import { DavisPortrait } from '../onboarding/DavisPortrait';
+
 import { requestAdvisorNarrative } from '../advisor/advisor-client';
 import { buildAdvisorContext, buildDeterministicNarrative } from '../advisor/narrative';
 
@@ -50,7 +52,9 @@ function scoreTone(score: number): string {
 function Panel({ title, children }: { title: string; children: React.ReactNode }): ReactElement {
   return (
     <div className="console-panel" style={{ padding: '12px 16px', minWidth: 0 }}>
-      <div className="console-section-title" style={{ marginBottom: 8 }}>{title}</div>
+      <div className="console-section-title" style={{ marginBottom: 8 }}>
+        {title}
+      </div>
       {children}
     </div>
   );
@@ -58,9 +62,18 @@ function Panel({ title, children }: { title: string; children: React.ReactNode }
 
 function StatRow({ label, value }: { label: string; value: string }): ReactElement {
   return (
-    <div style={{ display: 'flex', justifyContent: 'space-between', padding: '3px 0', borderBottom: '1px solid #E7E9E6' }}>
+    <div
+      style={{
+        display: 'flex',
+        justifyContent: 'space-between',
+        padding: '3px 0',
+        borderBottom: '1px solid #E7E9E6',
+      }}
+    >
       <span style={{ fontSize: 12, color: '#5A6774' }}>{label}</span>
-      <span className="console-value" style={{ fontSize: 12, fontWeight: 600 }}>{value}</span>
+      <span className="console-value" style={{ fontSize: 12, fontWeight: 600 }}>
+        {value}
+      </span>
     </div>
   );
 }
@@ -77,7 +90,9 @@ export function AfterActionScreen(): ReactElement {
   const [twinState, setTwinState] = useState<LearnerTwinState | null>(null);
   const [records, setRecords] = useState<readonly DecisionEvidence[]>([]);
   const [narrative, setNarrative] = useState<string>('');
-  const [narrativeSource, setNarrativeSource] = useState<'deterministic' | 'gemini'>('deterministic');
+  const [narrativeSource, setNarrativeSource] = useState<'deterministic' | 'gemini'>(
+    'deterministic',
+  );
 
   const scenarioName =
     CRISIS_CARDS.find((card) => card.id === selectedCrisis)?.label ?? 'Crisis Scenario';
@@ -136,14 +151,47 @@ export function AfterActionScreen(): ReactElement {
   const unservedMwS = Math.round(stats.unservedEnergyMwTicks / 10);
 
   return (
-    <div className="absolute inset-0 z-40 pointer-events-auto" style={{ background: 'rgba(28, 37, 48, 0.55)', overflowY: 'auto' }}>
-      <div style={{ maxWidth: 1180, margin: '28px auto', padding: '0 20px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+    <div
+      className="absolute inset-0 z-40 pointer-events-auto"
+      style={{ background: 'rgba(28, 37, 48, 0.55)', overflowY: 'auto' }}
+    >
+      <div
+        style={{
+          maxWidth: 1180,
+          margin: '28px auto',
+          padding: '0 20px',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 12,
+        }}
+      >
         {/* ── Header ── */}
-        <div className="console-panel" style={{ padding: '16px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
+        <div
+          className="console-panel"
+          style={{
+            padding: '16px 20px',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            flexWrap: 'wrap',
+            gap: 12,
+          }}
+        >
           <div>
             <div className="console-section-title">After-Action Review · {scenarioName}</div>
-            <div style={{ fontSize: 24, fontWeight: 600, color: held ? '#217A56' : '#B3261E', marginTop: 2 }}>
-              {held ? 'Grid Held' : outcome === 'PartialBlackout' ? 'Partial Blackout' : 'System Blackout'}
+            <div
+              style={{
+                fontSize: 24,
+                fontWeight: 600,
+                color: held ? '#217A56' : '#B3261E',
+                marginTop: 2,
+              }}
+            >
+              {held
+                ? 'Grid Held'
+                : outcome === 'PartialBlackout'
+                  ? 'Partial Blackout'
+                  : 'System Blackout'}
             </div>
             <div style={{ fontSize: 12, color: '#5A6774' }}>
               Shift length {simClock(stats.latestTick)} · {records.length} measured intervention(s)
@@ -151,7 +199,10 @@ export function AfterActionScreen(): ReactElement {
           </div>
           {overall !== undefined && (
             <div style={{ textAlign: 'right' }}>
-              <div className="console-value" style={{ fontSize: 40, fontWeight: 600, color: scoreTone(overall.score) }}>
+              <div
+                className="console-value"
+                style={{ fontSize: 40, fontWeight: 600, color: scoreTone(overall.score) }}
+              >
                 {overall.score}
               </div>
               <div className="console-section-title">Overall Mission Rating</div>
@@ -159,43 +210,104 @@ export function AfterActionScreen(): ReactElement {
           )}
         </div>
 
-        {/* ── Advisor narrative ── */}
-        <Panel title={narrativeSource === 'gemini' ? 'Mission Debrief · AI mentor (Gemini, evidence-grounded)' : 'Mission Debrief · deterministic analysis'}>
-          <p style={{ fontSize: 13.5, lineHeight: 1.65, color: '#1C2530' }}>
-            {narrative.length > 0 ? narrative : 'Assembling the evidence from your run…'}
-          </p>
+        {/* ── Advisor narrative ──
+            Bylined to Davis: the operator who ran their handover is the one
+            debriefing them. The provenance of the text (deterministic vs.
+            Gemini rewrite of the SAME evidence) stays stated outright — the
+            persona never obscures where the words came from. */}
+        <Panel
+          title={
+            narrativeSource === 'gemini'
+              ? 'Mission Debrief · AI mentor (Gemini, evidence-grounded)'
+              : 'Mission Debrief · deterministic analysis'
+          }
+        >
+          <div style={{ display: 'flex', gap: 13 }}>
+            <DavisPortrait mood={outcome === 'success' ? 'approving' : 'grave'} size={52} />
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ display: 'flex', alignItems: 'baseline', gap: 7, marginBottom: 5 }}>
+                <span className="console-section-title" style={{ fontSize: 10 }}>
+                  CHIEF ENG. DAVIS
+                </span>
+                <span className="console-value" style={{ fontSize: 9.5, color: '#8B97A3' }}>
+                  END OF SHIFT
+                </span>
+              </div>
+              <p style={{ fontSize: 13.5, lineHeight: 1.65, color: '#1C2530', margin: 0 }}>
+                {narrative.length > 0 ? narrative : 'Assembling the evidence from your run…'}
+              </p>
+            </div>
+          </div>
         </Panel>
 
         {/* ── Scores ── */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 10 }}>
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
+            gap: 10,
+          }}
+        >
           {scores
             .filter((score) => score.id !== 'overall')
             .map((score) => (
               <div key={score.id} className="console-panel" style={{ padding: '10px 14px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
-                  <span style={{ fontSize: 12, fontWeight: 600, color: '#1C2530' }}>{score.label}</span>
-                  <span className="console-value" style={{ fontSize: 20, fontWeight: 600, color: scoreTone(score.score) }}>
+                <div
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'baseline',
+                  }}
+                >
+                  <span style={{ fontSize: 12, fontWeight: 600, color: '#1C2530' }}>
+                    {score.label}
+                  </span>
+                  <span
+                    className="console-value"
+                    style={{ fontSize: 20, fontWeight: 600, color: scoreTone(score.score) }}
+                  >
                     {score.score}
                   </span>
                 </div>
-                <div style={{ fontSize: 11, color: '#5A6774', marginTop: 4, lineHeight: 1.45 }}>{score.reason}</div>
+                <div style={{ fontSize: 11, color: '#5A6774', marginTop: 4, lineHeight: 1.45 }}>
+                  {score.reason}
+                </div>
               </div>
             ))}
         </div>
 
         {/* ── Three-column evidence ── */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 10 }}>
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
+            gap: 10,
+          }}
+        >
           {/* Grid performance */}
           <Panel title="Grid Performance">
             <StatRow label="Peak demand" value={`${Math.round(stats.peakDemandMw)} MW`} />
-            <StatRow label="Worst supply balance" value={`${Math.round(stats.worstBalanceMw)} MW`} />
-            <StatRow label="Peak corridor stress" value={`${Math.round(stats.peakCorridorStress * 100)} %`} />
-            <StatRow label="Renewable share (avg)" value={`${Math.round(stats.renewableShareAvg * 100)} %`} />
+            <StatRow
+              label="Worst supply balance"
+              value={`${Math.round(stats.worstBalanceMw)} MW`}
+            />
+            <StatRow
+              label="Peak corridor stress"
+              value={`${Math.round(stats.peakCorridorStress * 100)} %`}
+            />
+            <StatRow
+              label="Renewable share (avg)"
+              value={`${Math.round(stats.renewableShareAvg * 100)} %`}
+            />
             <StatRow label="Protection trips" value={String(stats.lineTrips)} />
             <StatRow label="Unserved energy" value={`${unservedMwS} MW·s`} />
             <StatRow
               label="Households affected (est.)"
-              value={stats.peakUnservedMw > 0 ? `≈${estimateHouseholdsAffected(stats.peakUnservedMw).toLocaleString()}` : '0'}
+              value={
+                stats.peakUnservedMw > 0
+                  ? `≈${estimateHouseholdsAffected(stats.peakUnservedMw).toLocaleString()}`
+                  : '0'
+              }
             />
             <StatRow
               label="Recovery time"
@@ -219,16 +331,36 @@ export function AfterActionScreen(): ReactElement {
               records.map((record) => {
                 const verdict = VERDICT_STYLE[record.verdict] ?? VERDICT_STYLE['pending']!;
                 return (
-                  <div key={`${record.decisionId}-${record.tick}`} style={{ padding: '6px 0', borderBottom: '1px solid #E7E9E6' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 8 }}>
-                      <span style={{ fontSize: 12, fontWeight: 600 }}>{labelForDecision(record.decisionId)}</span>
-                      <span className="console-value" style={{ fontSize: 10, fontWeight: 600, color: verdict.color }}>
+                  <div
+                    key={`${record.decisionId}-${record.tick}`}
+                    style={{ padding: '6px 0', borderBottom: '1px solid #E7E9E6' }}
+                  >
+                    <div
+                      style={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'baseline',
+                        gap: 8,
+                      }}
+                    >
+                      <span style={{ fontSize: 12, fontWeight: 600 }}>
+                        {labelForDecision(record.decisionId)}
+                      </span>
+                      <span
+                        className="console-value"
+                        style={{ fontSize: 10, fontWeight: 600, color: verdict.color }}
+                      >
                         {verdict.label}
                       </span>
                     </div>
-                    <div className="console-value" style={{ fontSize: 10.5, color: '#5A6774', marginTop: 2 }}>
+                    <div
+                      className="console-value"
+                      style={{ fontSize: 10.5, color: '#5A6774', marginTop: 2 }}
+                    >
                       {simClock(record.tick)} · stress {Math.round(record.pre.maxLoading * 100)} %
-                      {record.post !== null ? ` → ${Math.round(record.post.maxLoading * 100)} %` : ''}
+                      {record.post !== null
+                        ? ` → ${Math.round(record.post.maxLoading * 100)} %`
+                        : ''}
                     </div>
                   </div>
                 );
@@ -262,7 +394,8 @@ export function AfterActionScreen(): ReactElement {
                     />
                   </div>
                   <div style={{ fontSize: 9.5, color: '#8B97A3', marginTop: 2 }}>
-                    confidence {Math.round((concept.confidence as number) * 100)} % · {concept.evidenceCount} observation(s)
+                    confidence {Math.round((concept.confidence as number) * 100)} % ·{' '}
+                    {concept.evidenceCount} observation(s)
                   </div>
                 </div>
               ))
@@ -273,21 +406,48 @@ export function AfterActionScreen(): ReactElement {
         {/* ── Timeline ── */}
         <Panel title="Run Timeline (from the event log)">
           {importantEntries.length === 0 ? (
-            <div style={{ fontSize: 12, color: '#8B97A3' }}>No notable events were logged this run.</div>
+            <div style={{ fontSize: 12, color: '#8B97A3' }}>
+              No notable events were logged this run.
+            </div>
           ) : (
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))', gap: '2px 18px' }}>
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))',
+                gap: '2px 18px',
+              }}
+            >
               {importantEntries.map((entry) => (
-                <div key={entry.seq} style={{ display: 'flex', gap: 8, alignItems: 'baseline', padding: '2px 0' }}>
-                  <span className="console-value" style={{ fontSize: 10.5, color: '#8B97A3', whiteSpace: 'nowrap' }}>
+                <div
+                  key={entry.seq}
+                  style={{ display: 'flex', gap: 8, alignItems: 'baseline', padding: '2px 0' }}
+                >
+                  <span
+                    className="console-value"
+                    style={{ fontSize: 10.5, color: '#8B97A3', whiteSpace: 'nowrap' }}
+                  >
                     {simClock(entry.tick)}
                   </span>
                   <span
                     className="console-value"
-                    style={{ fontSize: 11, fontWeight: 600, color: SEVERITY_COLOR[entry.severity] ?? '#1C2530', whiteSpace: 'nowrap' }}
+                    style={{
+                      fontSize: 11,
+                      fontWeight: 600,
+                      color: SEVERITY_COLOR[entry.severity] ?? '#1C2530',
+                      whiteSpace: 'nowrap',
+                    }}
                   >
                     {entry.title}
                   </span>
-                  <span style={{ fontSize: 11, color: '#5A6774', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  <span
+                    style={{
+                      fontSize: 11,
+                      color: '#5A6774',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      whiteSpace: 'nowrap',
+                    }}
+                  >
                     {entry.detail}
                   </span>
                 </div>
@@ -298,10 +458,18 @@ export function AfterActionScreen(): ReactElement {
 
         {/* ── Actions ── */}
         <div style={{ display: 'flex', gap: 10, justifyContent: 'center', paddingBottom: 24 }}>
-          <button className="console-btn-primary" style={{ padding: '10px 32px', fontSize: 13 }} onClick={replay}>
+          <button
+            className="console-btn-primary"
+            style={{ padding: '10px 32px', fontSize: 13 }}
+            onClick={replay}
+          >
             Run Another Scenario
           </button>
-          <button className="console-btn" style={{ padding: '10px 32px', fontSize: 13 }} onClick={returnToHero}>
+          <button
+            className="console-btn"
+            style={{ padding: '10px 32px', fontSize: 13 }}
+            onClick={returnToHero}
+          >
             End Session
           </button>
         </div>

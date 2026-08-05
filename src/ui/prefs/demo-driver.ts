@@ -17,6 +17,7 @@ import {
   useEventLogStore,
   useGridStore,
   useSimulationStore,
+  useTutorialStore,
 } from '@state';
 
 import { useCameraStore } from '../../rendering/camera/camera-store';
@@ -58,14 +59,18 @@ export function startDemo(runtime: AppRuntime): () => void {
     cleanups.push(() => clearTimeout(timer));
   };
 
-  // Step 1: Hero → CrisisSelect (the intro flight starts itself).
+  // Step 1: Hero → Tutorial (the intro flight starts itself). The demo is a
+  // hands-free showcase, so the persona tutorial stands down and the console
+  // arrives fully assembled. Session-only: watching the demo must never cost
+  // a curious player the tutorial they haven't seen yet.
+  useTutorialStore.getState().skipForSession();
   if (useAppFlowStore.getState().mode === AppMode.Hero) {
-    useAppFlowStore.getState().enterSimulation();
+    useAppFlowStore.getState().beginShift();
   }
 
   // Step 2: when the intro lands, start the heatwave after a beat.
   const startRun = (): void => {
-    if (cancelled || useAppFlowStore.getState().mode !== AppMode.CrisisSelect) return;
+    if (cancelled || useAppFlowStore.getState().mode !== AppMode.Tutorial) return;
     useEventLogStore.getState().clear();
     runtime.session.start('heatwave');
     useAppFlowStore.getState().selectCrisis('heatwave');

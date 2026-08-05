@@ -71,7 +71,9 @@ function shotForSelection(kind: string, id: string): Shot | null {
     return at === undefined ? null : frameNode('Inspect_Substation', at, { distance: 85 });
   }
   const at = BUILDING_POSITIONS[id];
-  return at === undefined ? null : frameNode('Inspect_Building', at, { distance: 70, elevation: 0.5 });
+  return at === undefined
+    ? null
+    : frameNode('Inspect_Building', at, { distance: 70, elevation: 0.5 });
 }
 
 export function CameraDirector(): ReactElement {
@@ -100,7 +102,7 @@ export function CameraDirector(): ReactElement {
     const wasHero = prevModeRef.current === AppMode.Hero;
     prevModeRef.current = mode;
     const store = useCameraStore.getState();
-    if (wasHero && mode === AppMode.CrisisSelect && !store.introDone) {
+    if (wasHero && mode === AppMode.Tutorial && !store.introDone) {
       store.setIntroActive(true);
       store.requestShot(INTRO_SHOT, { priority: 100, timing: 'CINEMATIC' });
     }

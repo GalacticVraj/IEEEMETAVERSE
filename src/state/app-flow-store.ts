@@ -1,12 +1,18 @@
 /**
- * app-flow-store.ts — The five-mode state machine for GridGuard.
+ * app-flow-store.ts — The mode state machine for GridGuard.
  *
- * Flow: Hero → Explore → CrisisSelect → ActiveCrisis → AfterAction
+ * Flow: Hero → Tutorial → ActiveCrisis → AfterAction
  * Implemented as a simple enum in zustand (no xstate dependency needed).
  * The camera and 3D scene persist across all modes; only the HUD changes.
+ *
+ * `Tutorial` is the single pre-flight mode. On a first visit the persona
+ * teaches the console panel by panel, ending with the scenario pick; on every
+ * later visit the panels are already revealed and it behaves as a plain
+ * scenario-selection screen. Panel disclosure itself lives in `tutorial-store`.
  */
 import { GRID_EVENT } from '@constants';
 import type { GridEventBus, Unsubscribe } from '@core';
+import type { Appliance } from '@engine/model/grid';
 import { create } from 'zustand';
 
 export enum AppMode {
@@ -14,7 +20,7 @@ export enum AppMode {
   Arrival = 'Arrival',
   Explore = 'Explore',
   Briefing = 'Briefing',
-  CrisisSelect = 'CrisisSelect',
+  Tutorial = 'Tutorial',
   ActiveCrisis = 'ActiveCrisis',
   AfterAction = 'AfterAction',
 }
@@ -37,8 +43,8 @@ export const CRISIS_CARDS: CrisisCard[] = [
     label: 'Record Heatwave',
     difficulty: 'Warning',
     description:
-      'A record heatwave drives cooling demand past safe limits across Meridian Bay, '
-      + 'then a baseload generator trips its cooling system, forcing the grid toward cascade failure.',
+      'A record heatwave drives cooling demand past safe limits across Meridian Bay, ' +
+      'then a baseload generator trips its cooling system, forcing the grid toward cascade failure.',
     recommended: true,
   },
   {
@@ -46,20 +52,28 @@ export const CRISIS_CARDS: CrisisCard[] = [
     label: 'Coastal Storm',
     difficulty: 'Critical',
     description:
-      'A violent coastal storm trips critical transmission lines via lightning and flashover, '
-      + 'while the wind farm ultimately shuts down on overspeed, fragmenting the grid.',
+      'A violent coastal storm trips critical transmission lines via lightning and flashover, ' +
+      'while the wind farm ultimately shuts down on overspeed, fragmenting the grid.',
   },
   {
     id: 'equipment-failure',
     label: 'Transformer Differential Fault',
     difficulty: 'Warning',
     description:
-      'A transformer internal fault trips the DT4-HB1 main infeed, forcing power '
-      + 're-routing that thermally overloads backup paths in sequential failure.',
+      'A transformer internal fault trips the DT4-HB1 main infeed, forcing power ' +
+      're-routing that thermally overloads backup paths in sequential failure.',
   },
 ];
 
-export type BuildingType = 'hospital' | 'school' | 'corporate' | 'ev_station' | 'house_high' | 'house_low' | 'solar_farm' | 'courthouse';
+export type BuildingType =
+  | 'hospital'
+  | 'school'
+  | 'corporate'
+  | 'ev_station'
+  | 'house_high'
+  | 'house_low'
+  | 'solar_farm'
+  | 'courthouse';
 
 export interface InspectCard {
   name: string;
@@ -70,7 +84,7 @@ export interface InspectCard {
   teachingNote: string;
   incomeTier?: 'low' | 'high';
   equityNote?: string;
-  appliances?: any[];
+  appliances?: readonly Appliance[];
   priorityTier?: 1 | 2 | 3 | 4;
   priorityLabel?: string;
 }
@@ -78,7 +92,8 @@ export interface InspectCard {
 export interface Decision {
   type: string;
   label: string;
-  [key: string]: any;
+  /** Scenario-specific extras. `unknown` on purpose: callers must narrow. */
+  [key: string]: unknown;
 }
 
 export interface DecisionLogEntry {
@@ -106,7 +121,8 @@ export interface AppFlowState {
   readonly openInspectCard: (id: string, card: InspectCard) => void;
   readonly closeInspectCard: () => void;
   readonly enterBriefing: () => void;
-  readonly enterSimulation: () => void;
+  /** Hero → Tutorial. The tutorial store decides whether to teach or hand over. */
+  readonly beginShift: () => void;
   readonly selectCrisis: (id: string) => void;
   readonly resolveCrisis: (result: 'success' | 'blackout') => void;
   readonly logDecision: (entry: DecisionLogEntry) => void;
@@ -128,36 +144,39 @@ export const useAppFlowStore = create<AppFlowState>()((set) => ({
 
   enterCity: () => set({ mode: AppMode.Arrival }),
   finishArrival: () => set({ mode: AppMode.Explore, exploreEnteredAt: Date.now() }),
-  openInspectCard: (id, card) => set((s) => {
-    const newSet = new Set(s.inspectedBuildingIds);
-    newSet.add(id);
-    return { inspectedBuilding: card, hasInspectedAny: true, inspectedBuildingIds: newSet };
-  }),
+  openInspectCard: (id, card) =>
+    set((s) => {
+      const newSet = new Set(s.inspectedBuildingIds);
+      newSet.add(id);
+      return { inspectedBuilding: card, hasInspectedAny: true, inspectedBuildingIds: newSet };
+    }),
   closeInspectCard: () => set({ inspectedBuilding: null }),
   enterBriefing: () => set({ mode: AppMode.Briefing }),
-  enterSimulation: () => set({ mode: AppMode.CrisisSelect }),
+  beginShift: () => set({ mode: AppMode.Tutorial }),
   selectCrisis: (id) => set({ selectedCrisis: id, mode: AppMode.ActiveCrisis }),
   resolveCrisis: (result) => set({ crisisResult: result, mode: AppMode.AfterAction }),
   logDecision: (entry) => set((s) => ({ decisionLog: [...s.decisionLog, entry] })),
   setPostmortem: (narrative) => set({ postmortemNarrative: narrative }),
-  replay: () => set({
-    mode: AppMode.CrisisSelect,
-    crisisResult: null,
-    decisionLog: [],
-    postmortemNarrative: null,
-    selectedCrisis: null,
-  }),
-  returnToHero: () => set({
-    mode: AppMode.Hero,
-    crisisResult: null,
-    decisionLog: [],
-    postmortemNarrative: null,
-    selectedCrisis: null,
-    hasInspectedAny: false,
-    exploreEnteredAt: 0,
-    inspectedBuilding: null,
-    inspectedBuildingIds: new Set<string>()
-  }),
+  replay: () =>
+    set({
+      mode: AppMode.Tutorial,
+      crisisResult: null,
+      decisionLog: [],
+      postmortemNarrative: null,
+      selectedCrisis: null,
+    }),
+  returnToHero: () =>
+    set({
+      mode: AppMode.Hero,
+      crisisResult: null,
+      decisionLog: [],
+      postmortemNarrative: null,
+      selectedCrisis: null,
+      hasInspectedAny: false,
+      exploreEnteredAt: 0,
+      inspectedBuilding: null,
+      inspectedBuildingIds: new Set<string>(),
+    }),
 }));
 
 /** The minimal session surface the flow needs — avoids a hard infra import. */
@@ -173,8 +192,6 @@ interface StoppableSession {
 export function bindAppFlow(bus: GridEventBus, session: StoppableSession): Unsubscribe {
   return bus.on(GRID_EVENT.GameEnded, (payload) => {
     session.stop();
-    useAppFlowStore
-      .getState()
-      .resolveCrisis(payload.outcome === 'Held' ? 'success' : 'blackout');
+    useAppFlowStore.getState().resolveCrisis(payload.outcome === 'Held' ? 'success' : 'blackout');
   });
 }
