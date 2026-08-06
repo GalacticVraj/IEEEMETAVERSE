@@ -43,7 +43,7 @@ await page.waitForSelector('canvas', { timeout: 20000 });
 await page.waitForTimeout(3500); // scene settle
 await shot('01-hero');
 
-// Hero → CrisisSelect (best-effort: button may differ across revisions)
+// Hero → Tutorial (best-effort: button may differ across revisions)
 try {
   await page.getByRole('button', { name: 'Begin Shift' }).click({ timeout: 8000, force: true });
 } catch {
@@ -56,6 +56,18 @@ await shot('02a-intro-early');
 await page.waitForTimeout(4000);
 await shot('02b-intro-late');
 await page.waitForTimeout(5000); // intro (9.5 s) fully complete → console visible
+await shot('02a-tutorial');
+
+// A fresh profile lands in the persona tutorial, which withholds the scenario
+// picker until its final beat. This harness audits the CONSOLE, not the
+// onboarding (tutorial-steps.test.ts and the s4 evidence cover that), so skip
+// straight to the assembled console.
+try {
+  await page.getByRole('button', { name: 'Skip tutorial' }).click({ timeout: 5000, force: true });
+  await page.waitForTimeout(1200);
+} catch {
+  // Already completed (persisted flag) — nothing to skip.
+}
 await shot('02-crisis-select');
 
 // Start the selected (default heatwave) scenario
@@ -79,7 +91,10 @@ const sample = async () => {
   };
 };
 const s1 = await sample();
-await page.waitForTimeout(5000);
+// Headless software GPU advances ~0.15 sim-seconds per real second, so a 5 s
+// window yields <1 sim-second and rounds below the `>` threshold — a false
+// negative on a perfectly healthy run. 15 s clears it comfortably.
+await page.waitForTimeout(15_000);
 const s2 = await sample();
 const alive = s1.clockSeconds !== null && s2.clockSeconds > s1.clockSeconds && (s2.gen ?? 0) > 0;
 console.log(`tick advance ${s1.clockSeconds}s → ${s2.clockSeconds}s, gen ${s2.gen} MW, alive=${alive}`);
