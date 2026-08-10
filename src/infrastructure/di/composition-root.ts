@@ -37,7 +37,9 @@ import {
   createProtectionEngine,
 } from '@engine';
 import type { ProtectionEventMap } from '@engine';
-import { SCENARIO_REGISTRY, createScenarioRegistry,
+import {
+  SCENARIO_REGISTRY,
+  createScenarioRegistry,
   HeatwaveScenario,
   StormScenario,
   EquipmentFailureScenario,
@@ -96,9 +98,9 @@ import {
   AMBIENT_LAYER,
   AUDIO_ENGINE,
   AUDIO_MIXER,
+  AudioEngine,
   PlaceholderAdaptiveMusic,
   PlaceholderAmbientLayer,
-  PlaceholderAudioEngine,
   PlaceholderAudioMixer,
   PlaceholderSfxPlayer,
   SFX_PLAYER,
@@ -161,25 +163,32 @@ export function createCompositionRoot(config: AppConfig): Container {
     }),
   );
   container.register(CASCADE_ENGINE, () => new DeterministicCascadeEngine());
-  container.register(RESTORATION_CONTROLLER, (c) => new DeterministicRestorationController(
-    c.resolve(TOPOLOGY_SERVICE),
-    c.resolve(ELECTRICAL_GRAPH),
-    c.resolve(PROTECTION_ENGINE),
-    c.resolve(GENERATION_MODEL),
-  ));
+  container.register(
+    RESTORATION_CONTROLLER,
+    (c) =>
+      new DeterministicRestorationController(
+        c.resolve(TOPOLOGY_SERVICE),
+        c.resolve(ELECTRICAL_GRAPH),
+        c.resolve(PROTECTION_ENGINE),
+        c.resolve(GENERATION_MODEL),
+      ),
+  );
   container.register(DIRECTOR, () => new GridDirector());
-  container.register(SIMULATION_ENGINE, (c) => new GridSimulationEngine(
-    c.resolve(ELECTRICAL_GRAPH),
-    c.resolve(TOPOLOGY_SERVICE),
-    c.resolve(WEATHER_MODEL),
-    c.resolve(GENERATION_MODEL),
-    c.resolve(LOAD_MODEL),
-    c.resolve(PROTECTION_ENGINE),
-    c.resolve(CASCADE_ENGINE),
-    c.resolve(RESTORATION_CONTROLLER),
-    c.resolve(DIRECTOR),
-  ));
-
+  container.register(
+    SIMULATION_ENGINE,
+    (c) =>
+      new GridSimulationEngine(
+        c.resolve(ELECTRICAL_GRAPH),
+        c.resolve(TOPOLOGY_SERVICE),
+        c.resolve(WEATHER_MODEL),
+        c.resolve(GENERATION_MODEL),
+        c.resolve(LOAD_MODEL),
+        c.resolve(PROTECTION_ENGINE),
+        c.resolve(CASCADE_ENGINE),
+        c.resolve(RESTORATION_CONTROLLER),
+        c.resolve(DIRECTOR),
+      ),
+  );
 
   // ---- Scenarios (real registry, plugin instances) ----
   // The scenario context is its own registration so the crisis session can
@@ -205,16 +214,14 @@ export function createCompositionRoot(config: AppConfig): Container {
         getShedFraction: (id: Parameters<typeof loads.getShedFraction>[0]) =>
           loads.getShedFraction(id),
         totalDemand: () => loads.totalDemand(),
-        getLoadDemand: (id: Parameters<typeof loads.getLoadDemand>[0]) =>
-          loads.getLoadDemand(id),
+        getLoadDemand: (id: Parameters<typeof loads.getLoadDemand>[0]) => loads.getLoadDemand(id),
       },
       protection: {
         thermalFor: (line: Parameters<typeof protection.thermalFor>[0]) =>
           protection.thermalFor(line),
         breakerFor: (line: Parameters<typeof protection.breakerFor>[0]) =>
           protection.breakerFor(line),
-        relayFor: (line: Parameters<typeof protection.relayFor>[0]) =>
-          protection.relayFor(line),
+        relayFor: (line: Parameters<typeof protection.relayFor>[0]) => protection.relayFor(line),
       },
     };
   });
@@ -272,8 +279,8 @@ export function createCompositionRoot(config: AppConfig): Container {
   container.register(TIMELINE, () => new PlaceholderTimeline());
   container.register(SNAPSHOT_STORE, () => createSnapshotStore());
 
-  // ---- System E: Audio (placeholders) ----
-  container.register(AUDIO_ENGINE, () => new PlaceholderAudioEngine());
+  // ---- System E: Audio ----
+  container.register(AUDIO_ENGINE, () => new AudioEngine());
   container.register(ADAPTIVE_MUSIC, () => new PlaceholderAdaptiveMusic());
   container.register(AMBIENT_LAYER, () => new PlaceholderAmbientLayer());
   container.register(SFX_PLAYER, () => new PlaceholderSfxPlayer());

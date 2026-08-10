@@ -1,0 +1,20 @@
+{
+  "sfx": {
+    "ui.click": "audio/sfx/ui-click.mp3",
+    "action.commit": "audio/sfx/action-commit.mp3",
+    "action.error": "audio/sfx/action-error.mp3",
+    "grid.breakerTrip": "audio/sfx/breaker-trip.mp3",
+    "grid.blackout": "audio/sfx/blackout.mp3",
+    "grid.generatorLost": "audio/sfx/generator-lost.mp3",
+    "grid.stressEscalation": "audio/sfx/stress-escalation.mp3",
+    "shift.start": "audio/sfx/shift-start.mp3",
+    "shift.end": "audio/sfx/shift-end.mp3",
+    "tour.step": "audio/sfx/tour-step.mp3",
+    "rating.reveal": "audio/sfx/rating-reveal.mp3"
+  },
+  "music": {
+    "calm": { "src": "audio/music/calm.mp3", "loop": true, "loopLengthSec": 16 },
+    "tense": { "src": "audio/music/tense.mp3", "loop": true, "loopLengthSec": 16 },
+    "critical": { "src": "audio/music/critical.mp3", "loop": true, "loopLengthSec": 16 }
+  }
+}
