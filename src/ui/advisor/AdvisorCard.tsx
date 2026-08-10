@@ -3,17 +3,33 @@
  * current advisor message (evidence-grounded, from the advisor store) top-
  * center under the command bar. Auto-expires; never stacks; never covers the
  * Mission Control rails.
+ *
+ * The mentor is Chief Engineer Davis — the same person who ran the shift
+ * handover in the tutorial, still on channel one. ONLY the presentation is
+ * personified here: the message text, its evidence, and every advisor rule
+ * are untouched.
  */
 import { useEffect } from 'react';
 import type { ReactElement } from 'react';
 
 import { useAdvisorStore } from '@state';
 
+import { DavisPortrait } from '../onboarding/DavisPortrait';
+import type { DavisMood } from '../onboarding/DavisPortrait';
+
 const KIND_LABEL: Record<string, string> = {
-  question: 'ADVISOR · THINK AHEAD',
-  explanation: 'ADVISOR · WHAT JUST HAPPENED',
-  reinforcement: 'ADVISOR · WELL HELD',
-  feedback: 'ADVISOR · MEASURED RESULT',
+  question: 'THINK AHEAD',
+  explanation: 'WHAT JUST HAPPENED',
+  reinforcement: 'WELL HELD',
+  feedback: 'MEASURED RESULT',
+};
+
+/** His expression follows the kind of message the evidence produced. */
+const KIND_MOOD: Record<string, DavisMood> = {
+  question: 'focused',
+  explanation: 'grave',
+  reinforcement: 'approving',
+  feedback: 'neutral',
 };
 
 const KIND_COLOR: Record<string, string> = {
@@ -44,7 +60,7 @@ export function AdvisorCard(): ReactElement | null {
     <div
       style={{
         position: 'absolute',
-        top: 60,
+        top: 58,
         left: '50%',
         transform: 'translateX(-50%)',
         zIndex: 26,
@@ -57,33 +73,56 @@ export function AdvisorCard(): ReactElement | null {
     >
       <div
         className="console-panel"
-        style={{ padding: '12px 16px', borderLeft: `4px solid ${accent}` }}
+        style={{ padding: '10px 14px', borderLeft: `3px solid ${accent}` }}
       >
-        <div
-          style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            marginBottom: 6,
-          }}
-        >
-          <span
-            className="console-section-title"
-            style={{ color: accent, fontSize: 11, fontWeight: 700 }}
-          >
-            {KIND_LABEL[message.kind] ?? 'ADVISOR'}
-          </span>
-          <button
-            className="console-btn"
-            style={{ padding: '2px 8px', fontSize: 11, minHeight: 24, borderRadius: 4 }}
-            onClick={dismiss}
-            aria-label="Dismiss advisor message"
-          >
-            ✕
-          </button>
-        </div>
-        <div style={{ fontSize: 12.5, lineHeight: 1.5, color: '#1C2530', fontWeight: 500 }}>
-          {message.text}
+        <div style={{ display: 'flex', gap: 11 }}>
+          <DavisPortrait
+            mood={KIND_MOOD[message.kind] ?? 'neutral'}
+            size={40}
+            statusColor={accent}
+          />
+
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                marginBottom: 4,
+              }}
+            >
+              <span style={{ display: 'flex', alignItems: 'baseline', gap: 7, minWidth: 0 }}>
+                <span className="console-section-title" style={{ fontSize: 10 }}>
+                  DAVIS
+                </span>
+                <span
+                  className="console-value"
+                  style={{
+                    fontSize: 8.5,
+                    color: accent,
+                    border: `1px solid ${accent}`,
+                    borderRadius: 2,
+                    padding: '0 3px',
+                    letterSpacing: '0.1em',
+                  }}
+                >
+                  CH.01
+                </span>
+                <span className="console-section-title" style={{ color: accent, fontSize: 10 }}>
+                  {KIND_LABEL[message.kind] ?? 'ADVISORY'}
+                </span>
+              </span>
+              <button
+                className="console-btn"
+                style={{ padding: '1px 7px', fontSize: 10, lineHeight: 1.5 }}
+                onClick={dismiss}
+                aria-label="Dismiss advisor message"
+              >
+                ✕
+              </button>
+            </div>
+            <div style={{ fontSize: 12, lineHeight: 1.5, color: '#1C2530' }}>{message.text}</div>
+          </div>
         </div>
       </div>
     </div>

@@ -15,28 +15,10 @@ import type { ReactElement } from 'react';
 import type { AppRuntime } from '@infra';
 
 import { useRuntime } from '../../runtime-context';
-import { Tooltip } from '../common/Tooltip';
+
 import { simClock } from './learning-copy';
 import { OPERATOR_ACTIONS } from './operator-actions';
 import type { OperatorAction } from './operator-actions';
-import { PanelHeader } from './PanelHeader';
-
-function ZapIcon(): ReactElement {
-  return (
-    <svg
-      width="15"
-      height="15"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2.2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
-    </svg>
-  );
-}
 
 /** Emit a DecisionCommitted with REAL tick + telemetry, and journal it. */
 function commitDecision(
@@ -83,53 +65,29 @@ function DirectorPrompt(): ReactElement | null {
 
   return (
     <div
-      className="animate-scale-in"
       style={{
-        border: '1.5px solid #B4531F',
-        borderRadius: 8,
-        padding: '10px 12px',
-        background: 'rgba(180, 83, 31, 0.08)',
-        marginBottom: 8,
+        border: '1px solid #B4531F',
+        borderRadius: 2,
+        padding: '8px 10px',
+        background: 'rgba(180, 83, 31, 0.06)',
       }}
     >
-      <div
-        className="console-section-title"
-        style={{ color: '#B4531F', marginBottom: 4, fontSize: 11, fontWeight: 700 }}
-      >
-        ⚡ URGENT DECISION REQUIRED
+      <div className="console-section-title" style={{ color: '#B4531F', marginBottom: 4 }}>
+        Decision Required
       </div>
-      <div
-        style={{
-          fontSize: 12,
-          lineHeight: 1.45,
-          color: '#1C2530',
-          marginBottom: 8,
-          fontWeight: 500,
-        }}
-      >
+      <div style={{ fontSize: 11.5, lineHeight: 1.45, color: '#1C2530', marginBottom: 6 }}>
         {activeDecision.prompt}
       </div>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
         {activeDecision.options.map((option, index) => (
-          <Tooltip
+          <button
             key={option}
-            title="Commit Urgent Decision"
-            content={`Commits "${option}" to address the crisis prompt. Impact is measured in After-Action review.`}
-            position="top"
+            className="console-btn"
+            style={{ textAlign: 'left', fontSize: 11.5 }}
+            onClick={() => commitDecision(runtime, activeDecision.decisionId, index, option)}
           >
-            <button
-              className="console-btn-primary"
-              style={{
-                textAlign: 'left',
-                fontSize: 11.5,
-                justifyContent: 'flex-start',
-                width: '100%',
-              }}
-              onClick={() => commitDecision(runtime, activeDecision.decisionId, index, option)}
-            >
-              {option}
-            </button>
-          </Tooltip>
+            {option}
+          </button>
         ))}
       </div>
     </div>
@@ -139,15 +97,17 @@ function DirectorPrompt(): ReactElement | null {
 function ActionRow({
   action,
   committedAtTick,
+  armed,
   onExecute,
 }: {
   action: OperatorAction;
   committedAtTick: number | undefined;
+  armed: boolean;
   onExecute: () => void;
 }): ReactElement {
   const committed = committedAtTick !== undefined;
   return (
-    <div style={{ borderBottom: '1px solid rgba(231, 233, 230, 0.7)', padding: '8px 0' }}>
+    <div style={{ borderBottom: '1px solid #E7E9E6', padding: '7px 0' }}>
       <div
         style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8 }}
       >
@@ -157,51 +117,43 @@ function ActionRow({
         {committed ? (
           <span
             className="console-value"
-            style={{
-              fontSize: 10,
-              color: '#217A56',
-              whiteSpace: 'nowrap',
-              fontWeight: 600,
-              background: 'rgba(33, 122, 86, 0.1)',
-              padding: '2px 6px',
-              borderRadius: 4,
-            }}
+            style={{ fontSize: 10, color: '#217A56', whiteSpace: 'nowrap' }}
           >
             COMMITTED · {simClock(committedAtTick)}
           </span>
         ) : (
-          <Tooltip
-            title={`Execute ${action.label}`}
-            content={`Dispatches "${action.plainEffect}" intervention to the grid.`}
-            position="top"
+          <button
+            className="console-btn"
+            style={{ padding: '3px 10px', fontSize: 11 }}
+            onClick={onExecute}
+            disabled={!armed}
+            title={armed ? undefined : 'Levers arm when the shift starts'}
           >
-            <button
-              className="console-btn"
-              style={{ padding: '4px 12px', fontSize: 11, minHeight: 28 }}
-              onClick={onExecute}
-            >
-              Execute
-            </button>
-          </Tooltip>
+            Execute
+          </button>
         )}
       </div>
-      <div style={{ fontSize: 10.5, color: '#5A6774', marginTop: 3 }}>{action.plainEffect}</div>
-      <div style={{ display: 'flex', gap: 12, marginTop: 4, fontSize: 10, color: '#8B97A3' }}>
-        <span>
-          Cost: <strong style={{ color: '#5A6774' }}>{action.cost}</strong>
-        </span>
-        <span style={{ color: '#217A56' }}>
-          Benefit: <strong>{action.benefit}</strong>
-        </span>
-        <span style={{ color: '#9A6B15' }}>
-          Risk: <strong>{action.risk}</strong>
-        </span>
+      <div style={{ fontSize: 10.5, color: '#5A6774', marginTop: 2 }}>{action.plainEffect}</div>
+      <div style={{ display: 'flex', gap: 10, marginTop: 3, fontSize: 10, color: '#8B97A3' }}>
+        <span>Cost: {action.cost}</span>
+      </div>
+      <div style={{ display: 'flex', gap: 10, fontSize: 10, color: '#8B97A3' }}>
+        <span style={{ color: '#217A56' }}>Benefit: {action.benefit}</span>
+      </div>
+      <div style={{ display: 'flex', gap: 10, fontSize: 10, color: '#8B97A3' }}>
+        <span style={{ color: '#9A6B15' }}>Risk: {action.risk}</span>
       </div>
     </div>
   );
 }
 
-export function OperatorActionsPanel(): ReactElement {
+/**
+ * `armed` is false while the persona tutorial previews the levers before a
+ * shift has started — the player can read every cost/benefit/risk, but
+ * committing a decision at tick 0 against a stopped session would be
+ * meaningless, so Execute stays disabled until the run begins.
+ */
+export function OperatorActionsPanel({ armed = true }: { armed?: boolean }): ReactElement {
   const runtime = useRuntime();
   const selectedCrisis = useAppFlowStore((s) => s.selectedCrisis);
   const [committed, setCommitted] = useState<Record<string, number>>({});
@@ -219,15 +171,21 @@ export function OperatorActionsPanel(): ReactElement {
 
   return (
     <div
-      className="console-panel animate-slide-in-left"
+      className="console-panel"
       style={{
-        padding: '12px 14px',
+        padding: '10px 14px',
         display: 'flex',
         flexDirection: 'column',
         gap: 8,
+        overflowY: 'auto',
       }}
     >
-      <PanelHeader title="DECISION" subtitle="Available operator interventions to stabilize network" icon={<ZapIcon />} />
+      <div className="console-section-title">Operator Actions</div>
+      {!armed && (
+        <div style={{ fontSize: 10.5, color: '#8B97A3', lineHeight: 1.45 }}>
+          These arm the moment your shift starts.
+        </div>
+      )}
       <DirectorPrompt />
       <div>
         {OPERATOR_ACTIONS.map((action) => (
@@ -235,6 +193,7 @@ export function OperatorActionsPanel(): ReactElement {
             key={action.id}
             action={action}
             committedAtTick={committed[action.id]}
+            armed={armed}
             onExecute={() => execute(action)}
           />
         ))}

@@ -7,7 +7,7 @@
 import { useEffect } from 'react';
 import type { ReactElement } from 'react';
 
-import { AppMode, useAppFlowStore, useUiStore } from '@state';
+import { AppMode, useAppFlowStore, useTutorialStore, useUiStore } from '@state';
 
 import { useCameraStore } from '../../rendering/camera/camera-store';
 import { OPERATOR_HOME } from '../../rendering/camera/shots';
@@ -18,7 +18,14 @@ export function QuickControls(): ReactElement {
   const soundMuted = useUiStore((s) => s.soundMuted);
   const toggleSound = useUiStore((s) => s.toggleSound);
   const startOnboarding = useUiStore((s) => s.startOnboarding);
+  const mode = useAppFlowStore((s) => s.mode);
+  const tutorialActive = useTutorialStore((s) => s.active);
+  const restartTutorial = useTutorialStore((s) => s.restart);
   const runtime = useRuntime();
+
+  // Offered only in pre-flight, and only once Davis has stepped aside —
+  // a "replay" chip during the tutorial itself would just be noise.
+  const canReplayTutorial = mode === AppMode.Tutorial && !tutorialActive;
 
   useEffect(() => {
     const onKey = (event: KeyboardEvent): void => {
@@ -54,6 +61,17 @@ export function QuickControls(): ReactElement {
         pointerEvents: 'auto',
       }}
     >
+      {canReplayTutorial && (
+        <button
+          className="console-btn"
+          style={{ padding: '3px 10px', fontSize: 11 }}
+          onClick={restartTutorial}
+          title="Have Chief Engineer Davis walk you through the console again"
+        >
+          Replay tutorial
+        </button>
+      )}
+
       <Tooltip
         title="Interactive Guided Tour"
         content="Launches a step-by-step 30-second walkthrough highlighting key Mission Control panels and controls."

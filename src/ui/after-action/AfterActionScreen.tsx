@@ -23,9 +23,10 @@ import {
 import { useRuntime } from '../../runtime-context';
 import { estimateHouseholdsAffected, simClock } from '../console/learning-copy';
 
+import { DavisPortrait } from '../onboarding/DavisPortrait';
+
 import { requestAdvisorNarrative } from '../advisor/advisor-client';
 import { buildAdvisorContext, buildDeterministicNarrative } from '../advisor/narrative';
-import { Tooltip } from '../common/Tooltip';
 
 const VERDICT_STYLE: Record<string, { label: string; color: string }> = {
   improved: { label: 'IMPROVED', color: '#217A56' },
@@ -48,30 +49,10 @@ function scoreTone(score: number): string {
   return '#B3261E';
 }
 
-function Panel({
-  title,
-  children,
-  delay = '0s',
-}: {
-  title: string;
-  children: React.ReactNode;
-  delay?: string | undefined;
-}): ReactElement {
+function Panel({ title, children }: { title: string; children: React.ReactNode }): ReactElement {
   return (
-    <div
-      className="console-panel animate-fade-in-up"
-      style={{
-        padding: '16px 20px',
-        minWidth: 0,
-        borderRadius: 8,
-        animationDelay: delay,
-        animationFillMode: 'both',
-      }}
-    >
-      <div
-        className="console-section-title"
-        style={{ marginBottom: 10, fontSize: 11, fontWeight: 700 }}
-      >
+    <div className="console-panel" style={{ padding: '12px 16px', minWidth: 0 }}>
+      <div className="console-section-title" style={{ marginBottom: 8 }}>
         {title}
       </div>
       {children}
@@ -85,12 +66,14 @@ function StatRow({ label, value }: { label: string; value: string }): ReactEleme
       style={{
         display: 'flex',
         justifyContent: 'space-between',
-        padding: '5px 0',
-        borderBottom: '1px solid rgba(231, 233, 230, 0.7)',
+        padding: '3px 0',
+        borderBottom: '1px solid #E7E9E6',
       }}
     >
-      <span className="metric-label">{label}</span>
-      <span className="metric-value">{value}</span>
+      <span style={{ fontSize: 12, color: '#5A6774' }}>{label}</span>
+      <span className="console-value" style={{ fontSize: 12, fontWeight: 600 }}>
+        {value}
+      </span>
     </div>
   );
 }
@@ -169,47 +152,39 @@ export function AfterActionScreen(): ReactElement {
 
   return (
     <div
-      className="absolute inset-0 z-40 pointer-events-auto animate-fade-in"
-      style={{
-        background: 'rgba(28, 37, 48, 0.65)',
-        backdropFilter: 'blur(8px)',
-        overflowY: 'auto',
-      }}
+      className="absolute inset-0 z-40 pointer-events-auto"
+      style={{ background: 'rgba(28, 37, 48, 0.55)', overflowY: 'auto' }}
     >
       <div
         style={{
           maxWidth: 1180,
-          margin: '36px auto',
+          margin: '28px auto',
           padding: '0 20px',
           display: 'flex',
           flexDirection: 'column',
-          gap: 14,
+          gap: 12,
         }}
       >
         {/* ── Header ── */}
         <div
-          className="console-panel animate-slide-down"
+          className="console-panel"
           style={{
-            padding: '20px 24px',
+            padding: '16px 20px',
             display: 'flex',
             justifyContent: 'space-between',
             alignItems: 'center',
             flexWrap: 'wrap',
-            gap: 14,
-            borderRadius: 10,
+            gap: 12,
           }}
         >
           <div>
-            <div className="console-section-title" style={{ fontSize: 11, fontWeight: 700 }}>
-              AFTER-ACTION REVIEW · {scenarioName.toUpperCase()}
-            </div>
+            <div className="console-section-title">After-Action Review · {scenarioName}</div>
             <div
               style={{
-                fontSize: 26,
-                fontWeight: 700,
+                fontSize: 24,
+                fontWeight: 600,
                 color: held ? '#217A56' : '#B3261E',
-                marginTop: 4,
-                letterSpacing: '-0.02em',
+                marginTop: 2,
               }}
             >
               {held
@@ -218,72 +193,51 @@ export function AfterActionScreen(): ReactElement {
                   ? 'Partial Blackout'
                   : 'System Blackout'}
             </div>
-            <div style={{ fontSize: 12, color: '#5A6774', marginTop: 2 }}>
+            <div style={{ fontSize: 12, color: '#5A6774' }}>
               Shift length {simClock(stats.latestTick)} · {records.length} measured intervention(s)
             </div>
           </div>
           {overall !== undefined && (
-            <div
-              style={{
-                textAlign: 'right',
-                background: 'rgba(28, 37, 48, 0.04)',
-                padding: '12px 20px',
-                borderRadius: 8,
-                display: 'flex',
-                alignItems: 'center',
-                gap: 14,
-                border: '1px solid rgba(211, 215, 210, 0.6)',
-              }}
-            >
-              <svg
-                width="28"
-                height="28"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke={scoreTone(overall.score)}
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
+            <div style={{ textAlign: 'right' }}>
+              <div
+                className="console-value"
+                style={{ fontSize: 40, fontWeight: 600, color: scoreTone(overall.score) }}
               >
-                <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6" />
-                <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18" />
-                <path d="M4 22h16" />
-                <path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22" />
-                <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22" />
-                <path d="M18 2H6v7a6 6 0 0 0 12 0V2z" />
-              </svg>
-              <div>
-                <div
-                  className="metric-large"
-                  style={{
-                    fontSize: 42,
-                    fontWeight: 800,
-                    color: scoreTone(overall.score),
-                    lineHeight: 1,
-                  }}
-                >
-                  {overall.score}
-                </div>
-                <div className="console-section-title" style={{ marginTop: 4, fontSize: 10 }}>
-                  OVERALL MISSION RATING
-                </div>
+                {overall.score}
               </div>
+              <div className="console-section-title">Overall Mission Rating</div>
             </div>
           )}
         </div>
 
-        {/* ── Advisor narrative ── */}
+        {/* ── Advisor narrative ──
+            Bylined to Davis: the operator who ran their handover is the one
+            debriefing them. The provenance of the text (deterministic vs.
+            Gemini rewrite of the SAME evidence) stays stated outright — the
+            persona never obscures where the words came from. */}
         <Panel
           title={
             narrativeSource === 'gemini'
-              ? 'MISSION DEBRIEF · AI MENTOR (GEMINI, EVIDENCE-GROUNDED)'
-              : 'MISSION DEBRIEF · DETERMINISTIC ANALYSIS'
+              ? 'Mission Debrief · AI mentor (Gemini, evidence-grounded)'
+              : 'Mission Debrief · deterministic analysis'
           }
-          delay="0.1s"
         >
-          <p style={{ fontSize: 13.5, lineHeight: 1.65, color: '#1C2530' }}>
-            {narrative.length > 0 ? narrative : 'Assembling the evidence from your run…'}
-          </p>
+          <div style={{ display: 'flex', gap: 13 }}>
+            <DavisPortrait mood={outcome === 'success' ? 'approving' : 'grave'} size={52} />
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ display: 'flex', alignItems: 'baseline', gap: 7, marginBottom: 5 }}>
+                <span className="console-section-title" style={{ fontSize: 10 }}>
+                  CHIEF ENG. DAVIS
+                </span>
+                <span className="console-value" style={{ fontSize: 9.5, color: '#8B97A3' }}>
+                  END OF SHIFT
+                </span>
+              </div>
+              <p style={{ fontSize: 13.5, lineHeight: 1.65, color: '#1C2530', margin: 0 }}>
+                {narrative.length > 0 ? narrative : 'Assembling the evidence from your run…'}
+              </p>
+            </div>
+          </div>
         </Panel>
 
         {/* ── Scores ── */}
@@ -291,22 +245,13 @@ export function AfterActionScreen(): ReactElement {
           style={{
             display: 'grid',
             gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
-            gap: 12,
+            gap: 10,
           }}
         >
           {scores
             .filter((score) => score.id !== 'overall')
-            .map((score, index) => (
-              <div
-                key={score.id}
-                className="console-panel animate-fade-in-up"
-                style={{
-                  padding: '12px 16px',
-                  borderRadius: 8,
-                  animationDelay: `${0.15 + index * 0.05}s`,
-                  animationFillMode: 'both',
-                }}
-              >
+            .map((score) => (
+              <div key={score.id} className="console-panel" style={{ padding: '10px 14px' }}>
                 <div
                   style={{
                     display: 'flex',
@@ -314,12 +259,12 @@ export function AfterActionScreen(): ReactElement {
                     alignItems: 'baseline',
                   }}
                 >
-                  <span style={{ fontSize: 12.5, fontWeight: 700, color: '#1C2530' }}>
+                  <span style={{ fontSize: 12, fontWeight: 600, color: '#1C2530' }}>
                     {score.label}
                   </span>
                   <span
-                    className="metric-large"
-                    style={{ fontSize: 22, fontWeight: 700, color: scoreTone(score.score) }}
+                    className="console-value"
+                    style={{ fontSize: 20, fontWeight: 600, color: scoreTone(score.score) }}
                   >
                     {score.score}
                   </span>
@@ -336,11 +281,11 @@ export function AfterActionScreen(): ReactElement {
           style={{
             display: 'grid',
             gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
-            gap: 12,
+            gap: 10,
           }}
         >
           {/* Grid performance */}
-          <Panel title="GRID PERFORMANCE" delay="0.3s">
+          <Panel title="Grid Performance">
             <StatRow label="Peak demand" value={`${Math.round(stats.peakDemandMw)} MW`} />
             <StatRow
               label="Worst supply balance"
@@ -377,9 +322,9 @@ export function AfterActionScreen(): ReactElement {
           </Panel>
 
           {/* Decision analysis */}
-          <Panel title="DECISION ANALYSIS (MEASURED)" delay="0.35s">
+          <Panel title="Decision Analysis (measured)">
             {records.length === 0 ? (
-              <div style={{ fontSize: 12, color: '#8B97A3', paddingTop: 6 }}>
+              <div style={{ fontSize: 12, color: '#8B97A3' }}>
                 No interventions this run — the grid ran unmanaged.
               </div>
             ) : (
@@ -388,7 +333,7 @@ export function AfterActionScreen(): ReactElement {
                 return (
                   <div
                     key={`${record.decisionId}-${record.tick}`}
-                    style={{ padding: '7px 0', borderBottom: '1px solid rgba(231, 233, 230, 0.7)' }}
+                    style={{ padding: '6px 0', borderBottom: '1px solid #E7E9E6' }}
                   >
                     <div
                       style={{
@@ -398,26 +343,19 @@ export function AfterActionScreen(): ReactElement {
                         gap: 8,
                       }}
                     >
-                      <span style={{ fontSize: 12, fontWeight: 600, color: '#1C2530' }}>
+                      <span style={{ fontSize: 12, fontWeight: 600 }}>
                         {labelForDecision(record.decisionId)}
                       </span>
                       <span
                         className="console-value"
-                        style={{
-                          fontSize: 10,
-                          fontWeight: 700,
-                          color: verdict.color,
-                          background: `${verdict.color}15`,
-                          padding: '2px 6px',
-                          borderRadius: 4,
-                        }}
+                        style={{ fontSize: 10, fontWeight: 600, color: verdict.color }}
                       >
                         {verdict.label}
                       </span>
                     </div>
                     <div
                       className="console-value"
-                      style={{ fontSize: 10.5, color: '#5A6774', marginTop: 3 }}
+                      style={{ fontSize: 10.5, color: '#5A6774', marginTop: 2 }}
                     >
                       {simClock(record.tick)} · stress {Math.round(record.pre.maxLoading * 100)} %
                       {record.post !== null
@@ -431,40 +369,31 @@ export function AfterActionScreen(): ReactElement {
           </Panel>
 
           {/* Concept mastery */}
-          <Panel title="CONCEPT MASTERY (EVIDENCE-BASED)" delay="0.4s">
+          <Panel title="Concept Mastery (evidence-based)">
             {twinState === null || twinState.concepts.length === 0 ? (
-              <div style={{ fontSize: 12, color: '#8B97A3', paddingTop: 6 }}>
+              <div style={{ fontSize: 12, color: '#8B97A3' }}>
                 No measured evidence yet — interventions build your mastery profile.
               </div>
             ) : (
               twinState.concepts.map((concept) => (
-                <div key={concept.concept} style={{ padding: '6px 0' }}>
+                <div key={concept.concept} style={{ padding: '5px 0' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11.5 }}>
-                    <span style={{ color: '#1C2530', fontWeight: 500 }}>{concept.concept}</span>
-                    <span className="console-value" style={{ fontWeight: 700 }}>
+                    <span style={{ color: '#1C2530' }}>{concept.concept}</span>
+                    <span className="console-value" style={{ fontWeight: 600 }}>
                       {Math.round((concept.mastery as number) * 100)} %
                     </span>
                   </div>
-                  <div
-                    style={{
-                      height: 6,
-                      background: '#E7E9E6',
-                      borderRadius: 3,
-                      marginTop: 4,
-                      overflow: 'hidden',
-                    }}
-                  >
+                  <div style={{ height: 4, background: '#E7E9E6', borderRadius: 1, marginTop: 3 }}>
                     <div
                       style={{
-                        height: 6,
+                        height: 4,
                         width: `${Math.round((concept.mastery as number) * 100)}%`,
                         background: (concept.mastery as number) >= 0.6 ? '#217A56' : '#9A6B15',
-                        borderRadius: 3,
-                        transition: 'width 0.6s cubic-bezier(0.16, 1, 0.3, 1)',
+                        borderRadius: 1,
                       }}
                     />
                   </div>
-                  <div style={{ fontSize: 9.5, color: '#8B97A3', marginTop: 3 }}>
+                  <div style={{ fontSize: 9.5, color: '#8B97A3', marginTop: 2 }}>
                     confidence {Math.round((concept.confidence as number) * 100)} % ·{' '}
                     {concept.evidenceCount} observation(s)
                   </div>
@@ -475,7 +404,7 @@ export function AfterActionScreen(): ReactElement {
         </div>
 
         {/* ── Timeline ── */}
-        <Panel title="RUN TIMELINE (FROM EVENT LOG)" delay="0.45s">
+        <Panel title="Run Timeline (from the event log)">
           {importantEntries.length === 0 ? (
             <div style={{ fontSize: 12, color: '#8B97A3' }}>
               No notable events were logged this run.
@@ -485,22 +414,17 @@ export function AfterActionScreen(): ReactElement {
               style={{
                 display: 'grid',
                 gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))',
-                gap: '4px 20px',
+                gap: '2px 18px',
               }}
             >
               {importantEntries.map((entry) => (
                 <div
                   key={entry.seq}
-                  style={{ display: 'flex', gap: 8, alignItems: 'baseline', padding: '3px 0' }}
+                  style={{ display: 'flex', gap: 8, alignItems: 'baseline', padding: '2px 0' }}
                 >
                   <span
                     className="console-value"
-                    style={{
-                      fontSize: 10.5,
-                      color: '#8B97A3',
-                      whiteSpace: 'nowrap',
-                      fontWeight: 600,
-                    }}
+                    style={{ fontSize: 10.5, color: '#8B97A3', whiteSpace: 'nowrap' }}
                   >
                     {simClock(entry.tick)}
                   </span>
@@ -508,7 +432,7 @@ export function AfterActionScreen(): ReactElement {
                     className="console-value"
                     style={{
                       fontSize: 11,
-                      fontWeight: 700,
+                      fontWeight: 600,
                       color: SEVERITY_COLOR[entry.severity] ?? '#1C2530',
                       whiteSpace: 'nowrap',
                     }}
@@ -533,43 +457,21 @@ export function AfterActionScreen(): ReactElement {
         </Panel>
 
         {/* ── Actions ── */}
-        <div
-          className="animate-fade-in-up"
-          style={{
-            display: 'flex',
-            gap: 14,
-            justifyContent: 'center',
-            paddingBottom: 32,
-            animationDelay: '0.5s',
-            animationFillMode: 'both',
-          }}
-        >
-          <Tooltip
-            title="Play Next Scenario"
-            content="Returns to scenario selection to attempt a new grid crisis challenge or refine your operator score."
-            position="top"
+        <div style={{ display: 'flex', gap: 10, justifyContent: 'center', paddingBottom: 24 }}>
+          <button
+            className="console-btn-primary"
+            style={{ padding: '10px 32px', fontSize: 13 }}
+            onClick={replay}
           >
-            <button
-              className="console-btn-primary"
-              style={{ padding: '10px 32px', fontSize: 13, minHeight: 40 }}
-              onClick={replay}
-            >
-              Run Another Scenario
-            </button>
-          </Tooltip>
-          <Tooltip
-            title="Return to Main Menu"
-            content="Concludes your operator session and returns to the main GridGuard landing screen."
-            position="top"
+            Run Another Scenario
+          </button>
+          <button
+            className="console-btn"
+            style={{ padding: '10px 32px', fontSize: 13 }}
+            onClick={returnToHero}
           >
-            <button
-              className="console-btn"
-              style={{ padding: '10px 32px', fontSize: 13, minHeight: 40 }}
-              onClick={returnToHero}
-            >
-              End Session
-            </button>
-          </Tooltip>
+            End Session
+          </button>
         </div>
       </div>
     </div>
