@@ -4,46 +4,97 @@
 
 /* -----------------------------------------------------------------------
    GridGuard — Daylight Mission-Control Console (doctrine v2)
-   Neutral daylight surfaces, semantic status colors, restrained radii.
-   No glassmorphism, no neon, no decorative gradients.
+   Neutral daylight surfaces, semantic status colors, premium radii & elevation.
    ----------------------------------------------------------------------- */
 
-*, *::before, *::after {
+*,
+*::before,
+*::after {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
 }
 
-html, body, #root {
+html,
+body,
+#root {
   width: 100%;
   height: 100%;
   overflow: hidden;
-  background: #EEF0EF;
+  background: #eef0ef;
+  scroll-behavior: smooth;
 }
 
 body {
-  font-family: 'Inter', system-ui, sans-serif;
-  color: #1C2530;
+  font-family:
+    'Inter',
+    system-ui,
+    -apple-system,
+    sans-serif;
+  color: #1c2530;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+/* ── Custom Console Scrollbars & Smooth Scrolling ────────────────────── */
+
+.console-rail-scroll {
+  scroll-behavior: smooth;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+.console-rail-scroll::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.console-rail-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.console-rail-scroll::-webkit-scrollbar-thumb {
+  background: rgba(139, 151, 163, 0.4);
+  border-radius: 4px;
+  transition: background 0.2s ease;
+}
+
+.console-rail-scroll::-webkit-scrollbar-thumb:hover {
+  background: rgba(139, 151, 163, 0.7);
 }
 
 /* ── Console primitives ──────────────────────────────────────────────── */
 
 .console-panel {
-  background: #FAFAF7;
-  border: 1px solid #D3D7D2;
-  border-radius: 4px;
-  box-shadow: 0 1px 2px rgba(28, 37, 48, 0.06);
+  background: rgba(250, 250, 247, 0.94);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(211, 215, 210, 0.85);
+  border-radius: 8px;
+  box-shadow:
+    0 4px 16px -2px rgba(28, 37, 48, 0.06),
+    0 1px 3px rgba(28, 37, 48, 0.04);
+  transition:
+    box-shadow 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+    border-color 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: transform, box-shadow;
+}
+
+.console-panel:hover {
+  border-color: rgba(185, 191, 185, 0.9);
+  box-shadow:
+    0 8px 24px -2px rgba(28, 37, 48, 0.1),
+    0 2px 6px rgba(28, 37, 48, 0.05);
 }
 
 .console-section-title {
   font-family: 'JetBrains Mono', ui-monospace, monospace;
   font-size: 11px;
-  font-weight: 600;
+  font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  color: #5A6774;
+  color: #5a6774;
 }
 
 .console-value {
@@ -51,162 +102,299 @@ body {
   font-variant-numeric: tabular-nums;
 }
 
-.console-btn {
-  background: #FFFFFF;
-  color: #1C2530;
-  border: 1px solid #D3D7D2;
-  border-radius: 2px;
-  padding: 6px 14px;
-  font-family: 'Inter', system-ui, sans-serif;
-  font-weight: 500;
-  font-size: 12px;
-  cursor: pointer;
-  transition: background 120ms ease, border-color 120ms ease;
-}
-.console-btn:hover {
-  background: #F1F3F1;
-  border-color: #B9BFB9;
-}
-.console-btn:disabled {
-  color: #8B97A3;
-  cursor: default;
-  background: #F5F6F4;
+.metric-large {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 20px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
 }
 
-.console-btn-primary {
-  background: #22637E;
-  color: #FAFAF7;
-  border: 1px solid #1B4F65;
-  border-radius: 2px;
+.metric-value {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 13px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.metric-label {
+  font-size: 12px;
+  color: #5a6774;
+  font-weight: 500;
+}
+
+/* ── Buttons ─────────────────────────────────────────────────────────── */
+
+.console-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 32px;
+  background: #ffffff;
+  color: #1c2530;
+  border: 1px solid #d3d7d2;
+  border-radius: 6px;
   padding: 6px 14px;
   font-family: 'Inter', system-ui, sans-serif;
   font-weight: 600;
   font-size: 12px;
+  line-height: 1.2;
   cursor: pointer;
-  transition: background 120ms ease;
+  box-shadow: 0 1px 2px rgba(28, 37, 48, 0.04);
+  transition:
+    background 150ms ease,
+    border-color 150ms ease,
+    transform 150ms cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 150ms ease;
+  will-change: transform;
 }
-.console-btn-primary:hover {
-  background: #1B4F65;
+.console-btn:hover:not(:disabled) {
+  background: #f4f6f4;
+  border-color: #b9bfb9;
+  transform: translateY(-1px);
+  box-shadow: 0 3px 8px rgba(28, 37, 48, 0.08);
+}
+.console-btn:active:not(:disabled) {
+  transform: scale(0.98);
+  box-shadow: 0 1px 2px rgba(28, 37, 48, 0.04);
+}
+.console-btn:disabled {
+  color: #8b97a3;
+  cursor: not-allowed;
+  background: #f5f6f4;
+  border-color: #e2e6e1;
+  box-shadow: none;
+  opacity: 0.65;
+}
+
+.console-btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 34px;
+  background: #22637e;
+  color: #fafaf7;
+  border: 1px solid #1b4f65;
+  border-radius: 6px;
+  padding: 6px 16px;
+  font-family: 'Inter', system-ui, sans-serif;
+  font-weight: 600;
+  font-size: 12px;
+  line-height: 1.2;
+  cursor: pointer;
+  box-shadow: 0 2px 4px rgba(34, 99, 126, 0.25);
+  transition:
+    background 150ms ease,
+    transform 150ms cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 150ms ease;
+  will-change: transform;
+}
+.console-btn-primary:hover:not(:disabled) {
+  background: #1b4f65;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(27, 79, 101, 0.35);
+}
+.console-btn-primary:active:not(:disabled) {
+  transform: scale(0.98);
+  box-shadow: 0 1px 2px rgba(27, 79, 101, 0.2);
 }
 .console-btn-primary:disabled {
-  background: #7FA6B8;
-  border-color: #7FA6B8;
-  cursor: default;
+  background: #89b2c4;
+  border-color: #89b2c4;
+  color: #eaf2f5;
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.console-btn:focus-visible,
+.console-btn-primary:focus-visible {
+  outline: 2px solid #22637e;
+  outline-offset: 2px;
+  box-shadow: 0 0 0 3px rgba(34, 99, 126, 0.2);
 }
 
 .status-led {
   display: inline-block;
   width: 8px;
   height: 8px;
-  border-radius: 1px;
+  border-radius: 50%;
   flex: none;
 }
 
-/* ── Legacy aliases (still-mounted old screens degrade professionally) ── */
+/* ── Legacy aliases ───────────────────────────────────────────────────── */
 
 .glass-panel,
-.glass-panel-solid {
-  background: #FAFAF7;
-  border: 1px solid #D3D7D2;
-  border-radius: 4px;
-  box-shadow: 0 1px 2px rgba(28, 37, 48, 0.06);
-  color: #1C2530;
-}
-
+.glass-panel-solid,
 .liquid-glass {
-  background: #FAFAF7;
-  border: 1px solid #D3D7D2;
-  border-radius: 4px;
+  background: rgba(250, 250, 247, 0.94);
+  border: 1px solid #d3d7d2;
+  border-radius: 8px;
+  box-shadow: 0 4px 16px -2px rgba(28, 37, 48, 0.06);
+  color: #1c2530;
 }
 
 .btn-moss {
-  background: #22637E;
-  color: #FAFAF7;
-  border: 1px solid #1B4F65;
+  background: #22637e;
+  color: #fafaf7;
+  border: 1px solid #1b4f65;
   padding: 10px 24px;
-  border-radius: 2px;
+  border-radius: 6px;
   font-family: 'Inter', system-ui, sans-serif;
   font-weight: 600;
   font-size: 14px;
   cursor: pointer;
-  transition: background 120ms ease;
+  transition:
+    background 150ms ease,
+    transform 150ms ease;
 }
 .btn-moss:hover {
-  background: #1B4F65;
+  background: #1b4f65;
+  transform: translateY(-1px);
+}
+.btn-moss:active {
+  transform: scale(0.98);
 }
 
 .btn-outline {
   background: transparent;
-  color: #22637E;
-  border: 1px solid #D3D7D2;
+  color: #22637e;
+  border: 1px solid #d3d7d2;
   padding: 8px 20px;
-  border-radius: 2px;
+  border-radius: 6px;
   font-family: 'Inter', system-ui, sans-serif;
   font-weight: 500;
   font-size: 13px;
   cursor: pointer;
-  transition: background 120ms ease, border-color 120ms ease;
+  transition:
+    background 150ms ease,
+    border-color 150ms ease;
 }
 .btn-outline:hover {
-  background: #F1F3F1;
-  border-color: #22637E;
+  background: #f1f3f1;
+  border-color: #22637e;
+}
+.btn-outline:active {
+  transform: scale(0.98);
 }
 
-/* ── Microinteractions (intentional, quiet) ──────────────────────────── */
+/* ── Microinteractions & Animations ─────────────────────────────────── */
 
 @keyframes panelIn {
-  from { opacity: 0; transform: translateY(6px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translate3d(0, 6px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .console-panel { animation: panelIn 0.3s ease-out; }
-  .console-btn, .console-btn-primary {
-    transition: background 120ms ease, border-color 120ms ease,
-      transform 120ms ease, box-shadow 120ms ease;
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translate3d(20px, 0, 0);
   }
-  .console-btn:hover:not(:disabled), .console-btn-primary:hover:not(:disabled) {
-    transform: translateY(-1px);
-    box-shadow: 0 2px 6px rgba(28, 37, 48, 0.12);
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
   }
-  .console-btn:active:not(:disabled), .console-btn-primary:active:not(:disabled) {
-    transform: translateY(0);
-    box-shadow: none;
-  }
-  .console-value { transition: color 0.25s ease; }
 }
 
-/* ── Accessibility: reduced motion kills ALL animation ───────────────── */
+@keyframes slideInLeft {
+  from {
+    opacity: 0;
+    transform: translate3d(-10px, 0, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 10px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translate3d(0, -8px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+.animate-slide-in-right {
+  animation: slideInRight 0.28s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  will-change: transform, opacity;
+}
+.animate-slide-in-left {
+  animation: slideInLeft 0.28s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  will-change: transform, opacity;
+}
+.animate-scale-in {
+  animation: scaleIn 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  will-change: transform, opacity;
+}
+.animate-fade-in-up {
+  animation: fadeInUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  will-change: transform, opacity;
+}
+.animate-fade-in {
+  animation: fadeIn 0.22s ease-out forwards;
+  will-change: opacity;
+}
+.animate-slide-down {
+  animation: slideDown 0.28s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  will-change: transform, opacity;
+}
+.animate-pulse-glow {
+  animation: none;
+}
 
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
+  *,
+  *::before,
+  *::after {
     animation: none !important;
     transition: none !important;
   }
 }
 
-/* ── Motion (restrained) ─────────────────────────────────────────────── */
-
-@keyframes fadeInUp {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-@keyframes slideDown {
-  from { opacity: 0; transform: translateY(-12px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-.animate-fade-in-up { animation: fadeInUp 0.6s ease-out forwards; }
-.animate-fade-in { animation: fadeIn 0.5s ease-out forwards; }
-.animate-slide-down { animation: slideDown 0.4s ease-out forwards; }
-/* Legacy alias — glow forbidden; keep name so old screens don't break. */
-.animate-pulse-glow { animation: none; }
-
-/* ── Presentation mode: scale the console up on very large displays ──── */
 @media (min-width: 2200px) {
-  html { font-size: 18px; }
+  html {
+    font-size: 18px;
+  }
 }

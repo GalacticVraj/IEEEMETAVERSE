@@ -8,6 +8,7 @@ import type { ReactElement } from 'react';
 
 import { useCameraStore } from './camera-store';
 import { OPERATOR_HOME } from './shots';
+import { Tooltip } from '../../ui/common/Tooltip';
 
 const skipIntro = (): void => {
   const store = useCameraStore.getState();
@@ -58,19 +59,34 @@ export function CameraHud({ dev = false }: { dev?: boolean }): ReactElement {
         >
           <div
             className="console-panel console-value"
-            style={{ padding: '10px 22px', fontSize: 13, letterSpacing: '0.08em', fontWeight: 600 }}
+            style={{
+              padding: '10px 24px',
+              fontSize: 13,
+              letterSpacing: '0.08em',
+              fontWeight: 700,
+              borderRadius: 8,
+            }}
           >
             {currentShotName ?? 'MERIDIAN BAY'}
           </div>
         </div>
         {/* Skip */}
-        <button
-          className="console-btn"
-          style={{ position: 'absolute', bottom: 24, right: 24, pointerEvents: 'auto' }}
-          onClick={skipIntro}
-        >
-          Skip intro ▸
-        </button>
+        <Tooltip title="Skip Cinematic Flythrough" content="Jumps directly to the active mission control console interface. Shortcut: ESC" position="top">
+          <button
+            className="console-btn-primary"
+            style={{
+              position: 'absolute',
+              bottom: 24,
+              right: 24,
+              pointerEvents: 'auto',
+              minHeight: 36,
+              padding: '8px 18px',
+            }}
+            onClick={skipIntro}
+          >
+            Skip intro ▸
+          </button>
+        </Tooltip>
       </div>
     );
   }
@@ -79,29 +95,55 @@ export function CameraHud({ dev = false }: { dev?: boolean }): ReactElement {
     <div
       style={{
         position: 'absolute',
-        bottom: 190,
+        bottom: 192,
         left: '50%',
         transform: 'translateX(-50%)',
         zIndex: 25,
         display: 'flex',
-        gap: 6,
+        gap: 8,
         alignItems: 'center',
         pointerEvents: 'auto',
       }}
     >
-      <button
-        className="console-btn"
-        style={{ padding: '3px 10px', fontSize: 11 }}
-        onClick={() => setAutoFollow(!autoFollow)}
-        title="When on, the camera gently follows major grid events unless you are steering"
+      <Tooltip
+        title="Auto-Follow Grid Disturbances"
+        content="Automatically pans 3D camera to active line trips and cascade events across Meridian Bay. Keeps critical faults in view during fast-moving crises."
+        position="top"
       >
-        Auto-follow: {autoFollow ? 'ON' : 'OFF'}
-      </button>
-      <button className="console-btn" style={{ padding: '3px 10px', fontSize: 11 }} onClick={goOverview}>
-        Overview
-      </button>
+        <button
+          className="console-btn"
+          style={{ padding: '4px 14px', fontSize: 11, minHeight: 28, borderRadius: 6 }}
+          onClick={() => setAutoFollow(!autoFollow)}
+        >
+          📹 Auto-Follow: {autoFollow ? 'ON' : 'OFF'}
+        </button>
+      </Tooltip>
+
+      <Tooltip
+        title="Reset Camera Viewpoint"
+        content="Smoothly re-centers 3D camera to a top-down overview of all 6 Meridian Bay grid districts. Shortcut: O"
+        position="top"
+      >
+        <button
+          className="console-btn"
+          style={{ padding: '4px 14px', fontSize: 11, minHeight: 28, borderRadius: 6 }}
+          onClick={goOverview}
+        >
+          🎥 Overview Viewpoint
+        </button>
+      </Tooltip>
+
       {dev && scripted && currentShotName !== null && (
-        <span className="console-value" style={{ fontSize: 10, color: '#5A6774' }}>
+        <span
+          className="console-value"
+          style={{
+            fontSize: 10,
+            color: '#5A6774',
+            background: 'rgba(250, 250, 247, 0.8)',
+            padding: '2px 6px',
+            borderRadius: 4,
+          }}
+        >
           {currentShotName}
         </span>
       )}

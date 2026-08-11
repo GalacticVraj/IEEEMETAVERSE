@@ -31,6 +31,7 @@ import { ConsoleShell } from './ui/console';
 import { HeroOverlay } from './ui/hero/HeroOverlay';
 import { TutorialManager } from './ui/onboarding';
 import { QuickControls } from './ui/prefs/QuickControls';
+import { OnboardingTour } from './ui/onboarding/OnboardingTour';
 import { AfterActionScreen } from './ui/after-action/AfterActionScreen';
 import { useAppFlowStore, AppMode } from './state/app-flow-store';
 import { useTutorialStore } from './state/tutorial-store';
@@ -72,7 +73,7 @@ export function App({ config }: AppProps): ReactElement {
         {/* Time-of-day rig: afternoon → dusk → night, driven by the sim tick.
             The heatwave peaks into the evening — physics and drama align. */}
         <color attach="background" args={['#DDE3E8']} />
-        <fog attach="fog" args={['#DDE3E8', 380, 950]} />
+        <fog attach="fog" args={['#DDE3E8', 420, 1100]} />
         <TimeOfDayRig />
 
         {/* Grid infrastructure (always visible) */}
@@ -122,6 +123,9 @@ export function App({ config }: AppProps): ReactElement {
       {/* Persona onboarding — Davis introduces one panel at a time. Replaced
           the old MissionBriefing card, which could only list rules at you. */}
       {isTutorial && !introActive && <TutorialManager />}
+
+      {/* Progressive Step-by-Step Onboarding Tour */}
+      {isConsole && !introActive && <OnboardingTour />}
 
       {/* After-Action report layered above the console */}
       {isAfterAction && <AfterActionScreen />}

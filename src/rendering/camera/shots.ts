@@ -24,11 +24,11 @@ export interface Shot {
 
 export type TimingPreset = 'FAST' | 'NORMAL' | 'SLOW' | 'CINEMATIC';
 
-/** Transition durations in seconds — frame-delta interpolation, never wall-clock tweens. */
+/** Transition durations in seconds — crisp, responsive interpolation. */
 export const TIMING_SECONDS: Record<TimingPreset, number> = {
-  FAST: 0.7,
-  NORMAL: 1.4,
-  SLOW: 2.2,
+  FAST: 0.8,
+  NORMAL: 1.5,
+  SLOW: 2.5,
   CINEMATIC: 3.2,
 };
 
@@ -99,7 +99,6 @@ export function frameLine(
   const dz = to[1] - from[1];
   const length = Math.hypot(dx, dz);
   const distance = Math.min(200, Math.max(MIN_FRAMING_DISTANCE, length * 1.5));
-  // Perpendicular azimuth → broadside view of the corridor.
   const azimuth = Math.atan2(dx, dz) + Math.PI / 2;
   return frameNode(name, [mx, mz], { distance, azimuth, elevation: 0.7 });
 }
@@ -134,8 +133,7 @@ export function zoneRadius(zoneId: string): number {
 }
 
 // ---------------------------------------------------------------------------
-// Event focus → shots (crisis choreography). Returns null rather than
-// inventing a frame for unknown assets — the camera never fakes anything.
+// Event focus → shots (crisis choreography)
 // ---------------------------------------------------------------------------
 
 export type EventFocusKind = 'line' | 'generator' | 'zone' | 'city';
@@ -165,7 +163,6 @@ export function shotForFocus(focus: EventFocus): Shot | null {
     return frameNode('Inspect_Generator', at, { distance: 95, elevation: 0.55 });
   }
 
-  // zone
   const known = MERIDIAN_BAY_TOPOLOGY.zones.some((z) => (z.id as string) === focus.id);
   if (!known) return null;
   return frameZone('Critical_Blackout', zoneCentroid(focus.id), zoneRadius(focus.id));
@@ -189,14 +186,12 @@ export function shotForDecision(decisionId: string): Shot | null {
       const zone = mapping.zones[0]!;
       return frameZone('Decision_Action', zoneCentroid(zone), zoneRadius(zone));
     }
-    // Multi-zone: frame the midpoint of the centroids, wide enough for both.
     const centroids = mapping.zones.map(zoneCentroid);
     const cx = centroids.reduce((s, c) => s + c[0], 0) / centroids.length;
     const cz = centroids.reduce((s, c) => s + c[1], 0) / centroids.length;
     const spread = centroids.reduce((m, c) => Math.max(m, Math.hypot(c[0] - cx, c[1] - cz)), 0);
     return frameZone('Decision_Action', [cx, cz], spread + 45);
   }
-  // City-wide actions (EV pause) and director-prompt decisions.
   if (decisionId.startsWith('op-ev-pause') || decisionId.startsWith('dec-')) {
     return frameCity('Decision_Action');
   }
@@ -204,7 +199,7 @@ export function shotForDecision(decisionId: string): Shot | null {
 }
 
 // ---------------------------------------------------------------------------
-// Intro sequence — one continuous flight over real districts (8–10 s)
+// Intro sequence — brisk continuous flyover over real districts (7.0 s)
 // ---------------------------------------------------------------------------
 
 export interface IntroLeg {
@@ -213,52 +208,38 @@ export interface IntroLeg {
   readonly target: readonly [number, number, number];
 }
 
-/**
- * Waypoints for the Catmull-Rom flight. Total nominal load (~895 MW) and
- * district roles come from the real topology. The director appends
- * OPERATOR_HOME as the final leg.
- */
 export const INTRO_LEGS: readonly IntroLeg[] = [
   {
-    caption: 'MERIDIAN BAY — a coastal grid serving six districts',
-    position: [-190, 240, -220],
-    target: [0, 0, 0],
+    caption: 'MERIDIAN BAY — coastal smart grid digital twin',
+    position: [-160, 220, 250],
+    target: [0, 5, 0],
   },
   {
     caption: 'GENERATION SOUTH — 400 MW baseload anchors the city',
-    position: [130, 85, 100],
-    target: [80, TARGET_HEIGHT, 65], // GS1
+    position: [110, 140, 140],
+    target: [50, 5, 40],
   },
   {
-    caption: 'INDUSTRIAL DISTRICT — the heaviest single demand block',
-    position: [115, 65, 12],
-    target: [68, TARGET_HEIGHT, 15], // IN cluster
+    caption: 'INDUSTRIAL DISTRICT & HARBOR — heavy demand and water treatment',
+    position: [75, 110, 30],
+    target: [35, 5, -10],
   },
   {
-    caption: 'HARBOR — imports, shipping, and critical water treatment',
-    position: [90, 62, -100],
-    target: [57, TARGET_HEIGHT, -52], // HB cluster
+    caption: 'DOWNTOWN & HOSPITAL — commercial core and critical care',
+    position: [20, 100, 100],
+    target: [5, 8, 45],
   },
   {
-    caption: 'MERIDIAN GENERAL — the hospital must never go dark',
-    position: [58, 42, 40],
-    target: [30, 10, 68], // DT-Hosp
+    caption: 'RENEWABLES NORTH — solar and wind balance the grid',
+    position: [-85, 115, 95],
+    target: [-50, 5, 55],
   },
   {
-    caption: 'DOWNTOWN — the commercial core',
-    position: [14, 68, 12],
-    target: [0, 12, 62], // DT cluster
-  },
-  {
-    caption: 'RENEWABLES NORTH — solar and wind ride the weather',
-    position: [-120, 70, 42],
-    target: [-75, TARGET_HEIGHT, 80], // GN1
-  },
-  {
-    caption: 'RESIDENTIAL DISTRICTS — the homes you keep powered',
-    position: [-100, 82, -30],
-    target: [-52, TARGET_HEIGHT, 5], // RN/RS spine
+    caption: 'RESIDENTIAL DISTRICTS — keeping 180,000 homes powered',
+    position: [-65, 130, 150],
+    target: [-25, 5, 10],
   },
 ];
 
-export const INTRO_DURATION_S = 9.5;
+/** Fast, deliberate intro duration (7.0 s down from 12.0 s). */
+export const INTRO_DURATION_S = 7.0;
