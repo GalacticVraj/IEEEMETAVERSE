@@ -45,6 +45,10 @@ export const GRID_EVENT = {
   ZonePowered: 'ZonePowered',
   /** A zone lost power. */
   ZoneBlackout: 'ZoneBlackout',
+  /** An under-frequency relay stage shed load automatically. */
+  LoadShedAutomatic: 'LoadShedAutomatic',
+  /** The N-1 contingency verdict changed. */
+  SecurityChanged: 'SecurityChanged',
 
   /** The simulation is requesting an operator decision. */
   DecisionRequested: 'DecisionRequested',

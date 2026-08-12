@@ -25,7 +25,7 @@ import type {
 import type { ICascadeEngine } from './cascade/cascade';
 import type { IDirector } from './director/director';
 import type { IGenerationModel } from './generation/generation';
-import { createFrequencyModel } from './frequency';
+import { UFLS_STAGES, createFrequencyModel } from './frequency';
 import type { FrequencyMachine, FrequencyModel } from './frequency';
 import type { ElectricalGraph } from './graph';
 import type { ILoadModel } from './loads/loads';
@@ -340,6 +340,7 @@ export class GridSimulationEngine implements ISimulationEngine, SnapshotableSyst
       timestepS: context.timestep,
     });
 
+    const previousSecurity = this.state.security;
     this.state = {
       frequency: asHertz(freq.frequencyHz),
       rocof: freq.rocofHzPerS,
@@ -356,6 +357,26 @@ export class GridSimulationEngine implements ISimulationEngine, SnapshotableSyst
       renewableGeneration: asMegaWatts(renewableMw),
       generators: generatorStatuses,
     };
+
+    // UFLS fired: this is the grid saving itself without asking. One event per
+    // stage so the timeline can explain each block of load that went dark.
+    for (const stage of freq.uflsNewlyTripped) {
+      const definition = UFLS_STAGES.find((entry) => entry.stage === stage);
+      if (definition === undefined) continue;
+      domainEvents.emit(GRID_EVENT.LoadShedAutomatic, {
+        stage,
+        thresholdHz: definition.thresholdHz,
+        shedFraction: definition.shedFraction,
+      });
+    }
+
+    if (freq.security !== previousSecurity) {
+      domainEvents.emit(GRID_EVENT.SecurityChanged, {
+        verdict: freq.security,
+        reserveMw: asMegaWatts(freq.reserveMw),
+        largestInfeedMw: asMegaWatts(freq.largestInfeedMw),
+      });
+    }
 
     this.restoration.plan(this.state);
 

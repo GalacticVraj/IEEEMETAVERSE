@@ -99,6 +99,20 @@ export interface ZoneBlackoutPayload {
   readonly unservedLoad: MegaWatts;
 }
 
+export interface LoadShedAutomaticPayload {
+  /** UFLS stage that fired, 1-based. */
+  readonly stage: number;
+  readonly thresholdHz: number;
+  /** Fraction of system load this stage disconnected. */
+  readonly shedFraction: number;
+}
+
+export interface SecurityChangedPayload {
+  readonly verdict: 'Secure' | 'AtRisk' | 'Insecure';
+  readonly reserveMw: MegaWatts;
+  readonly largestInfeedMw: MegaWatts;
+}
+
 export interface DecisionRequestedPayload {
   readonly decisionId: DecisionId;
   readonly prompt: string;
@@ -150,6 +164,8 @@ export interface GridEventMap extends KernelEventMap {
   CascadeEnded: CascadeEndedPayload;
   ZonePowered: ZonePoweredPayload;
   ZoneBlackout: ZoneBlackoutPayload;
+  LoadShedAutomatic: LoadShedAutomaticPayload;
+  SecurityChanged: SecurityChangedPayload;
   DecisionRequested: DecisionRequestedPayload;
   DecisionCommitted: DecisionCommittedPayload;
   LearningUpdated: LearningUpdatedPayload;

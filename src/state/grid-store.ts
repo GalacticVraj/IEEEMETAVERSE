@@ -21,6 +21,13 @@ export interface GridProjection {
   readonly totalGeneration: number;
   readonly totalLoad: number;
   readonly frequency: number;
+  readonly rocof: number;
+  readonly inertiaMwS: number;
+  readonly uflsStage: number;
+  readonly uflsShedFraction: number;
+  readonly security: 'Secure' | 'AtRisk' | 'Insecure';
+  readonly reserveMw: number;
+  readonly largestInfeedMw: number;
   readonly renewableGeneration: number;
   readonly lines: readonly LineFlow[];
   readonly zones: readonly ZoneStatus[];
@@ -35,6 +42,13 @@ const INITIAL: GridProjection = {
   totalGeneration: 0,
   totalLoad: 0,
   frequency: 60,
+  rocof: 0,
+  inertiaMwS: 0,
+  uflsStage: 0,
+  uflsShedFraction: 0,
+  security: 'Secure',
+  reserveMw: 0,
+  largestInfeedMw: 0,
   renewableGeneration: 0,
   lines: [],
   zones: [],
