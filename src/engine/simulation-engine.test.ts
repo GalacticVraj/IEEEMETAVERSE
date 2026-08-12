@@ -69,20 +69,16 @@ describe('GridSimulationEngine', () => {
       step: vi.fn(),
       reset: vi.fn(),
       dispose: vi.fn(),
-      advance: vi
-        .fn()
-        .mockReturnValue({
-          temperature: asCelsius(25),
-          irradiance: asRatio(1.0),
-          wind: asRatio(0.5),
-        }),
-      current: vi
-        .fn()
-        .mockReturnValue({
-          temperature: asCelsius(25),
-          irradiance: asRatio(1.0),
-          wind: asRatio(0.5),
-        }),
+      advance: vi.fn().mockReturnValue({
+        temperature: asCelsius(25),
+        irradiance: asRatio(1.0),
+        wind: asRatio(0.5),
+      }),
+      current: vi.fn().mockReturnValue({
+        temperature: asCelsius(25),
+        irradiance: asRatio(1.0),
+        wind: asRatio(0.5),
+      }),
     };
 
     const generation = {
@@ -347,5 +343,30 @@ describe('GridSimulationEngine', () => {
     engine.reset();
     expect(engine.getState().frequency as number).toBe(60);
     expect(engine.getState().uflsStage).toBe(0);
+  });
+
+  it('actually disconnects load when UFLS fires', () => {
+    // The relay computing a shed fraction is not enough — the load has to
+    // really go away, or frequency never recovers and the automatic defence
+    // is decorative. This is the whole lesson of UFLS: the grid survives by
+    // making a district dark.
+    const { engine, generation } = setupMockEngine(makeGraph());
+    engine.init(makeMockContext());
+
+    // Deep, sustained deficit: 50 MW of generation against 50 MW of demand
+    // becomes 10 MW of generation.
+    generation.totalOutput.mockReturnValue(asMegaWatts(10));
+    for (let tick = 1; tick <= 400; tick += 1) {
+      engine.step({ tick, time: tick as any, timestep: 0.1 as any });
+    }
+
+    const state = engine.getState();
+    expect(state.uflsStage).toBeGreaterThanOrEqual(1);
+    expect(state.uflsShedFraction).toBeGreaterThan(0);
+
+    // The load model still WANTS 50 MW, but relays have disconnected part of
+    // it, so the load actually connected to the grid must be lower.
+    expect(state.totalLoad as number).toBeLessThan(50);
+    expect(state.totalLoad as number).toBeCloseTo(50 * (1 - state.uflsShedFraction), 5);
   });
 });

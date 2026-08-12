@@ -335,12 +335,22 @@ export class GridSimulationEngine implements ISimulationEngine, SnapshotableSyst
       online: !this.generation.isTripped(gen.id),
     }));
 
+    // Load already disconnected by under-frequency relays is NOT connected to
+    // the grid, so the swing equation must not see it. Without this the relays
+    // computed a shed fraction that nothing acted on: frequency rode the
+    // collapse floor forever and the automatic defence was decorative.
+    // The fraction latched by the previous tick is what is open right now.
+    const connectedDemandMw = (totalDemand as number) * (1 - this.state.uflsShedFraction);
+
     const freq = this.frequencyModel.step({
       machines,
       generationMw: totalGen,
-      demandMw: totalDemand,
+      demandMw: connectedDemandMw,
       timestepS: context.timestep,
     });
+
+    // Anything this tick's relays just opened comes off immediately too.
+    const servedDemandMw = (totalDemand as number) * (1 - freq.uflsShedFraction);
 
     const previousSecurity = this.state.security;
     this.state = {
@@ -355,7 +365,7 @@ export class GridSimulationEngine implements ISimulationEngine, SnapshotableSyst
       lines: lineFlows,
       zones: zoneStatuses,
       totalGeneration: totalGen,
-      totalLoad: totalDemand,
+      totalLoad: asMegaWatts(servedDemandMw),
       renewableGeneration: asMegaWatts(renewableMw),
       generators: generatorStatuses,
     };

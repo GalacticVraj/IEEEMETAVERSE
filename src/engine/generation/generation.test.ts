@@ -36,13 +36,9 @@ describe('MeridianBayGenerationModel', () => {
       wind: asRatio(0.5),
       irradiance: asRatio(1.0),
     };
-    // Demand = 600 MW
-    model.dispatch(MERIDIAN_BAY_TOPOLOGY, weather, asMegaWatts(600));
-    expect(model.totalOutput()).toBeCloseTo(575, 0); // restricted by G-IMPORT ramp limit of 10
-
-    // Dispatch a few more times to let it ramp up
-    model.dispatch(MERIDIAN_BAY_TOPOLOGY, weather, asMegaWatts(600));
-    model.dispatch(MERIDIAN_BAY_TOPOLOGY, weather, asMegaWatts(600));
+    // Demand = 600 MW. The first dispatch after a reset establishes the
+    // operating point directly — the operator inherits a running grid — so
+    // merit order is satisfied immediately rather than after a ramp.
     model.dispatch(MERIDIAN_BAY_TOPOLOGY, weather, asMegaWatts(600));
 
     const total = model.totalOutput();
@@ -75,6 +71,10 @@ describe('MeridianBayGenerationModel', () => {
       wind: asRatio(0),
       irradiance: asRatio(0),
     };
+
+    // Prime the operating point at a low demand so the import tie sits at 0.
+    model.dispatch(MERIDIAN_BAY_TOPOLOGY, weather, asMegaWatts(400));
+    expect(model.getGeneratorOutput(asGeneratorId('G-IMPORT'))).toBe(0);
 
     // Tick 1: Target = 600 MW, base load = 400 MW, import needed = 200 MW.
     // Import limit is 10 MW/tick. It should ramp from 0 to 10 MW.
@@ -151,7 +151,13 @@ describe('MeridianBayGenerationModel', () => {
     for (let i = 0; i < 200; i += 1) {
       model.dispatch(MERIDIAN_BAY_TOPOLOGY, hotWeather, asMegaWatts(2000), 57.0);
     }
-    expect(model.totalOutput() as number).toBeLessThanOrEqual(1150);
+    // Derived, not hardcoded — installed capacity is a topology fact and this
+    // assertion is about the clamp, not about a particular fleet size.
+    const installedMw = MERIDIAN_BAY_TOPOLOGY.generators.reduce(
+      (sum, g) => sum + (g.capacity as number),
+      0,
+    );
+    expect(model.totalOutput() as number).toBeLessThanOrEqual(installedMw);
   });
 
   it('does not rush a ramp DOWN because frequency is low', () => {
@@ -166,5 +172,43 @@ describe('MeridianBayGenerationModel', () => {
     const afterOneTick = model.totalOutput() as number;
     // Ramp-down is still limited to the base rate, so one tick cannot undo it.
     expect(high - afterOneTick).toBeLessThanOrEqual(40);
+  });
+
+  it('starts from a dispatched operating point, not from zero output', () => {
+    // An operator takes over a grid that is ALREADY RUNNING. Starting every
+    // ramp-limited unit at 0 MW created a ~600 MW phantom deficit on tick 0
+    // that crashed frequency and fired every UFLS stage before the player
+    // could act. The first dispatch after a reset establishes the operating
+    // point; ramp limits govern every tick after it.
+    const model = new MeridianBayGenerationModel();
+    model.init(makeMockContext() as never);
+
+    const demand = asMegaWatts(900);
+    model.dispatch(MERIDIAN_BAY_TOPOLOGY, hotWeather, demand, 60);
+
+    // Within a few MW of the ask on the very first tick.
+    expect(model.totalOutput() as number).toBeGreaterThan(880);
+  });
+
+  it('still applies ramp limits on the tick after the first', () => {
+    const model = new MeridianBayGenerationModel();
+    model.init(makeMockContext() as never);
+
+    model.dispatch(MERIDIAN_BAY_TOPOLOGY, hotWeather, asMegaWatts(600), 60);
+    const primed = model.totalOutput() as number;
+    model.dispatch(MERIDIAN_BAY_TOPOLOGY, hotWeather, asMegaWatts(1100), 60);
+    const afterOne = model.totalOutput() as number;
+
+    // A single tick cannot close a 500 MW gap — ramp limits are back in force.
+    expect(afterOne - primed).toBeLessThan(200);
+  });
+
+  it('re-primes after reset', () => {
+    const model = new MeridianBayGenerationModel();
+    model.init(makeMockContext() as never);
+    model.dispatch(MERIDIAN_BAY_TOPOLOGY, hotWeather, asMegaWatts(900), 60);
+    model.reset();
+    model.dispatch(MERIDIAN_BAY_TOPOLOGY, hotWeather, asMegaWatts(900), 60);
+    expect(model.totalOutput() as number).toBeGreaterThan(880);
   });
 });

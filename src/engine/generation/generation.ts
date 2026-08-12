@@ -60,6 +60,14 @@ export class MeridianBayGenerationModel implements IGenerationModel, Snapshotabl
   private context!: SystemContext;
   private tripped = new Set<GeneratorId>();
   private currentOutputs = new Map<GeneratorId, MegaWatts>();
+  /**
+   * False until the first dispatch after a reset has established the operating
+   * point. An operator inherits a grid that is ALREADY RUNNING — starting every
+   * ramp-limited unit at 0 MW created a phantom deficit of several hundred MW
+   * on tick 0, which under real frequency dynamics crashed the grid and fired
+   * every UFLS stage before the player could act.
+   */
+  private primed = false;
 
   public init(context: SystemContext): void {
     this.context = context;
@@ -73,6 +81,7 @@ export class MeridianBayGenerationModel implements IGenerationModel, Snapshotabl
   public reset(): void {
     this.tripped.clear();
     this.currentOutputs.clear();
+    this.primed = false;
   }
 
   public dispose(): void {
@@ -214,6 +223,11 @@ export class MeridianBayGenerationModel implements IGenerationModel, Snapshotabl
       let actual = target;
       if (this.tripped.has(gen.id)) {
         actual = 0;
+      } else if (!this.primed) {
+        // First dispatch after a reset: adopt the planned operating point
+        // directly. Ramp limits describe how fast a running plant can CHANGE
+        // output, not how it came to be running in the first place.
+        actual = target;
       } else {
         const baseLimit = RAMP_LIMITS[gen.kind as string];
         if (baseLimit !== undefined) {
@@ -243,6 +257,9 @@ export class MeridianBayGenerationModel implements IGenerationModel, Snapshotabl
         },
       );
     }
+
+    // The operating point is established; ramp limits govern from here.
+    this.primed = true;
 
     return results;
   }

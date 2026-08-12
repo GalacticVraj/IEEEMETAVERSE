@@ -24,11 +24,42 @@ export const WEATHER_MODEL: Token<IWeatherModel> = createToken('WeatherModel');
 // Deterministic weather arcs. Each scenario overrides which arc is active.
 // ---------------------------------------------------------------------------
 
-/** Normalised sine-based heatwave arc: temperature rises over ~200 ticks. */
-const heatwaveTemp = (tick: number, base: Celsius, amplitude: Celsius): Celsius =>
-  (base + amplitude * Math.sin((Math.PI * tick) / 200)) as Celsius;
+/**
+ * The shift is ONE arc, not a loop: 1,800 ticks of late afternoon running into
+ * night. Both the day/night rendering rig and the scenario script assume that
+ * shape, and the weather model has to agree with them — otherwise the sun sets
+ * eighteen times while the city visibly darkens once, and the solar farm
+ * produces nothing at the afternoon peak it is meant to cover.
+ */
+export const RUN_TICKS = 1800;
 
-const clampRatio = (v: number): Ratio => (Math.max(0, Math.min(1, v)) as Ratio);
+/** Run progress, clamped to [0,1]. */
+const progressAt = (tick: number): number => Math.min(1, Math.max(0, tick / RUN_TICKS));
+
+/**
+ * Daylight strength: full through the first 30 % of the shift, then a
+ * smoothstep down to darkness. Mirrors `nightFactor` in the rendering rig so
+ * the physics and the picture describe the same evening.
+ */
+export function daylightFactor(tick: number): number {
+  const t = Math.min(1, Math.max(0, (progressAt(tick) - 0.3) / 0.6));
+  const night = t * t * (3 - 2 * t); // smoothstep
+  return 1 - night;
+}
+
+/**
+ * Heat builds through the afternoon and peaks into the evening — the reason
+ * the heatwave bites exactly when solar is leaving. A half-sine over the run
+ * rises once and eases once; the previous 200-tick period oscillated four and
+ * a half times across a single shift.
+ */
+const heatwaveTemp = (tick: number, base: Celsius, amplitude: Celsius): Celsius =>
+  (base + amplitude * Math.sin(Math.PI * progressAt(tick) * PEAK_SHIFT)) as Celsius;
+
+/** Places the temperature peak around two-thirds through the shift. */
+const PEAK_SHIFT = 0.75;
+
+const clampRatio = (v: number): Ratio => Math.max(0, Math.min(1, v)) as Ratio;
 
 /** Classify weather regime from temperature. */
 function classifyKind(tempC: Celsius, wind: Ratio): WeatherKind {
@@ -67,15 +98,12 @@ export class DeterministicWeatherModel implements IWeatherModel {
 
   private _compute(tick: number): WeatherState {
     const temperature = heatwaveTemp(tick, this.baseTemp, this.heatAmplitude);
-    // Diurnal irradiance variation: peaks at midday (tick 50 of 100-tick day).
-    const dayPhase = (tick % 100) / 100;
-    const irradiance = clampRatio(
-      this.irradianceBase * Math.sin(Math.PI * dayPhase),
-    );
+    // Irradiance follows the single afternoon→night arc, so the solar farm is
+    // producing at the start of the shift and gone by the end of it.
+    const irradiance = clampRatio(this.irradianceBase * daylightFactor(tick));
     // Wind varies slowly with a secondary sine.
-    const wind = clampRatio(
-      this.windBase + 0.2 * Math.sin((2 * Math.PI * tick) / 300),
-    );
+    // Wind drifts slowly across the shift rather than cycling every 30 s.
+    const wind = clampRatio(this.windBase + 0.2 * Math.sin((2 * Math.PI * tick) / RUN_TICKS));
     const kind = classifyKind(temperature, wind);
     return { kind, temperature, irradiance, wind };
   }

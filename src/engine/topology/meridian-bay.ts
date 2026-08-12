@@ -43,10 +43,45 @@ const gkind = (k: string): GenerationKind => k as GenerationKind;
 // Zones
 // ---------------------------------------------------------------------------
 const ZONES: readonly Zone[] = [
-  { id: zid('DT'), name: 'Downtown', buildingIds: ['DT-Corp1', 'DT-Corp2', 'DT-Corp3', 'DT-Corp4', 'DT-Corp5', 'DT-Hosp'] },
+  {
+    id: zid('DT'),
+    name: 'Downtown',
+    buildingIds: ['DT-Corp1', 'DT-Corp2', 'DT-Corp3', 'DT-Corp4', 'DT-Corp5', 'DT-Hosp'],
+  },
   { id: zid('IN'), name: 'Industrial', buildingIds: ['IN-Fac1', 'IN-Fac2'] },
-  { id: zid('RN'), name: 'Residential North', buildingIds: ['RN-House1', 'RN-House2', 'RN-House3', 'RN-House4', 'RN-House5', 'RN-House6', 'RN-House7', 'RN-Sch1', 'RN-EV1', 'RN-Solar'] },
-  { id: zid('RS'), name: 'Residential South', buildingIds: ['RS-House1', 'RS-House2', 'RS-House3', 'RS-House4', 'RS-House5', 'RS-House6', 'RS-House7', 'RS-House8', 'RS-House9', 'RS-Sch2', 'RS-EV2'] },
+  {
+    id: zid('RN'),
+    name: 'Residential North',
+    buildingIds: [
+      'RN-House1',
+      'RN-House2',
+      'RN-House3',
+      'RN-House4',
+      'RN-House5',
+      'RN-House6',
+      'RN-House7',
+      'RN-Sch1',
+      'RN-EV1',
+      'RN-Solar',
+    ],
+  },
+  {
+    id: zid('RS'),
+    name: 'Residential South',
+    buildingIds: [
+      'RS-House1',
+      'RS-House2',
+      'RS-House3',
+      'RS-House4',
+      'RS-House5',
+      'RS-House6',
+      'RS-House7',
+      'RS-House8',
+      'RS-House9',
+      'RS-Sch2',
+      'RS-EV2',
+    ],
+  },
   { id: zid('AP'), name: 'Airport', buildingIds: ['AP-Term', 'AP-EV3'] },
   { id: zid('HB'), name: 'Harbor', buildingIds: ['HB-Fac'] },
 ];
@@ -90,8 +125,17 @@ const NODES: readonly GridNode[] = [
 const GENERATORS: readonly Generator[] = [
   // Baseload coal/nuclear south — 400 MW, cannot ramp
   { id: gid('G-BASE-S'), node: id('GS1'), kind: gkind('Baseload'), capacity: mw(400) },
-  // Gas peaker south — 150 MW, fast ramp
-  { id: gid('G-PEAK-S'), node: id('GS1'), kind: gkind('Peaker'), capacity: mw(150) },
+  // Gas peaker south — 220 MW, fast ramp.
+  //
+  // Sized so the shift OPENS with a positive reserve margin. Peak demand is
+  // 895 MW nominal plus ~186 MW of flexible appliance load = ~1081 MW, while
+  // afternoon availability is capped by irradiance and wind. At 150 MW this
+  // peaker left the system short before a single fault had fired, which real
+  // frequency dynamics turned into an immediate collapse through every UFLS
+  // stage — the run was over before the operator could read the console.
+  // Planning reserve on a real system is ~15 % above peak; this restores a
+  // margin, and the evening still erodes it as solar leaves.
+  { id: gid('G-PEAK-S'), node: id('GS1'), kind: gkind('Peaker'), capacity: mw(220) },
   // Gas peaker industrial — 80 MW
   { id: gid('G-PEAK-IN'), node: id('IN1'), kind: gkind('Peaker'), capacity: mw(80) },
   // Solar farm north — 120 MW (weather-derated)
@@ -111,41 +155,149 @@ const GENERATORS: readonly Generator[] = [
 // ---------------------------------------------------------------------------
 const LOADS: readonly Load[] = [
   // Downtown commercial + office
-  { id: loadId('LD-DT-COM'), node: id('DT1'), zone: zid('DT'), nominalDemand: mw(80), critical: false },
+  {
+    id: loadId('LD-DT-COM'),
+    node: id('DT1'),
+    zone: zid('DT'),
+    nominalDemand: mw(80),
+    critical: false,
+  },
   // Downtown hospital (CRITICAL — never shed)
-  { id: loadId('LD-DT-HOSP'), node: id('DT3'), zone: zid('DT'), nominalDemand: mw(20), critical: true },
+  {
+    id: loadId('LD-DT-HOSP'),
+    node: id('DT3'),
+    zone: zid('DT'),
+    nominalDemand: mw(20),
+    critical: true,
+  },
   // Downtown retail
-  { id: loadId('LD-DT-RET'), node: id('DT2'), zone: zid('DT'), nominalDemand: mw(40), critical: false },
+  {
+    id: loadId('LD-DT-RET'),
+    node: id('DT2'),
+    zone: zid('DT'),
+    nominalDemand: mw(40),
+    critical: false,
+  },
   // Downtown mixed use
-  { id: loadId('LD-DT-MIX'), node: id('DT4'), zone: zid('DT'), nominalDemand: mw(35), critical: false },
+  {
+    id: loadId('LD-DT-MIX'),
+    node: id('DT4'),
+    zone: zid('DT'),
+    nominalDemand: mw(35),
+    critical: false,
+  },
   // Industrial heavy (foundry, manufacturing)
-  { id: loadId('LD-IN-HVY'), node: id('IN2'), zone: zid('IN'), nominalDemand: mw(150), critical: false },
+  {
+    id: loadId('LD-IN-HVY'),
+    node: id('IN2'),
+    zone: zid('IN'),
+    nominalDemand: mw(150),
+    critical: false,
+  },
   // Industrial light
-  { id: loadId('LD-IN-LGT'), node: id('IN3'), zone: zid('IN'), nominalDemand: mw(60), critical: false },
+  {
+    id: loadId('LD-IN-LGT'),
+    node: id('IN3'),
+    zone: zid('IN'),
+    nominalDemand: mw(60),
+    critical: false,
+  },
   // Residential North A
-  { id: loadId('LD-RN-A'), node: id('RN1'), zone: zid('RN'), nominalDemand: mw(55), critical: false },
+  {
+    id: loadId('LD-RN-A'),
+    node: id('RN1'),
+    zone: zid('RN'),
+    nominalDemand: mw(55),
+    critical: false,
+  },
   // Residential North B
-  { id: loadId('LD-RN-B'), node: id('RN2'), zone: zid('RN'), nominalDemand: mw(50), critical: false },
+  {
+    id: loadId('LD-RN-B'),
+    node: id('RN2'),
+    zone: zid('RN'),
+    nominalDemand: mw(50),
+    critical: false,
+  },
   // Residential North C
-  { id: loadId('LD-RN-C'), node: id('RN3'), zone: zid('RN'), nominalDemand: mw(45), critical: false },
+  {
+    id: loadId('LD-RN-C'),
+    node: id('RN3'),
+    zone: zid('RN'),
+    nominalDemand: mw(45),
+    critical: false,
+  },
   // Residential South A
-  { id: loadId('LD-RS-A'), node: id('RS1'), zone: zid('RS'), nominalDemand: mw(65), critical: false },
+  {
+    id: loadId('LD-RS-A'),
+    node: id('RS1'),
+    zone: zid('RS'),
+    nominalDemand: mw(65),
+    critical: false,
+  },
   // Residential South B
-  { id: loadId('LD-RS-B'), node: id('RS2'), zone: zid('RS'), nominalDemand: mw(60), critical: false },
+  {
+    id: loadId('LD-RS-B'),
+    node: id('RS2'),
+    zone: zid('RS'),
+    nominalDemand: mw(60),
+    critical: false,
+  },
   // Residential South C
-  { id: loadId('LD-RS-C'), node: id('RS3'), zone: zid('RS'), nominalDemand: mw(55), critical: false },
+  {
+    id: loadId('LD-RS-C'),
+    node: id('RS3'),
+    zone: zid('RS'),
+    nominalDemand: mw(55),
+    critical: false,
+  },
   // Airport terminal
-  { id: loadId('LD-AP-TERM'), node: id('AP1'), zone: zid('AP'), nominalDemand: mw(30), critical: false },
+  {
+    id: loadId('LD-AP-TERM'),
+    node: id('AP1'),
+    zone: zid('AP'),
+    nominalDemand: mw(30),
+    critical: false,
+  },
   // Emergency services / ATC (CRITICAL)
-  { id: loadId('LD-AP-EMRG'), node: id('AP2'), zone: zid('AP'), nominalDemand: mw(15), critical: true },
+  {
+    id: loadId('LD-AP-EMRG'),
+    node: id('AP2'),
+    zone: zid('AP'),
+    nominalDemand: mw(15),
+    critical: true,
+  },
   // Harbor industrial
-  { id: loadId('LD-HB-IND'), node: id('HB1'), zone: zid('HB'), nominalDemand: mw(70), critical: false },
+  {
+    id: loadId('LD-HB-IND'),
+    node: id('HB1'),
+    zone: zid('HB'),
+    nominalDemand: mw(70),
+    critical: false,
+  },
   // Water treatment plant (CRITICAL)
-  { id: loadId('LD-HB-WATR'), node: id('HB2'), zone: zid('HB'), nominalDemand: mw(25), critical: true },
+  {
+    id: loadId('LD-HB-WATR'),
+    node: id('HB2'),
+    zone: zid('HB'),
+    nominalDemand: mw(25),
+    critical: true,
+  },
   // Harbor shipping
-  { id: loadId('LD-HB-SHIP'), node: id('HB2'), zone: zid('HB'), nominalDemand: mw(35), critical: false },
+  {
+    id: loadId('LD-HB-SHIP'),
+    node: id('HB2'),
+    zone: zid('HB'),
+    nominalDemand: mw(35),
+    critical: false,
+  },
   // Solar farm self-use
-  { id: loadId('LD-GN-AUX'), node: id('GN1'), zone: zid('RN'), nominalDemand: mw(5), critical: false },
+  {
+    id: loadId('LD-GN-AUX'),
+    node: id('GN1'),
+    zone: zid('RN'),
+    nominalDemand: mw(5),
+    critical: false,
+  },
 ];
 
 // Total nominal load: ~895 MW
@@ -172,7 +324,7 @@ const LINES: readonly PowerLine[] = [
   // ---- Residential North ----
   { id: lid('RN1-RN2'), from: id('RN1'), to: id('RN2'), capacity: mw(180), reactance: pu(0.08) },
   { id: lid('RN2-RN3'), from: id('RN2'), to: id('RN3'), capacity: mw(150), reactance: pu(0.09) },
-  { id: lid('GN1-RN1'), from: id('GN1'), to: id('RN1'), capacity: mw(220), reactance: pu(0.10) },
+  { id: lid('GN1-RN1'), from: id('GN1'), to: id('RN1'), capacity: mw(220), reactance: pu(0.1) },
 
   // ---- Residential South ----
   { id: lid('RS1-RS2'), from: id('RS1'), to: id('RS2'), capacity: mw(180), reactance: pu(0.08) },
@@ -185,7 +337,7 @@ const LINES: readonly PowerLine[] = [
   { id: lid('HB1-HB2'), from: id('HB1'), to: id('HB2'), capacity: mw(200), reactance: pu(0.05) },
 
   // ---- Inter-zone transmission backbone ----
-  { id: lid('DT1-IN1'), from: id('DT1'), to: id('IN1'), capacity: mw(350), reactance: pu(0.10) },
+  { id: lid('DT1-IN1'), from: id('DT1'), to: id('IN1'), capacity: mw(350), reactance: pu(0.1) },
   { id: lid('DT1-RN1'), from: id('DT1'), to: id('RN1'), capacity: mw(280), reactance: pu(0.12) },
   { id: lid('DT2-RS1'), from: id('DT2'), to: id('RS1'), capacity: mw(280), reactance: pu(0.11) },
   { id: lid('DT5-AP1'), from: id('DT5'), to: id('AP1'), capacity: mw(200), reactance: pu(0.13) },
@@ -226,6 +378,6 @@ export const MERIDIAN_BAY_TOTAL_LOAD_MW: MegaWatts = mw(
 );
 
 /** Critical load IDs (never shed). */
-export const MERIDIAN_BAY_CRITICAL_LOADS: readonly LoadId[] = LOADS.filter(
-  (l) => l.critical,
-).map((l) => l.id);
+export const MERIDIAN_BAY_CRITICAL_LOADS: readonly LoadId[] = LOADS.filter((l) => l.critical).map(
+  (l) => l.id,
+);
