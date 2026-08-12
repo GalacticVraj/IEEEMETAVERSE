@@ -30,7 +30,12 @@ describe('MeridianBayGenerationModel', () => {
     const ctx = makeMockContext();
     model.init(ctx);
 
-    const weather = { kind: 'Clear' as const, temperature: asCelsius(25), wind: asRatio(0.5), irradiance: asRatio(1.0) };
+    const weather = {
+      kind: 'Clear' as const,
+      temperature: asCelsius(25),
+      wind: asRatio(0.5),
+      irradiance: asRatio(1.0),
+    };
     // Demand = 600 MW
     model.dispatch(MERIDIAN_BAY_TOPOLOGY, weather, asMegaWatts(600));
     expect(model.totalOutput()).toBeCloseTo(575, 0); // restricted by G-IMPORT ramp limit of 10
@@ -64,7 +69,12 @@ describe('MeridianBayGenerationModel', () => {
     const model = new MeridianBayGenerationModel();
     model.init(makeMockContext());
 
-    const weather = { kind: 'Clear' as const, temperature: asCelsius(25), wind: asRatio(0), irradiance: asRatio(0) };
+    const weather = {
+      kind: 'Clear' as const,
+      temperature: asCelsius(25),
+      wind: asRatio(0),
+      irradiance: asRatio(0),
+    };
 
     // Tick 1: Target = 600 MW, base load = 400 MW, import needed = 200 MW.
     // Import limit is 10 MW/tick. It should ramp from 0 to 10 MW.
@@ -80,7 +90,12 @@ describe('MeridianBayGenerationModel', () => {
     const model = new MeridianBayGenerationModel();
     model.init(makeMockContext());
 
-    const weather = { kind: 'Clear' as const, temperature: asCelsius(25), wind: asRatio(0.5), irradiance: asRatio(1.0) };
+    const weather = {
+      kind: 'Clear' as const,
+      temperature: asCelsius(25),
+      wind: asRatio(0.5),
+      irradiance: asRatio(1.0),
+    };
 
     model.tripGenerator(asGeneratorId('G-BASE-S'));
     model.dispatch(MERIDIAN_BAY_TOPOLOGY, weather, asMegaWatts(600));
@@ -101,5 +116,55 @@ describe('MeridianBayGenerationModel', () => {
 
     model.restoreState(snap);
     expect(model.isTripped(asGeneratorId('G-BASE-S'))).toBe(true);
+  });
+
+  // -------------------------------------------------------------------------
+  // Governor response — ramp limits ARE primary frequency response
+  // -------------------------------------------------------------------------
+
+  const hotWeather = {
+    temperature: asCelsius(40),
+    irradiance: asRatio(1),
+    wind: asRatio(1),
+  } as never;
+
+  it('ramps governed units harder when frequency is depressed', () => {
+    const nominal = new MeridianBayGenerationModel();
+    const depressed = new MeridianBayGenerationModel();
+    nominal.init(makeMockContext() as never);
+    depressed.init(makeMockContext() as never);
+
+    // Prime both with the same starting outputs at nominal frequency.
+    nominal.dispatch(MERIDIAN_BAY_TOPOLOGY, hotWeather, asMegaWatts(600), 60);
+    depressed.dispatch(MERIDIAN_BAY_TOPOLOGY, hotWeather, asMegaWatts(600), 60);
+
+    // Now ask for far more than either can reach in a single tick.
+    nominal.dispatch(MERIDIAN_BAY_TOPOLOGY, hotWeather, asMegaWatts(1100), 60);
+    depressed.dispatch(MERIDIAN_BAY_TOPOLOGY, hotWeather, asMegaWatts(1100), 59.0);
+
+    expect(depressed.totalOutput() as number).toBeGreaterThan(nominal.totalOutput() as number);
+  });
+
+  it('does not exceed rated capacity however urgent the governor', () => {
+    const model = new MeridianBayGenerationModel();
+    model.init(makeMockContext() as never);
+    for (let i = 0; i < 200; i += 1) {
+      model.dispatch(MERIDIAN_BAY_TOPOLOGY, hotWeather, asMegaWatts(2000), 57.0);
+    }
+    expect(model.totalOutput() as number).toBeLessThanOrEqual(1150);
+  });
+
+  it('does not rush a ramp DOWN because frequency is low', () => {
+    // A governor does not close a valve faster just because frequency fell.
+    const model = new MeridianBayGenerationModel();
+    model.init(makeMockContext() as never);
+    for (let i = 0; i < 40; i += 1) {
+      model.dispatch(MERIDIAN_BAY_TOPOLOGY, hotWeather, asMegaWatts(1100), 60);
+    }
+    const high = model.totalOutput() as number;
+    model.dispatch(MERIDIAN_BAY_TOPOLOGY, hotWeather, asMegaWatts(400), 58.0);
+    const afterOneTick = model.totalOutput() as number;
+    // Ramp-down is still limited to the base rate, so one tick cannot undo it.
+    expect(high - afterOneTick).toBeLessThanOrEqual(40);
   });
 });

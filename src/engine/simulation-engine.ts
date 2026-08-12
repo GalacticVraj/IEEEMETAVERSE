@@ -179,7 +179,9 @@ export class GridSimulationEngine implements ISimulationEngine, SnapshotableSyst
     const totalDemand = this.loads.totalDemand();
 
     // 3. Generation dispatch to meet total demand
-    this.generation.dispatch(topology, weatherState, totalDemand);
+    // The governor sees the frequency the LAST tick ended at — a real
+    // governor responds to measured frequency, necessarily a tick behind.
+    this.generation.dispatch(topology, weatherState, totalDemand, this.state.frequency);
     const totalGen = this.generation.totalOutput();
 
     // 4. Power flow solve

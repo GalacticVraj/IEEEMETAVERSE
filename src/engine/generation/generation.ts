@@ -2,7 +2,14 @@ import { asMegaWatts, asSystemId } from '@app-types';
 import type { GeneratorId, MegaWatts, SystemId } from '@app-types';
 import { GRID_EVENT } from '@constants';
 import { createToken } from '@core';
-import type { GridEventMap, SimulationSystem, SnapshotableSystem, SystemContext, Token, TypedEventBus } from '@core';
+import type {
+  GridEventMap,
+  SimulationSystem,
+  SnapshotableSystem,
+  SystemContext,
+  Token,
+  TypedEventBus,
+} from '@core';
 
 import type { GridTopology } from '../model/grid';
 import type { WeatherState } from '../weather/weather';
@@ -13,11 +20,27 @@ export interface GenerationDispatch {
 }
 
 /** Computes how much each generator is producing under current conditions. */
+/**
+ * Governor droop, per unit. 5 % means a 5 % frequency change commands 100 %
+ * output change — the standard setting for interconnected operation.
+ */
+const DROOP_R = 0.05;
+const NOMINAL_HZ = 60;
+/** A governor can open a valve several times faster than a dispatch ramp. */
+const MAX_GOVERNOR_URGENCY = 4;
+/** Per-tick ramp headroom in MW, by generator kind. */
+const RAMP_LIMITS: Readonly<Record<string, number>> = {
+  Peaker: 5,
+  Import: 10,
+  Storage: 20,
+};
+
 export interface IGenerationModel extends SimulationSystem {
   dispatch(
     topology: GridTopology,
     weather: WeatherState,
     targetDemand?: MegaWatts,
+    frequencyHz?: number,
   ): readonly GenerationDispatch[];
   totalOutput(): MegaWatts;
   tripGenerator(id: GeneratorId): void;
@@ -94,9 +117,10 @@ export class MeridianBayGenerationModel implements IGenerationModel, Snapshotabl
     topology: GridTopology,
     weather: WeatherState,
     targetDemand: MegaWatts = 895 as MegaWatts,
+    frequencyHz: number = NOMINAL_HZ,
   ): readonly GenerationDispatch[] {
     const results: GenerationDispatch[] = [];
-    let remainingDemand: number = targetDemand as number;
+    let remainingDemand: number = targetDemand;
 
     // 1. Calculate maximum available capacity for each generator under current weather
     const availabilities = new Map<GeneratorId, number>();
@@ -106,7 +130,7 @@ export class MeridianBayGenerationModel implements IGenerationModel, Snapshotabl
         continue;
       }
 
-      let avail: number = gen.capacity as number;
+      let avail: number = gen.capacity;
       if (gen.kind === 'Solar') {
         avail = gen.capacity * weather.irradiance;
       } else if (gen.kind === 'Wind') {
@@ -166,12 +190,23 @@ export class MeridianBayGenerationModel implements IGenerationModel, Snapshotabl
       }
     }
 
-    // 3. Apply ramp rate limits from previous outputs
-    // Baseload: fixed (no ramp limit, but goes to 0 if tripped)
-    // Renewables: no ramp limit
-    // Peakers: ramp limit of 5 MW/tick
-    // Import: ramp limit of 10 MW/tick
-    // Battery: ramp limit of 20 MW/tick
+    // 3. Apply ramp rate limits from previous outputs.
+    //
+    // These limits ARE the primary frequency response: a governor senses
+    // falling frequency and opens the valve, and how fast it can do so is
+    // exactly what a ramp limit expresses. Frequency deviation therefore
+    // scales the limit rather than injecting a separate power term — adding
+    // a parallel droop injection on top of a dispatch that already chases
+    // demand would double-count primary response.
+    //
+    // Baseload cannot ramp meaningfully; renewables are weather-limited;
+    // neither responds to frequency.
+    const deviationHz = NOMINAL_HZ - frequencyHz;
+    const urgency =
+      deviationHz <= 0
+        ? 1
+        : Math.min(MAX_GOVERNOR_URGENCY, 1 + deviationHz / (DROOP_R * NOMINAL_HZ) / 0.1);
+
     for (const gen of topology.generators) {
       const target = plannedDispatch.get(gen.id) ?? 0;
       const prev = this.currentOutputs.get(gen.id) ?? 0;
@@ -179,23 +214,16 @@ export class MeridianBayGenerationModel implements IGenerationModel, Snapshotabl
       let actual = target;
       if (this.tripped.has(gen.id)) {
         actual = 0;
-      } else if (gen.kind === 'Peaker') {
-        const diff = target - prev;
-        const limit = 5;
-        if (Math.abs(diff) > limit) {
-          actual = prev + Math.sign(diff) * limit;
-        }
-      } else if (gen.kind === 'Import') {
-        const diff = target - prev;
-        const limit = 10;
-        if (Math.abs(diff) > limit) {
-          actual = prev + Math.sign(diff) * limit;
-        }
-      } else if (gen.kind === 'Storage') {
-        const diff = target - prev;
-        const limit = 20;
-        if (Math.abs(diff) > limit) {
-          actual = prev + Math.sign(diff) * limit;
+      } else {
+        const baseLimit = RAMP_LIMITS[gen.kind as string];
+        if (baseLimit !== undefined) {
+          // Only an increase is urgent — a governor does not close a valve
+          // faster because frequency is low.
+          const diff = target - prev;
+          const limit = diff > 0 ? baseLimit * urgency : baseLimit;
+          if (Math.abs(diff) > limit) {
+            actual = prev + Math.sign(diff) * limit;
+          }
         }
       }
 
@@ -207,10 +235,13 @@ export class MeridianBayGenerationModel implements IGenerationModel, Snapshotabl
       results.push({ generator: gen.id, output: asMegaWatts(actual) });
 
       // Emit GenerationChanged when output changes
-      (this.context.events as unknown as TypedEventBus<GridEventMap>).emit(GRID_EVENT.GenerationChanged, {
-        generator: gen.id,
-        output: asMegaWatts(actual),
-      });
+      (this.context.events as unknown as TypedEventBus<GridEventMap>).emit(
+        GRID_EVENT.GenerationChanged,
+        {
+          generator: gen.id,
+          output: asMegaWatts(actual),
+        },
+      );
     }
 
     return results;
