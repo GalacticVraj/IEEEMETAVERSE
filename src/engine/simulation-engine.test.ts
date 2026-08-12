@@ -32,13 +32,30 @@ describe('GridSimulationEngine', () => {
         { id: 'b2' as any, zone: 'Z1' as any },
       ],
       lines: [
-        { id: asLineId('l1'), from: 'b1' as any, to: 'b2' as any, capacity: asMegaWatts(100), reactance: 0.1 as any },
+        {
+          id: asLineId('l1'),
+          from: 'b1' as any,
+          to: 'b2' as any,
+          capacity: asMegaWatts(100),
+          reactance: 0.1 as any,
+        },
       ],
       generators: [
-        { id: asGeneratorId('g1'), node: 'b1' as any, kind: 'Baseload' as any, capacity: asMegaWatts(100) },
+        {
+          id: asGeneratorId('g1'),
+          node: 'b1' as any,
+          kind: 'Baseload' as any,
+          capacity: asMegaWatts(100),
+        },
       ],
       loads: [
-        { id: 'ld1' as any, node: 'b2' as any, zone: 'Z1' as any, nominalDemand: asMegaWatts(50), critical: false },
+        {
+          id: 'ld1' as any,
+          node: 'b2' as any,
+          zone: 'Z1' as any,
+          nominalDemand: asMegaWatts(50),
+          critical: false,
+        },
       ],
       zones: [{ id: 'Z1' as any, name: 'Zone 1', buildingIds: [] }],
     }),
@@ -52,8 +69,20 @@ describe('GridSimulationEngine', () => {
       step: vi.fn(),
       reset: vi.fn(),
       dispose: vi.fn(),
-      advance: vi.fn().mockReturnValue({ temperature: asCelsius(25), irradiance: asRatio(1.0), wind: asRatio(0.5) }),
-      current: vi.fn().mockReturnValue({ temperature: asCelsius(25), irradiance: asRatio(1.0), wind: asRatio(0.5) }),
+      advance: vi
+        .fn()
+        .mockReturnValue({
+          temperature: asCelsius(25),
+          irradiance: asRatio(1.0),
+          wind: asRatio(0.5),
+        }),
+      current: vi
+        .fn()
+        .mockReturnValue({
+          temperature: asCelsius(25),
+          irradiance: asRatio(1.0),
+          wind: asRatio(0.5),
+        }),
     };
 
     const generation = {
@@ -139,12 +168,24 @@ describe('GridSimulationEngine', () => {
     graph.mutate((tx) => {
       tx.addBus({ id: 'b1' as any, nominalVoltageKv: 230 });
       tx.addBus({ id: 'b2' as any, nominalVoltageKv: 230 });
-      tx.addLine({ id: asLineId('l1'), from: 'b1' as any, to: 'b2' as any, capacityMw: 100, reactancePu: 0.1 });
-      tx.addGenerator({ id: asGeneratorId('g1'), busId: 'b1' as any, capacityMw: 100, generationKind: 'Baseload' as any });
+      tx.addLine({
+        id: asLineId('l1'),
+        from: 'b1' as any,
+        to: 'b2' as any,
+        capacityMw: 100,
+        reactancePu: 0.1,
+      });
+      tx.addGenerator({
+        id: asGeneratorId('g1'),
+        busId: 'b1' as any,
+        capacityMw: 100,
+        generationKind: 'Baseload' as any,
+      });
       tx.addLoad({ id: 'ld1' as any, busId: 'b2' as any, nominalDemandMw: 50 });
     });
 
-    const { engine, weather, generation, loads, protection, cascade, restoration, director } = setupMockEngine(graph);
+    const { engine, weather, generation, loads, protection, cascade, restoration, director } =
+      setupMockEngine(graph);
     const ctx = makeMockContext();
     engine.init(ctx);
 
@@ -173,10 +214,7 @@ describe('GridSimulationEngine', () => {
 
     // The kernel emits the single authoritative SimulationTick after all
     // systems have stepped — the engine must NOT emit its own duplicate.
-    expect(ctx.emitSpy).not.toHaveBeenCalledWith(
-      GRID_EVENT.SimulationTick,
-      expect.anything(),
-    );
+    expect(ctx.emitSpy).not.toHaveBeenCalledWith(GRID_EVENT.SimulationTick, expect.anything());
   });
 
   it('bridges protection-opened lines onto the bus as LineTripped', () => {
@@ -184,8 +222,19 @@ describe('GridSimulationEngine', () => {
     graph.mutate((tx) => {
       tx.addBus({ id: 'b1' as any, nominalVoltageKv: 230 });
       tx.addBus({ id: 'b2' as any, nominalVoltageKv: 230 });
-      tx.addLine({ id: asLineId('l1'), from: 'b1' as any, to: 'b2' as any, capacityMw: 100, reactancePu: 0.1 });
-      tx.addGenerator({ id: asGeneratorId('g1'), busId: 'b1' as any, capacityMw: 100, generationKind: 'Baseload' as any });
+      tx.addLine({
+        id: asLineId('l1'),
+        from: 'b1' as any,
+        to: 'b2' as any,
+        capacityMw: 100,
+        reactancePu: 0.1,
+      });
+      tx.addGenerator({
+        id: asGeneratorId('g1'),
+        busId: 'b1' as any,
+        capacityMw: 100,
+        generationKind: 'Baseload' as any,
+      });
       tx.addLoad({ id: 'ld1' as any, busId: 'b2' as any, nominalDemandMw: 50 });
     });
 
@@ -201,5 +250,102 @@ describe('GridSimulationEngine', () => {
       line: asLineId('l1'),
       cause: 'Overload',
     });
+  });
+
+  // -------------------------------------------------------------------------
+  // Frequency dynamics — the algebraic placeholder is gone
+  // -------------------------------------------------------------------------
+
+  const makeGraph = () => {
+    const graph = createElectricalGraph({ now: () => 0 });
+    graph.mutate((tx) => {
+      tx.addBus({ id: 'b1' as any, nominalVoltageKv: 230 });
+      tx.addBus({ id: 'b2' as any, nominalVoltageKv: 230 });
+      tx.addLine({
+        id: asLineId('l1'),
+        from: 'b1' as any,
+        to: 'b2' as any,
+        capacityMw: 100,
+        reactancePu: 0.1,
+      });
+      tx.addGenerator({
+        id: asGeneratorId('g1'),
+        busId: 'b1' as any,
+        capacityMw: 100,
+        generationKind: 'Baseload' as any,
+      });
+      tx.addLoad({ id: 'ld1' as any, busId: 'b2' as any, nominalDemandMw: 50 });
+    });
+    return graph;
+  };
+
+  it('integrates frequency rather than computing it algebraically', () => {
+    const { engine, generation } = setupMockEngine(makeGraph());
+    engine.init(makeMockContext());
+
+    // Hold a steady 20 MW deficit. The retired formula was memoryless — it
+    // would report the SAME frequency on every tick. Real frequency keeps
+    // falling for as long as the deficit persists.
+    generation.totalOutput.mockReturnValue(asMegaWatts(30));
+
+    engine.step({ tick: 1, time: 1 as any, timestep: 0.1 as any });
+    const first = engine.getState().frequency as number;
+    engine.step({ tick: 2, time: 2 as any, timestep: 0.1 as any });
+    const second = engine.getState().frequency as number;
+
+    expect(first).toBeLessThan(60);
+    expect(second).toBeLessThan(first);
+    expect(engine.getState().rocof).toBeLessThan(0);
+    expect(first).toBeGreaterThan(55);
+    expect(first).toBeLessThan(65);
+  });
+
+  it('holds nominal frequency while generation matches demand', () => {
+    const { engine } = setupMockEngine(makeGraph());
+    engine.init(makeMockContext());
+
+    for (let tick = 1; tick <= 20; tick += 1) {
+      engine.step({ tick, time: tick as any, timestep: 0.1 as any });
+    }
+    expect(engine.getState().frequency as number).toBeCloseTo(60, 6);
+    expect(engine.getState().rocof).toBeCloseTo(0, 6);
+  });
+
+  it('publishes inertia, RoCoF and an N-1 verdict on GridState', () => {
+    const { engine } = setupMockEngine(makeGraph());
+    engine.init(makeMockContext());
+    engine.step({ tick: 1, time: 1 as any, timestep: 0.1 as any });
+
+    const state = engine.getState();
+    // One 100 MW Baseload machine online: H=5 => 500 MW-s.
+    expect(state.inertiaMwS).toBe(500);
+    expect(Number.isFinite(state.rocof)).toBe(true);
+    expect(['Secure', 'AtRisk', 'Insecure']).toContain(state.security);
+    expect(state.uflsStage).toBe(0);
+  });
+
+  it('loses inertia when a synchronous machine trips', () => {
+    const { engine, generation } = setupMockEngine(makeGraph());
+    engine.init(makeMockContext());
+    engine.step({ tick: 1, time: 1 as any, timestep: 0.1 as any });
+    expect(engine.getState().inertiaMwS).toBe(500);
+
+    generation.isTripped.mockReturnValue(true);
+    engine.step({ tick: 2, time: 2 as any, timestep: 0.1 as any });
+    expect(engine.getState().inertiaMwS).toBe(0);
+  });
+
+  it('restores nominal frequency after a reset', () => {
+    const { engine, generation } = setupMockEngine(makeGraph());
+    engine.init(makeMockContext());
+    generation.totalOutput.mockReturnValue(asMegaWatts(10));
+    for (let tick = 1; tick <= 10; tick += 1) {
+      engine.step({ tick, time: tick as any, timestep: 0.1 as any });
+    }
+    expect(engine.getState().frequency as number).toBeLessThan(60);
+
+    engine.reset();
+    expect(engine.getState().frequency as number).toBe(60);
+    expect(engine.getState().uflsStage).toBe(0);
   });
 });

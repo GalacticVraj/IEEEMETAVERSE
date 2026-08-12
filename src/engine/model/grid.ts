@@ -12,6 +12,8 @@ import type {
   ZoneState,
 } from '@app-types';
 
+import type { SecurityVerdict } from '../frequency';
+
 /*
  * ---------------------------------------------------------------------------
  * Static electrical topology — the wiring diagram. Immutable for a given
@@ -109,6 +111,20 @@ export interface GeneratorStatus {
 
 export interface GridState {
   readonly frequency: Hertz;
+  /** Rate of change of frequency, Hz/s. Negative while frequency falls. */
+  readonly rocof: number;
+  /** Stored kinetic energy of online synchronous machines, MW·s. */
+  readonly inertiaMwS: number;
+  /** Highest under-frequency load-shedding stage that has fired; 0 = none. */
+  readonly uflsStage: number;
+  /** Fraction of system load disconnected automatically by UFLS. */
+  readonly uflsShedFraction: number;
+  /** N-1 contingency verdict for the present operating point. */
+  readonly security: SecurityVerdict;
+  /** Unloaded capacity on online units, MW. */
+  readonly reserveMw: MegaWatts;
+  /** Output of the largest single online in-feed, MW. */
+  readonly largestInfeedMw: MegaWatts;
   readonly lines: readonly LineFlow[];
   readonly zones: readonly ZoneStatus[];
   readonly totalGeneration: MegaWatts;

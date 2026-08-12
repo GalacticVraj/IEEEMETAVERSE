@@ -31,12 +31,26 @@ describe('DeterministicRestorationController', () => {
     return {
       get: () =>
         ({
-          nodes: [{ id: asBusId('b1'), zone: 'DT' as any }, { id: asBusId('b2'), zone: 'DT' as any }],
+          nodes: [
+            { id: asBusId('b1'), zone: 'DT' as any },
+            { id: asBusId('b2'), zone: 'DT' as any },
+          ],
           lines: [
-            { id: asLineId('l1'), from: asBusId('b1'), to: asBusId('b2'), capacity: asMegaWatts(100), reactance: 0.1 as any },
+            {
+              id: asLineId('l1'),
+              from: asBusId('b1'),
+              to: asBusId('b2'),
+              capacity: asMegaWatts(100),
+              reactance: 0.1 as any,
+            },
           ],
           generators: [
-            { id: asGeneratorId('G-GAS-HB'), node: asBusId('b1'), kind: 'Peaker' as any, capacity: asMegaWatts(60) },
+            {
+              id: asGeneratorId('G-GAS-HB'),
+              node: asBusId('b1'),
+              kind: 'Peaker' as any,
+              capacity: asMegaWatts(60),
+            },
           ],
           loads: [],
           zones: [{ id: 'DT' as any, name: 'Downtown', buildingIds: [] }],
@@ -52,7 +66,13 @@ describe('DeterministicRestorationController', () => {
     graph.mutate((tx) => {
       tx.addBus({ id: asBusId('b1'), nominalVoltageKv: 230 });
       tx.addBus({ id: asBusId('b2'), nominalVoltageKv: 230 });
-      tx.addLine({ id: asLineId('l1'), from: asBusId('b1'), to: asBusId('b2'), capacityMw: 100, reactancePu: 0.1 });
+      tx.addLine({
+        id: asLineId('l1'),
+        from: asBusId('b1'),
+        to: asBusId('b2'),
+        capacityMw: 100,
+        reactancePu: 0.1,
+      });
     });
 
     const protection = createProtectionEngine();
@@ -74,13 +94,22 @@ describe('DeterministicRestorationController', () => {
     controller.init(ctx);
 
     // 1. Simulate tripping the line (breaker takes 1 tick to open, so evaluate twice)
-    protection.evaluate({ graph, flows: [{ line: asLineId('l1'), loading: 2.0 }], tick: 1, timestepS: 1 });
-    protection.evaluate({ graph, flows: [{ line: asLineId('l1'), loading: 0.0 }], tick: 2, timestepS: 1 });
+    protection.evaluate({
+      graph,
+      flows: [{ line: asLineId('l1'), loading: 2.0 }],
+      tick: 1,
+      timestepS: 1,
+    });
+    protection.evaluate({
+      graph,
+      flows: [{ line: asLineId('l1'), loading: 0.0 }],
+      tick: 2,
+      timestepS: 1,
+    });
 
     // Line should be removed from graph now
     expect(graph.getLine(asLineId('l1'))).toBeUndefined();
     expect(protection.breakerFor(asLineId('l1'))?.phase).toBe('Open');
-
 
     // Make it cool down (below warningC=75C)
     const thermal = protection.thermalFor(asLineId('l1'));
@@ -91,8 +120,17 @@ describe('DeterministicRestorationController', () => {
 
     const state: GridState = {
       frequency: 60 as any,
+      rocof: 0,
+      inertiaMwS: 3760,
+      uflsStage: 0,
+      uflsShedFraction: 0,
+      security: 'Secure',
+      reserveMw: 0 as never,
+      largestInfeedMw: 0 as never,
       lines: [],
-      zones: [{ zone: 'DT' as any, state: 'Powered', servedLoad: 0 as any, unservedLoad: 0 as any }],
+      zones: [
+        { zone: 'DT' as any, state: 'Powered', servedLoad: 0 as any, unservedLoad: 0 as any },
+      ],
       totalGeneration: 100 as any,
       totalLoad: 100 as any,
       renewableGeneration: 0 as any,
@@ -127,8 +165,17 @@ describe('DeterministicRestorationController', () => {
 
     const state: GridState = {
       frequency: 60 as any,
+      rocof: 0,
+      inertiaMwS: 3760,
+      uflsStage: 0,
+      uflsShedFraction: 0,
+      security: 'Secure',
+      reserveMw: 0 as never,
+      largestInfeedMw: 0 as never,
       lines: [],
-      zones: [{ zone: 'DT' as any, state: 'Blackout', servedLoad: 0 as any, unservedLoad: 100 as any }],
+      zones: [
+        { zone: 'DT' as any, state: 'Blackout', servedLoad: 0 as any, unservedLoad: 100 as any },
+      ],
       totalGeneration: 0 as any,
       totalLoad: 100 as any,
       renewableGeneration: 0 as any,

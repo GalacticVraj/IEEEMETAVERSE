@@ -193,6 +193,18 @@ export default tseslint.config(
       '@typescript-eslint/no-magic-numbers': 'off',
       'no-console': 'off',
       '@typescript-eslint/no-non-null-assertion': 'off',
+      // Test doubles are inherently untyped: `vi.fn()` returns `any`, and
+      // hand-built mocks of a subsystem interface cannot be given the real
+      // type without implementing it. These rules protect PRODUCTION type
+      // safety and stay on everywhere else — leaving them on here only forced
+      // `as any` casts to be written a different way, never more safely.
+      '@typescript-eslint/no-explicit-any': 'off',
+      '@typescript-eslint/no-unsafe-assignment': 'off',
+      '@typescript-eslint/no-unsafe-member-access': 'off',
+      '@typescript-eslint/no-unsafe-call': 'off',
+      '@typescript-eslint/no-unsafe-argument': 'off',
+      '@typescript-eslint/no-unsafe-return': 'off',
+      '@typescript-eslint/no-unnecessary-type-assertion': 'off',
     },
   },
 

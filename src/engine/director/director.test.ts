@@ -27,6 +27,13 @@ describe('GridDirector', () => {
 
   const makeMockState = (maxLoading = 0.5, hasCascade = false, hasBlackout = false): GridState => ({
     frequency: asHertz(60),
+    rocof: 0,
+    inertiaMwS: 3760,
+    uflsStage: 0,
+    uflsShedFraction: 0,
+    security: 'Secure',
+    reserveMw: 0 as never,
+    largestInfeedMw: 0 as never,
     lines: [
       {
         line: 'l1' as any,
@@ -95,22 +102,31 @@ describe('GridDirector', () => {
 
     // Overload trigger
     director.pace(ctx, makeMockState(1.05));
-    expect(ctx.emitSpy).toHaveBeenCalledWith(GRID_EVENT.DecisionRequested, expect.objectContaining({
-      prompt: expect.stringContaining('High line loading detected'),
-    }));
+    expect(ctx.emitSpy).toHaveBeenCalledWith(
+      GRID_EVENT.DecisionRequested,
+      expect.objectContaining({
+        prompt: expect.stringContaining('High line loading detected'),
+      }),
+    );
 
     // Cascade trigger
     ctx.emitSpy.mockClear();
     director.pace(ctx, makeMockState(0.5, true));
-    expect(ctx.emitSpy).toHaveBeenCalledWith(GRID_EVENT.DecisionRequested, expect.objectContaining({
-      prompt: expect.stringContaining('Cascading failure sequence detected'),
-    }));
+    expect(ctx.emitSpy).toHaveBeenCalledWith(
+      GRID_EVENT.DecisionRequested,
+      expect.objectContaining({
+        prompt: expect.stringContaining('Cascading failure sequence detected'),
+      }),
+    );
 
     // Blackout trigger
     ctx.emitSpy.mockClear();
     director.pace(ctx, makeMockState(0.5, false, true));
-    expect(ctx.emitSpy).toHaveBeenCalledWith(GRID_EVENT.DecisionRequested, expect.objectContaining({
-      prompt: expect.stringContaining('Blackout detected'),
-    }));
+    expect(ctx.emitSpy).toHaveBeenCalledWith(
+      GRID_EVENT.DecisionRequested,
+      expect.objectContaining({
+        prompt: expect.stringContaining('Blackout detected'),
+      }),
+    );
   });
 });
