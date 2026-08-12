@@ -17,6 +17,12 @@ import { BUS_POSITIONS, BUS_ZONE, ZONE_COLOR } from './layout';
 // Line Loading Color Spectrum
 // ---------------------------------------------------------------------------
 
+/** Far terrain extent — must clear the furthest camera station in shots.ts. */
+const FAR_TERRAIN_SIZE = 4000;
+/** City terrain — sized to the built area; the only plane taking shadows. */
+const CITY_TERRAIN_W = 220;
+const CITY_TERRAIN_D = 260;
+
 /** Pulse travel speed (corridor lengths per second) at zero loading. */
 const PULSE_BASE_SPEED = 0.4;
 /** Additional pulse speed at full thermal loading. */
@@ -405,15 +411,26 @@ export function TransmissionLines(): JSX.Element {
 export function GroundPlane(): JSX.Element {
   return (
     <group name="ground-terrain">
+      {/* Far terrain. The city plane's edge was visible from the hero camera,
+          floating against void. This extends past every camera station in
+          shots.ts; fog closes the rest. Sits lowest so the city plane and the
+          coastal sea both draw over it. */}
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.75, 0]}>
+        <planeGeometry args={[FAR_TERRAIN_SIZE, FAR_TERRAIN_SIZE]} />
+        <meshStandardMaterial color="#22392f" roughness={1} metalness={0} />
+      </mesh>
+
+      {/* City terrain — the only plane that receives building shadows. */}
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[-20, -0.05, 0]} receiveShadow>
-        <planeGeometry args={[220, 260]} />
+        <planeGeometry args={[CITY_TERRAIN_W, CITY_TERRAIN_D]} />
         <meshStandardMaterial color="#2d4a3e" roughness={0.92} metalness={0.0} />
       </mesh>
-      {/* Tightly-proportioned 180x180 grid helper */}
+
+      {/* Survey grid at city scale — a scale reference, not wallpaper. */}
       <gridHelper args={[180, 18, '#15803d', '#1e3a2b']} position={[0, 0.02, 0]} />
 
       {/* Mountain Framing Ridges along North & West */}
-      <group position={[-110, 0, -110]}>
+      <group position={[-150, 0, -140]}>
         <mesh position={[0, 22, 0]}>
           <coneGeometry args={[45, 40, 7]} />
           <meshStandardMaterial color="#1e3a2b" roughness={0.9} />
@@ -421,6 +438,10 @@ export function GroundPlane(): JSX.Element {
         <mesh position={[50, 16, -20]}>
           <coneGeometry args={[38, 30, 7]} />
           <meshStandardMaterial color="#166534" roughness={0.9} />
+        </mesh>
+        <mesh position={[-60, 19, 40]}>
+          <coneGeometry args={[42, 34, 7]} />
+          <meshStandardMaterial color="#1b3327" roughness={0.9} />
         </mesh>
       </group>
     </group>

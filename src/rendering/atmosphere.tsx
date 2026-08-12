@@ -60,9 +60,9 @@ function Clouds(): JSX.Element {
 const SHORELINE_X = 90;
 /** How far the water tucks under the shore so the seam cannot show a gap. */
 const SHORE_OVERLAP = 6;
-const SEA_WIDTH = 420;
+const SEA_WIDTH = 1600;
 /** Wider than the terrain in Z so the water runs out to fog, not to a visible edge. */
-const SEA_DEPTH = 620;
+const SEA_DEPTH = 1600;
 const SEA_CENTER_X = SHORELINE_X - SHORE_OVERLAP + SEA_WIDTH / 2;
 
 function CoastalSea(): JSX.Element {

@@ -37,7 +37,7 @@ export const PROFILES: Record<AppProfile, AppConfig> = {
     profile: 'development',
     simulation: { ...baseSimulation, seed: DEV_SEED },
     render: { ...baseRender },
-    debug: { overlay: true, logLevel: 'debug' },
+    debug: { overlay: false, logLevel: 'debug' },
     kernel: { freezePayloads: false, leakThreshold: MAX_EVENT_LISTENERS, diagnostics: true },
   },
   demo: {

@@ -5,3 +5,5 @@
  */
 export * from './metrics/metrics-collector';
 export * from './debug-overlay';
+export * from './render-stats-store';
+export * from './RenderStatsProbe';

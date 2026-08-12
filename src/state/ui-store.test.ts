@@ -1,6 +1,35 @@
+// @vitest-environment jsdom
 import { beforeEach, describe, expect, it } from 'vitest';
 
-import { useUiStore } from './ui-store';
+import { readDebugFlagFromLocation, useUiStore } from './ui-store';
+
+describe('ui-store debug overlay', () => {
+  beforeEach(() => {
+    useUiStore.setState({ debugOverlayVisible: false });
+  });
+
+  it('is hidden by default', () => {
+    expect(useUiStore.getState().debugOverlayVisible).toBe(false);
+  });
+
+  it('toggles on and back off', () => {
+    useUiStore.getState().toggleDebugOverlay();
+    expect(useUiStore.getState().debugOverlayVisible).toBe(true);
+    useUiStore.getState().toggleDebugOverlay();
+    expect(useUiStore.getState().debugOverlayVisible).toBe(false);
+  });
+
+  it('sets an explicit value', () => {
+    useUiStore.getState().setDebugOverlay(true);
+    expect(useUiStore.getState().debugOverlayVisible).toBe(true);
+  });
+
+  it('reads the ?debug flag from a query string', () => {
+    expect(readDebugFlagFromLocation('?debug')).toBe(true);
+    expect(readDebugFlagFromLocation('?demo')).toBe(false);
+    expect(readDebugFlagFromLocation('')).toBe(false);
+  });
+});
 
 describe('ui-store onboarding transport', () => {
   beforeEach(() => {

@@ -11,7 +11,7 @@ import { EffectComposer, Bloom } from '@react-three/postprocessing';
 import { useEffect, type ReactElement } from 'react';
 
 import type { AppConfig } from '@config';
-import { DebugOverlay } from '@debug';
+import { DebugOverlay, RenderStatsProbe } from '@debug';
 
 import {
   BusMarkers,
@@ -33,6 +33,7 @@ import { TutorialManager } from './ui/onboarding';
 import { QuickControls } from './ui/prefs/QuickControls';
 import { OnboardingTour } from './ui/onboarding/OnboardingTour';
 import { AfterActionScreen } from './ui/after-action/AfterActionScreen';
+import { useUiStore } from './state/ui-store';
 import { useAppFlowStore, AppMode } from './state/app-flow-store';
 import { useTutorialStore } from './state/tutorial-store';
 
@@ -45,6 +46,8 @@ export interface AppProps {
 // ---------------------------------------------------------------------------
 export function App({ config }: AppProps): ReactElement {
   const mode = useAppFlowStore((s) => s.mode);
+  const debugOverlayVisible = useUiStore((s) => s.debugOverlayVisible);
+  const setDebugOverlay = useUiStore((s) => s.setDebugOverlay);
   const introActive = useCameraStore((s) => s.introActive);
   const beginTutorial = useTutorialStore((s) => s.begin);
   const teaching = useTutorialStore((s) => s.active);
@@ -61,6 +64,20 @@ export function App({ config }: AppProps): ReactElement {
   useEffect(() => {
     if (isTutorial) beginTutorial();
   }, [isTutorial, beginTutorial]);
+
+  // The developer overlay is opt-in only — `?debug` in the URL seeds it, and
+  // Ctrl+Shift+D toggles it at runtime. It must never greet a player, so the
+  // config profile no longer decides this.
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent): void => {
+      if (e.ctrlKey && e.shiftKey && (e.key === 'D' || e.key === 'd')) {
+        e.preventDefault();
+        setDebugOverlay(!useUiStore.getState().debugOverlayVisible);
+      }
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [setDebugOverlay]);
 
   return (
     <div style={{ width: '100vw', height: '100vh', background: '#DDE3E8', position: 'relative' }}>
@@ -98,6 +115,10 @@ export function App({ config }: AppProps): ReactElement {
         {/* ALL camera behavior — hero orbit, intro, focus, choreography — is
             owned by the one CameraDirector. Never mount another camera. */}
         <CameraDirector />
+
+        {/* Renderer instrumentation — must live inside the Canvas to reach
+            `gl.info`. Renders nothing. */}
+        <RenderStatsProbe />
       </Canvas>
 
       {/* ── DOM Overlays (mode-dependent) ────────────────────────── */}
@@ -132,8 +153,8 @@ export function App({ config }: AppProps): ReactElement {
       {/* After-Action report layered above the console */}
       {isAfterAction && <AfterActionScreen />}
 
-      {/* Debug overlay (always available in dev) */}
-      {config.debug.overlay ? <DebugOverlay seed={config.simulation.seed} /> : null}
+      {/* Developer overlay — opt-in via `?debug` or Ctrl+Shift+D, never by profile */}
+      {debugOverlayVisible ? <DebugOverlay seed={config.simulation.seed} /> : null}
     </div>
   );
 }

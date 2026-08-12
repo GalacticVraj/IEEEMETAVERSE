@@ -25,6 +25,7 @@ export interface UiState {
   readonly selectZone: (zone: ZoneId | null) => void;
   readonly selectAsset: (asset: SelectedAsset | null) => void;
   readonly toggleDebugOverlay: () => void;
+  readonly setDebugOverlay: (visible: boolean) => void;
   readonly setActivePanel: (panel: string | null) => void;
   readonly toggleSound: () => void;
   readonly startOnboarding: () => void;
@@ -34,10 +35,20 @@ export interface UiState {
   readonly endOnboarding: () => void;
 }
 
+/**
+ * The debug overlay is a DEVELOPER tool and must never appear for a player.
+ * It is opt-in only: `?debug` in the URL, or Ctrl+Shift+D at runtime.
+ * Exported separately so it can be tested without touching `window`.
+ */
+export function readDebugFlagFromLocation(search: string): boolean {
+  return new URLSearchParams(search).has('debug');
+}
+
 export const useUiStore = create<UiState>()((set) => ({
   selectedZone: null,
   selectedAsset: null,
-  debugOverlayVisible: false,
+  debugOverlayVisible:
+    typeof window === 'undefined' ? false : readDebugFlagFromLocation(window.location.search),
   activePanel: null,
   soundMuted: false,
   onboardingActive: false,
@@ -50,6 +61,9 @@ export const useUiStore = create<UiState>()((set) => ({
   },
   toggleDebugOverlay: () => {
     set((state) => ({ debugOverlayVisible: !state.debugOverlayVisible }));
+  },
+  setDebugOverlay: (visible) => {
+    set({ debugOverlayVisible: visible });
   },
   setActivePanel: (panel) => {
     set({ activePanel: panel });

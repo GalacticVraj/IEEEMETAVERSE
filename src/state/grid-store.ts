@@ -34,7 +34,7 @@ const INITIAL: GridProjection = {
   tick: 0,
   totalGeneration: 0,
   totalLoad: 0,
-  frequency: 50,
+  frequency: 60,
   renewableGeneration: 0,
   lines: [],
   zones: [],
@@ -49,41 +49,38 @@ export const useGridStore = create<GridProjection>()(() => INITIAL);
  * Bind the GridStore to the event bus + engine. Call once at bootstrap.
  * Returns an unsubscribe that detaches all listeners.
  */
-export function bindGridStore(
-  bus: GridEventBus,
-  engine: ISimulationEngine,
-): Unsubscribe {
+export function bindGridStore(bus: GridEventBus, engine: ISimulationEngine): Unsubscribe {
   const subs: Unsubscribe[] = [
-
     bus.on(GRID_EVENT.SimulationTick, (p) => {
       const gs = engine.getState();
       useGridStore.setState({
         tick: p.tick,
-        totalGeneration: gs.totalGeneration as number,
-        totalLoad: gs.totalLoad as number,
-        frequency: gs.frequency as number,
-        renewableGeneration: gs.renewableGeneration as number,
-        lines: gs.lines as readonly LineFlow[],
-        zones: gs.zones as readonly ZoneStatus[],
-        generators: gs.generators as readonly GeneratorStatus[],
+        totalGeneration: gs.totalGeneration,
+        totalLoad: gs.totalLoad,
+        frequency: gs.frequency,
+        renewableGeneration: gs.renewableGeneration,
+        lines: gs.lines,
+        zones: gs.zones,
+        generators: gs.generators,
       });
     }),
 
     bus.on(GRID_EVENT.LineTripped, (p) => {
       const prev = useGridStore.getState();
       const openLines = new Set<string>(prev.openLines);
-      openLines.add(p.line as string);
+      openLines.add(p.line);
       useGridStore.setState({ openLines, trippedCount: openLines.size });
     }),
 
     bus.on(GRID_EVENT.LineRecovered, (p) => {
       const prev = useGridStore.getState();
       const openLines = new Set<string>(prev.openLines);
-      openLines.delete(p.line as string);
+      openLines.delete(p.line);
       useGridStore.setState({ openLines, trippedCount: openLines.size });
     }),
-
   ];
 
-  return () => { for (const u of subs) u(); };
+  return () => {
+    for (const u of subs) u();
+  };
 }

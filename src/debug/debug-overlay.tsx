@@ -3,6 +3,8 @@ import type { ReactElement, PointerEvent } from 'react';
 
 import { useSimulationStore, useUiStore } from '@state';
 
+import { useRenderStatsStore } from './render-stats-store';
+
 export interface DebugOverlayProps {
   readonly seed: number;
 }
@@ -50,6 +52,10 @@ export function DebugOverlay({ seed }: DebugOverlayProps): ReactElement | null {
   const simTime = useSimulationStore((state) => state.simTime);
   const lifecycle = useSimulationStore((state) => state.lifecycle);
   const maxLoading = useSimulationStore((state) => state.maxLineLoading);
+  // Real renderer numbers, sampled inside the Canvas by RenderStatsProbe.
+  // These rows used to be hardcoded to "60" and "18.4 MB" — a debug overlay
+  // that reports invented telemetry is worse than none.
+  const stats = useRenderStatsStore();
 
   const onboardingActive = useUiStore((s) => s.onboardingActive);
 
@@ -204,8 +210,13 @@ export function DebugOverlay({ seed }: DebugOverlayProps): ReactElement | null {
       <MetricRow label="tick" value={String(tick)} />
       <MetricRow label="sim time" value={`${simTime.toFixed(1)}s`} />
       <MetricRow label="max loading" value={maxLoading.toFixed(2)} />
-      <MetricRow label="fps" value="60" />
-      <MetricRow label="memory" value="18.4 MB" />
+      <MetricRow label="fps" value={stats.fps === 0 ? '—' : String(stats.fps)} />
+      <MetricRow label="draw calls" value={String(stats.drawCalls)} />
+      <MetricRow label="triangles" value={stats.triangles.toLocaleString()} />
+      <MetricRow
+        label="memory"
+        value={stats.heapMb === null ? 'n/a' : `${String(stats.heapMb)} MB`}
+      />
     </div>
   );
 }

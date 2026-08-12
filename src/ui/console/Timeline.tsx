@@ -84,7 +84,16 @@ export function Timeline(): ReactElement {
         gridTemplateColumns: '190px 1fr 340px',
         gap: 16,
         padding: '10px 16px',
-        borderRadius: '8px 8px 0 0',
+        // The console grid reserves a 176px bottom row; this panel has to FILL
+        // it and be opaque. It previously floated inside the row with a
+        // translucent surface, so the 3D scene showed through beneath the
+        // timeline. Square corners because it is a full-bleed bottom bar —
+        // and the frozen visual language caps radii at 4px regardless.
+        background: '#F4F6F4',
+        borderTop: '1px solid #D7DCD6',
+        boxShadow: '0 -8px 24px rgba(28, 37, 48, 0.06)',
+        height: '100%',
+        borderRadius: 0,
         borderLeft: 'none',
         borderRight: 'none',
         borderBottom: 'none',
@@ -101,7 +110,9 @@ export function Timeline(): ReactElement {
             TIMELINE
           </span>
         </div>
-        <div style={{ fontSize: 10.5, color: '#8B97A3', lineHeight: 1.1 }}>Major events that occurred during this simulation</div>
+        <div style={{ fontSize: 10.5, color: '#8B97A3', lineHeight: 1.1 }}>
+          Major events that occurred during this simulation
+        </div>
 
         <Tooltip
           title="Elapsed Physics Time"
@@ -110,7 +121,13 @@ export function Timeline(): ReactElement {
         >
           <div
             className="metric-large"
-            style={{ fontSize: 18, fontWeight: 700, color: '#1C2530', marginTop: 2, cursor: 'help' }}
+            style={{
+              fontSize: 18,
+              fontWeight: 700,
+              color: '#1C2530',
+              marginTop: 2,
+              cursor: 'help',
+            }}
           >
             {simClock(tick)}
           </div>
