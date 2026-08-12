@@ -5,7 +5,7 @@
  */
 import { useFrame } from '@react-three/fiber';
 import { useRef } from 'react';
-import * as THREE from 'three';
+import type * as THREE from 'three';
 
 // ---------------------------------------------------------------------------
 // Drifting clouds — translucent organic layers high above the city
@@ -56,12 +56,31 @@ function Clouds(): JSX.Element {
 // Rectangular Coastal Sea — clean straight coastline at map boundary X = +90
 // ---------------------------------------------------------------------------
 
+/** Eastern edge of the ground terrain — where land ends and water begins. */
+const SHORELINE_X = 90;
+/** How far the water tucks under the shore so the seam cannot show a gap. */
+const SHORE_OVERLAP = 6;
+const SEA_WIDTH = 420;
+/** Wider than the terrain in Z so the water runs out to fog, not to a visible edge. */
+const SEA_DEPTH = 620;
+const SEA_CENTER_X = SHORELINE_X - SHORE_OVERLAP + SEA_WIDTH / 2;
+
 function CoastalSea(): JSX.Element {
   return (
     <group name="coastal-sea">
-      {/* Rectangular ocean plane flush with the eastern map boundary (X = +90) */}
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[240, -0.15, 0]}>
-        <planeGeometry args={[300, 260]} />
+      {/* Ocean plane meeting the eastern map boundary at X = +90.
+          The plane deliberately OVERLAPS the shore by `SHORE_OVERLAP` and sits
+          just under the terrain: butting the two edges together at exactly X=90
+          left a hairline gap at grazing camera angles, since the terrain sits at
+          y=-0.05 and the water at y=-0.15. It is also oversized in Z so the
+          water reaches the fog line instead of ending in a visible straight
+          edge inside the view. */}
+      <mesh
+        rotation={[-Math.PI / 2, 0, 0]}
+        position={[SEA_CENTER_X, -0.12, 0]}
+        receiveShadow={false}
+      >
+        <planeGeometry args={[SEA_WIDTH, SEA_DEPTH]} />
         <meshStandardMaterial
           color="#0284c7"
           emissive="#38bdf8"

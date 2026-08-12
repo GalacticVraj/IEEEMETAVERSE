@@ -68,9 +68,11 @@ export function explainLine(
     return {
       statusLabel: flow.state === 'Tripped' ? 'TRIPPED' : 'TRIPPING',
       statusTone: 'critical',
-      cause: 'Protection opened this line — sustained current above its thermal limit would have damaged the conductor.',
+      cause:
+        'Protection opened this line — sustained current above its thermal limit would have damaged the conductor.',
       impact: `Power that flowed here now reroutes through neighboring corridors. ${zoneNames} depend on this path.`,
-      action: 'Reduce demand in the zones this corridor feeds; the line recloses automatically once it cools.',
+      action:
+        'Reduce demand in the zones this corridor feeds; the line recloses automatically once it cools.',
     };
   }
   if (flow.state === 'Cooling') {
@@ -86,7 +88,8 @@ export function explainLine(
     return {
       statusLabel: 'OVERLOADED',
       statusTone: 'critical',
-      cause: 'Electricity flow exceeds the thermal rating — the conductor is heating toward its protection limit.',
+      cause:
+        'Electricity flow exceeds the thermal rating — the conductor is heating toward its protection limit.',
       impact: `If protection trips it, ${zoneNames} lose this corridor and neighbors absorb the flow.`,
       action: 'Shed or shift demand fed by this corridor NOW.',
     };
@@ -212,7 +215,10 @@ export function explainGenerator(
 // Buses
 // ---------------------------------------------------------------------------
 
-export function explainBus(zoneId: string, zoneStatus: ZoneStatus | undefined): {
+export function explainBus(
+  zoneId: string,
+  zoneStatus: ZoneStatus | undefined,
+): {
   cause: string;
   impact: string;
   action: string;
@@ -221,8 +227,8 @@ export function explainBus(zoneId: string, zoneStatus: ZoneStatus | undefined): 
   if (zoneStatus?.state === 'Blackout') {
     return {
       cause: `Every energized path into ${name} was lost, so this bus is de-energized.`,
-      impact: `${Math.round((zoneStatus.unservedLoad) ?? 0)} MW unserved — ≈${estimateHouseholdsAffected(
-        (zoneStatus.unservedLoad) ?? 0,
+      impact: `${Math.round(zoneStatus.unservedLoad ?? 0)} MW unserved — ≈${estimateHouseholdsAffected(
+        zoneStatus.unservedLoad ?? 0,
       ).toLocaleString()} households (estimate).`,
       action: 'Restore a transmission path into the zone.',
     };
@@ -285,7 +291,13 @@ export const BUILDING_NOTES: Record<string, BuildingNote> = {
     2,
     'High',
   ),
-  'RN-Sch1': note('North High', 'Community school', 'Schools have moderate, schedulable load.', 3, 'Medium'),
+  'RN-Sch1': note(
+    'North High',
+    'Community school',
+    'Schools have moderate, schedulable load.',
+    3,
+    'Medium',
+  ),
   'RS-Sch2': note(
     'South Elementary',
     'Community school',
@@ -350,14 +362,126 @@ const HOUSE_LOW_NOTE = note(
 export function buildingNote(id: string): BuildingNote {
   const exact = BUILDING_NOTES[id];
   if (exact) return exact;
-  if (id.startsWith('DT-Corp')) return { ...CORPORATE_NOTE, name: `${CORPORATE_NOTE.name} ${id.slice(-1)}` };
+  const infrastructure = INFRASTRUCTURE_NOTES[id];
+  if (infrastructure) return infrastructure;
+  if (id.startsWith('DT-Corp'))
+    return { ...CORPORATE_NOTE, name: `${CORPORATE_NOTE.name} ${id.slice(-1)}` };
   if (id.startsWith('RN-House')) return HOUSE_HIGH_NOTE;
   if (id.startsWith('RS-House')) return HOUSE_LOW_NOTE;
   return note(id, 'City structure', 'Part of the Meridian Bay load base.', 4, 'Flexible');
 }
 
+/** Teaching copy for the grid assets the city renders alongside its buildings. */
+const INFRASTRUCTURE_NOTES: Record<string, BuildingNote> = {
+  'HB-Fac': note(
+    'Meridian Harbor Terminal',
+    'Port and water treatment',
+    'The harbor carries water treatment alongside port load — shedding it reaches further into the city than the district map suggests.',
+    2,
+    'High',
+  ),
+  'AP-Term': note(
+    'Meridian Airport Terminal',
+    'Transport hub',
+    'Airside systems and emergency services share this feed.',
+    2,
+    'High',
+  ),
+  'SUB-DT': note(
+    'Downtown Substation',
+    'Distribution substation',
+    'Steps transmission voltage down for the whole downtown district. Lose it and every load behind it goes dark at once.',
+    1,
+    'Critical',
+  ),
+  'SUB-IN': note(
+    'Industrial Substation',
+    'Distribution substation',
+    'Feeds the industrial district. Heavy machinery draws hard through this one point.',
+    2,
+    'High',
+  ),
+  'SUB-RN': note(
+    'Residential North Substation',
+    'Distribution substation',
+    'The single feed for Residential North — a fault here darkens the whole estate.',
+    2,
+    'High',
+  ),
+  'SUB-RS': note(
+    'Residential South Substation',
+    'Distribution substation',
+    'The single feed for Residential South.',
+    2,
+    'High',
+    'Residential South carries the lower-income households — shedding here costs more than it saves.',
+  ),
+  'GEN-Thermal1': note(
+    'Meridian Baseload Plant',
+    'Thermal generation',
+    'Spinning thermal plant carrying baseload. Its inertia is what slows frequency down when supply is lost.',
+    1,
+    'Critical',
+  ),
+  'GEN-Wind1': note(
+    'Bay Wind Array A',
+    'Renewable generation',
+    'Output follows the wind, not your commands — you dispatch around it, not with it.',
+    3,
+    'Variable',
+  ),
+  'GEN-Wind2': note(
+    'Bay Wind Array B',
+    'Renewable generation',
+    'Output follows the wind, not your commands — you dispatch around it, not with it.',
+    3,
+    'Variable',
+  ),
+  'BESS-1': note(
+    'North Battery Storage',
+    'Grid-scale storage',
+    'Charges off surplus and discharges into a shortfall. Fast, but its energy is finite.',
+    2,
+    'High',
+  ),
+  'BESS-2': note(
+    'Downtown Battery Storage',
+    'Grid-scale storage',
+    'Sited next to the downtown load it supports, so its output does not need a corridor to get there.',
+    2,
+    'High',
+  ),
+  'RN-Solar': note(
+    'Meridian Solar Farm',
+    'Renewable generation',
+    'Produces only while the sun is up — as the shift runs into evening its contribution falls to zero.',
+    3,
+    'Variable',
+  ),
+};
+
+/**
+ * Grid infrastructure is named for what it IS, not for the district it sits in,
+ * so the "<ZONE>-<Name>" prefix rule below cannot place it. Without this table
+ * a substation resolved to the pseudo-zone "SUB", found no ZoneStatus, and
+ * reported itself POWERED even while its district was blacked out.
+ */
+const INFRASTRUCTURE_ZONE: Readonly<Record<string, string>> = {
+  'SUB-DT': 'DT',
+  'SUB-IN': 'IN',
+  'SUB-RN': 'RN',
+  'SUB-RS': 'RS',
+  'GEN-Thermal1': 'IN',
+  'GEN-Wind1': 'RN',
+  'GEN-Wind2': 'RN',
+  'BESS-1': 'RN',
+  'BESS-2': 'DT',
+};
+
 /** Building id prefix → zone id (building ids are "<ZONE>-<Name>"). */
 export function zoneOfBuilding(buildingId: string): string {
+  const explicit = INFRASTRUCTURE_ZONE[buildingId];
+  if (explicit !== undefined) return explicit;
   const dash = buildingId.indexOf('-');
   return dash > 0 ? buildingId.slice(0, dash) : buildingId;
 }

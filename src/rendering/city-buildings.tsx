@@ -11,22 +11,57 @@
  */
 import { useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
-import * as THREE from 'three';
+import type { ThreeEvent } from '@react-three/fiber';
+import type * as THREE from 'three';
+
+/**
+ * Pointer handlers every clickable city asset accepts. These were `any`,
+ * which switched off type checking on 33 props and accounted for most of the
+ * lint errors in this file.
+ */
+export type CityAssetClick = (event: ThreeEvent<MouseEvent>) => void;
+export type CityAssetPointer = (event: ThreeEvent<PointerEvent>) => void;
+
+interface CityAssetHandlers {
+  onClick?: CityAssetClick;
+  onPointerDown?: CityAssetPointer;
+  onPointerUp?: CityAssetPointer;
+}
+
+/**
+ * Spreads only the handlers that were actually supplied. `exactOptionalPropertyTypes`
+ * is on, so passing an explicit `undefined` to R3F's `EventHandlers` is a type error.
+ */
+/** Callers pass their own optional props straight through, so the input side
+ * must tolerate an explicit `undefined` even though the output side may not. */
+interface CityAssetHandlerInput {
+  onClick?: CityAssetClick | undefined;
+  onPointerDown?: CityAssetPointer | undefined;
+  onPointerUp?: CityAssetPointer | undefined;
+}
+
+function handlers(h: CityAssetHandlerInput): CityAssetHandlers {
+  const out: CityAssetHandlers = {};
+  if (h.onClick !== undefined) out.onClick = h.onClick;
+  if (h.onPointerDown !== undefined) out.onPointerDown = h.onPointerDown;
+  if (h.onPointerUp !== undefined) out.onPointerUp = h.onPointerUp;
+  return out;
+}
 
 // ---------------------------------------------------------------------------
 // Design Palette & Materials
 // ---------------------------------------------------------------------------
-const ROOF_GREEN = '#4a7c59';       // Sustainable rooftop greenery
-const SOLAR_BLUE = '#2563eb';       // High-efficiency solar panels
-const GLASS_TINT = '#1e3a5f';       // Corporate glass facade
-const HOSPITAL_WHITE = '#e2e8f0';   // Hospital facade
-const CROSS_RED = '#ef4444';        // Red cross emergency marker
-const SCHOOL_WARM = '#92400e';      // Warm educational brick
-const EV_CANOPY = '#334155';        // EV station canopy
-const CHARGE_GLOW = '#22c55e';      // Green charge glow
-const INDUSTRIAL_GRAY = '#475569';  // Heavy industrial steel
-const SUBSTATION_YELLOW = '#eab308';// High-voltage warning yellow
-const BATTERY_CYAN = '#06b6d4';     // Grid battery energy storage
+const ROOF_GREEN = '#4a7c59'; // Sustainable rooftop greenery
+const SOLAR_BLUE = '#2563eb'; // High-efficiency solar panels
+const GLASS_TINT = '#1e3a5f'; // Corporate glass facade
+const HOSPITAL_WHITE = '#e2e8f0'; // Hospital facade
+const CROSS_RED = '#ef4444'; // Red cross emergency marker
+const SCHOOL_WARM = '#92400e'; // Warm educational brick
+const EV_CANOPY = '#334155'; // EV station canopy
+const CHARGE_GLOW = '#22c55e'; // Green charge glow
+const INDUSTRIAL_GRAY = '#475569'; // Heavy industrial steel
+const SUBSTATION_YELLOW = '#eab308'; // High-voltage warning yellow
+const BATTERY_CYAN = '#06b6d4'; // Grid battery energy storage
 
 // ---------------------------------------------------------------------------
 // Hospital — Priority Infrastructure (Beacon, Red Cross, Emergency Aura)
@@ -40,9 +75,9 @@ export function Hospital({
 }: {
   position: [number, number, number];
   isPrioritized?: boolean;
-  onClick?: any;
-  onPointerDown?: any;
-  onPointerUp?: any;
+  onClick?: CityAssetClick;
+  onPointerDown?: CityAssetPointer;
+  onPointerUp?: CityAssetPointer;
 }) {
   const beaconRef = useRef<THREE.MeshStandardMaterial>(null);
   const auraRef = useRef<THREE.MeshStandardMaterial>(null);
@@ -55,14 +90,12 @@ export function Hospital({
         : 0.4 + Math.sin(t * 3) * 0.3;
     }
     if (auraRef.current) {
-      auraRef.current.opacity = isPrioritized
-        ? 0.25 + Math.sin(t * 4) * 0.15
-        : 0.05;
+      auraRef.current.opacity = isPrioritized ? 0.25 + Math.sin(t * 4) * 0.15 : 0.05;
     }
   });
 
   return (
-    <group position={position} onClick={onClick} onPointerDown={onPointerDown} onPointerUp={onPointerUp}>
+    <group position={position} {...handlers({ onClick, onPointerDown, onPointerUp })}>
       {/* Priority Emergency Ground Aura */}
       <mesh position={[0, 0.08, 0]} rotation={[-Math.PI / 2, 0, 0]}>
         <ringGeometry args={[5, 14, 32]} />
@@ -105,7 +138,12 @@ export function Hospital({
       {/* Emergency Beacon Light */}
       <mesh position={[0, 21.2, 0]}>
         <sphereGeometry args={[0.6, 12, 12]} />
-        <meshStandardMaterial ref={beaconRef} color={CROSS_RED} emissive={CROSS_RED} emissiveIntensity={0.6} />
+        <meshStandardMaterial
+          ref={beaconRef}
+          color={CROSS_RED}
+          emissive={CROSS_RED}
+          emissiveIntensity={0.6}
+        />
       </mesh>
 
       {/* Ambulance Bay / Helipad Pad */}
@@ -124,9 +162,19 @@ export function Hospital({
 // ---------------------------------------------------------------------------
 // School — Mid-height brick building, playground & solar array
 // ---------------------------------------------------------------------------
-export function School({ position, onClick, onPointerDown, onPointerUp }: { position: [number, number, number]; onClick?: any; onPointerDown?: any; onPointerUp?: any }) {
+export function School({
+  position,
+  onClick,
+  onPointerDown,
+  onPointerUp,
+}: {
+  position: [number, number, number];
+  onClick?: CityAssetClick;
+  onPointerDown?: CityAssetPointer;
+  onPointerUp?: CityAssetPointer;
+}) {
   return (
-    <group position={position} onClick={onClick} onPointerDown={onPointerDown} onPointerUp={onPointerUp}>
+    <group position={position} {...handlers({ onClick, onPointerDown, onPointerUp })}>
       <mesh position={[0, 4.5, 0]} castShadow receiveShadow>
         <boxGeometry args={[9, 9, 6]} />
         <meshStandardMaterial color={SCHOOL_WARM} roughness={0.6} />
@@ -139,7 +187,13 @@ export function School({ position, onClick, onPointerDown, onPointerUp }: { posi
       {[-2.5, 0, 2.5].map((x, i) => (
         <mesh key={i} position={[x, 9.15, 0]} rotation={[-0.35, 0, 0]}>
           <boxGeometry args={[2, 0.1, 2.8]} />
-          <meshStandardMaterial color={SOLAR_BLUE} emissive={SOLAR_BLUE} emissiveIntensity={0.3} metalness={0.9} roughness={0.1} />
+          <meshStandardMaterial
+            color={SOLAR_BLUE}
+            emissive={SOLAR_BLUE}
+            emissiveIntensity={0.3}
+            metalness={0.9}
+            roughness={0.1}
+          />
         </mesh>
       ))}
       {/* Athletic Field */}
@@ -154,9 +208,19 @@ export function School({ position, onClick, onPointerDown, onPointerUp }: { posi
 // ---------------------------------------------------------------------------
 // Courthouse / Civic Hall — Classic architecture
 // ---------------------------------------------------------------------------
-export function Courthouse({ position, onClick, onPointerDown, onPointerUp }: { position: [number, number, number]; onClick?: any; onPointerDown?: any; onPointerUp?: any }) {
+export function Courthouse({
+  position,
+  onClick,
+  onPointerDown,
+  onPointerUp,
+}: {
+  position: [number, number, number];
+  onClick?: CityAssetClick;
+  onPointerDown?: CityAssetPointer;
+  onPointerUp?: CityAssetPointer;
+}) {
   return (
-    <group position={position} onClick={onClick} onPointerDown={onPointerDown} onPointerUp={onPointerUp}>
+    <group position={position} {...handlers({ onClick, onPointerDown, onPointerUp })}>
       <mesh position={[0, 5.5, 0]} castShadow receiveShadow>
         <boxGeometry args={[11, 11, 8.5]} />
         <meshStandardMaterial color="#cbd5e1" roughness={0.45} />
@@ -193,20 +257,25 @@ export function CorporateTower({
   position: [number, number, number];
   height?: number;
   rotation?: number;
-  onClick?: any;
-  onPointerDown?: any;
-  onPointerUp?: any;
+  onClick?: CityAssetClick;
+  onPointerDown?: CityAssetPointer;
+  onPointerUp?: CityAssetPointer;
 }) {
   const matRef = useRef<THREE.MeshStandardMaterial>(null);
 
   useFrame(({ clock }) => {
     if (matRef.current) {
-      matRef.current.emissiveIntensity = 0.25 + Math.sin(clock.elapsedTime * 1.5 + position[0]) * 0.12;
+      matRef.current.emissiveIntensity =
+        0.25 + Math.sin(clock.elapsedTime * 1.5 + position[0]) * 0.12;
     }
   });
 
   return (
-    <group position={position} rotation={[0, rotation, 0]} onClick={onClick} onPointerDown={onPointerDown} onPointerUp={onPointerUp}>
+    <group
+      position={position}
+      rotation={[0, rotation, 0]}
+      {...handlers({ onClick, onPointerDown, onPointerUp })}
+    >
       <mesh position={[0, height / 2, 0]} castShadow receiveShadow>
         <boxGeometry args={[5, height, 5]} />
         <meshStandardMaterial
@@ -246,9 +315,9 @@ export function CommercialComplex({
   onPointerUp,
 }: {
   position: [number, number, number];
-  onClick?: any;
-  onPointerDown?: any;
-  onPointerUp?: any;
+  onClick?: CityAssetClick;
+  onPointerDown?: CityAssetPointer;
+  onPointerUp?: CityAssetPointer;
 }) {
   const glowRef = useRef<THREE.MeshStandardMaterial>(null);
 
@@ -259,7 +328,7 @@ export function CommercialComplex({
   });
 
   return (
-    <group position={position} onClick={onClick} onPointerDown={onPointerDown} onPointerUp={onPointerUp}>
+    <group position={position} {...handlers({ onClick, onPointerDown, onPointerUp })}>
       <mesh position={[0, 3, 0]} castShadow receiveShadow>
         <boxGeometry args={[14, 6, 10]} />
         <meshStandardMaterial color="#334155" roughness={0.5} />
@@ -286,7 +355,17 @@ export function CommercialComplex({
 // ---------------------------------------------------------------------------
 // EV Charging Station
 // ---------------------------------------------------------------------------
-export function EvStation({ position, onClick, onPointerDown, onPointerUp }: { position: [number, number, number]; onClick?: any; onPointerDown?: any; onPointerUp?: any }) {
+export function EvStation({
+  position,
+  onClick,
+  onPointerDown,
+  onPointerUp,
+}: {
+  position: [number, number, number];
+  onClick?: CityAssetClick;
+  onPointerDown?: CityAssetPointer;
+  onPointerUp?: CityAssetPointer;
+}) {
   const glowRef = useRef<THREE.MeshStandardMaterial>(null);
 
   useFrame(({ clock }) => {
@@ -296,18 +375,37 @@ export function EvStation({ position, onClick, onPointerDown, onPointerUp }: { p
   });
 
   return (
-    <group position={position} onClick={onClick} onPointerDown={onPointerDown} onPointerUp={onPointerUp}>
+    <group position={position} {...handlers({ onClick, onPointerDown, onPointerUp })}>
       <mesh position={[0, 4.2, 0]}>
         <boxGeometry args={[8.5, 0.25, 5.5]} />
-        <meshStandardMaterial color={SOLAR_BLUE} emissive={SOLAR_BLUE} emissiveIntensity={0.25} metalness={0.9} roughness={0.1} />
+        <meshStandardMaterial
+          color={SOLAR_BLUE}
+          emissive={SOLAR_BLUE}
+          emissiveIntensity={0.25}
+          metalness={0.9}
+          roughness={0.1}
+        />
       </mesh>
-      {([[-3.2, -2.2], [3.2, -2.2], [-3.2, 2.2], [3.2, 2.2]] as const).map(([x, z], i) => (
+      {(
+        [
+          [-3.2, -2.2],
+          [3.2, -2.2],
+          [-3.2, 2.2],
+          [3.2, 2.2],
+        ] as const
+      ).map(([x, z], i) => (
         <mesh key={i} position={[x, 2.1, z]}>
           <cylinderGeometry args={[0.16, 0.16, 4.2, 6]} />
           <meshStandardMaterial color={EV_CANOPY} />
         </mesh>
       ))}
-      {([{ x: -2.2, col: '#38bdf8' }, { x: 0, col: '#10b981' }, { x: 2.2, col: '#f59e0b' }] as const).map((car, i) => (
+      {(
+        [
+          { x: -2.2, col: '#38bdf8' },
+          { x: 0, col: '#10b981' },
+          { x: 2.2, col: '#f59e0b' },
+        ] as const
+      ).map((car, i) => (
         <group key={i} position={[car.x, 0, 0]}>
           <mesh position={[0, 0.65, 0]}>
             <boxGeometry args={[1.6, 0.85, 2.6]} />
@@ -319,7 +417,12 @@ export function EvStation({ position, onClick, onPointerDown, onPointerUp }: { p
           </mesh>
           <mesh position={[0.95, 0.55, 0]}>
             <sphereGeometry args={[0.18, 8, 8]} />
-            <meshStandardMaterial ref={i === 0 ? glowRef : null} color={CHARGE_GLOW} emissive={CHARGE_GLOW} emissiveIntensity={0.7} />
+            <meshStandardMaterial
+              ref={i === 0 ? glowRef : null}
+              color={CHARGE_GLOW}
+              emissive={CHARGE_GLOW}
+              emissiveIntensity={0.7}
+            />
           </mesh>
         </group>
       ))}
@@ -330,9 +433,19 @@ export function EvStation({ position, onClick, onPointerDown, onPointerUp }: { p
 // ---------------------------------------------------------------------------
 // Houses & Apartments
 // ---------------------------------------------------------------------------
-export function HouseHigh({ position, onClick, onPointerDown, onPointerUp }: { position: [number, number, number]; onClick?: any; onPointerDown?: any; onPointerUp?: any }) {
+export function HouseHigh({
+  position,
+  onClick,
+  onPointerDown,
+  onPointerUp,
+}: {
+  position: [number, number, number];
+  onClick?: CityAssetClick;
+  onPointerDown?: CityAssetPointer;
+  onPointerUp?: CityAssetPointer;
+}) {
   return (
-    <group position={position} onClick={onClick} onPointerDown={onPointerDown} onPointerUp={onPointerUp}>
+    <group position={position} {...handlers({ onClick, onPointerDown, onPointerUp })}>
       <mesh position={[0, 2.2, 0]} castShadow receiveShadow>
         <boxGeometry args={[4.2, 4.4, 3.8]} />
         <meshStandardMaterial color="#475569" roughness={0.65} />
@@ -343,7 +456,13 @@ export function HouseHigh({ position, onClick, onPointerDown, onPointerUp }: { p
       </mesh>
       <mesh position={[0, 5.9, -0.3]} rotation={[-0.45, 0, 0]}>
         <boxGeometry args={[2.6, 0.08, 1.9]} />
-        <meshStandardMaterial color={SOLAR_BLUE} emissive={SOLAR_BLUE} emissiveIntensity={0.3} metalness={0.9} roughness={0.1} />
+        <meshStandardMaterial
+          color={SOLAR_BLUE}
+          emissive={SOLAR_BLUE}
+          emissiveIntensity={0.3}
+          metalness={0.9}
+          roughness={0.1}
+        />
       </mesh>
       <mesh position={[3.2, 0.6, 0]}>
         <boxGeometry args={[0.4, 1.2, 0.4]} />
@@ -357,9 +476,19 @@ export function HouseHigh({ position, onClick, onPointerDown, onPointerUp }: { p
   );
 }
 
-export function HouseLow({ position, onClick, onPointerDown, onPointerUp }: { position: [number, number, number]; onClick?: any; onPointerDown?: any; onPointerUp?: any }) {
+export function HouseLow({
+  position,
+  onClick,
+  onPointerDown,
+  onPointerUp,
+}: {
+  position: [number, number, number];
+  onClick?: CityAssetClick;
+  onPointerDown?: CityAssetPointer;
+  onPointerUp?: CityAssetPointer;
+}) {
   return (
-    <group position={position} onClick={onClick} onPointerDown={onPointerDown} onPointerUp={onPointerUp}>
+    <group position={position} {...handlers({ onClick, onPointerDown, onPointerUp })}>
       <mesh position={[0, 1.6, 0]} castShadow receiveShadow>
         <boxGeometry args={[3.2, 3.2, 2.7]} />
         <meshStandardMaterial color="#525252" roughness={0.75} />
@@ -376,9 +505,15 @@ export function HouseLow({ position, onClick, onPointerDown, onPointerUp }: { po
   );
 }
 
-export function HighDensityApartment({ position, onClick }: { position: [number, number, number]; onClick?: any }) {
+export function HighDensityApartment({
+  position,
+  onClick,
+}: {
+  position: [number, number, number];
+  onClick?: CityAssetClick;
+}) {
   return (
-    <group position={position} onClick={onClick}>
+    <group position={position} {...handlers({ onClick })}>
       <mesh position={[0, 7.5, 0]} castShadow receiveShadow>
         <boxGeometry args={[7, 15, 6]} />
         <meshStandardMaterial color="#64748b" roughness={0.5} />
@@ -389,7 +524,7 @@ export function HighDensityApartment({ position, onClick }: { position: [number,
             <boxGeometry args={[1.2, 1.5, 0.05]} />
             <meshStandardMaterial color="#fef08a" emissive="#fde047" emissiveIntensity={0.3} />
           </mesh>
-        ))
+        )),
       )}
     </group>
   );
@@ -405,7 +540,7 @@ export function Substation({
 }: {
   position: [number, number, number];
   isOverloaded?: boolean;
-  onClick?: any;
+  onClick?: CityAssetClick;
 }) {
   const humRef = useRef<THREE.MeshStandardMaterial>(null);
 
@@ -417,7 +552,7 @@ export function Substation({
   });
 
   return (
-    <group position={position} onClick={onClick}>
+    <group position={position} {...handlers({ onClick })}>
       <mesh position={[0, 0.04, 0]} rotation={[-Math.PI / 2, 0, 0]}>
         <planeGeometry args={[12, 10]} />
         <meshStandardMaterial color="#334155" roughness={0.9} />
@@ -463,7 +598,7 @@ export function BatteryStorage({
 }: {
   position: [number, number, number];
   isActive?: boolean;
-  onClick?: any;
+  onClick?: CityAssetClick;
 }) {
   const pulseRef = useRef<THREE.MeshStandardMaterial>(null);
 
@@ -477,7 +612,7 @@ export function BatteryStorage({
   });
 
   return (
-    <group position={position} onClick={onClick}>
+    <group position={position} {...handlers({ onClick })}>
       <mesh position={[0, 0.04, 0]} rotation={[-Math.PI / 2, 0, 0]}>
         <planeGeometry args={[14, 10]} />
         <meshStandardMaterial color="#1e293b" />
@@ -514,7 +649,7 @@ export function ThermalGenerator({
 }: {
   position: [number, number, number];
   isTripped?: boolean;
-  onClick?: any;
+  onClick?: CityAssetClick;
 }) {
   const faultRef = useRef<THREE.MeshStandardMaterial>(null);
 
@@ -525,7 +660,7 @@ export function ThermalGenerator({
   });
 
   return (
-    <group position={position} onClick={onClick}>
+    <group position={position} {...handlers({ onClick })}>
       <mesh position={[0, 5, 0]} castShadow receiveShadow>
         <boxGeometry args={[14, 10, 10]} />
         <meshStandardMaterial color={INDUSTRIAL_GRAY} roughness={0.5} metalness={0.4} />
@@ -571,7 +706,7 @@ export function WindTurbine({
   position: [number, number, number];
   speed?: number;
   isTripped?: boolean;
-  onClick?: any;
+  onClick?: CityAssetClick;
 }) {
   const bladesRef = useRef<THREE.Group>(null);
 
@@ -582,7 +717,7 @@ export function WindTurbine({
   });
 
   return (
-    <group position={position} onClick={onClick}>
+    <group position={position} {...handlers({ onClick })}>
       <mesh position={[0, 9, 0]}>
         <cylinderGeometry args={[0.3, 0.7, 18, 10]} />
         <meshStandardMaterial color="#cbd5e1" metalness={0.5} roughness={0.3} />
@@ -615,7 +750,7 @@ export function IndustrialFactory({
 }: {
   position: [number, number, number];
   isActive?: boolean;
-  onClick?: any;
+  onClick?: CityAssetClick;
 }) {
   const lightRef = useRef<THREE.MeshStandardMaterial>(null);
 
@@ -628,7 +763,7 @@ export function IndustrialFactory({
   });
 
   return (
-    <group position={position} onClick={onClick}>
+    <group position={position} {...handlers({ onClick })}>
       <mesh position={[0, 3.5, 0]} castShadow receiveShadow>
         <boxGeometry args={[12, 7, 9]} />
         <meshStandardMaterial
@@ -671,9 +806,9 @@ export function SolarFarm({
 }: {
   position: [number, number, number];
   isActive?: boolean;
-  onClick?: any;
-  onPointerDown?: any;
-  onPointerUp?: any;
+  onClick?: CityAssetClick;
+  onPointerDown?: CityAssetPointer;
+  onPointerUp?: CityAssetPointer;
 }) {
   const panelRows = 4;
   const panelCols = 5;
@@ -688,7 +823,7 @@ export function SolarFarm({
   });
 
   return (
-    <group position={position} onClick={onClick} onPointerDown={onPointerDown} onPointerUp={onPointerUp}>
+    <group position={position} {...handlers({ onClick, onPointerDown, onPointerUp })}>
       {Array.from({ length: panelRows }, (_, r) =>
         Array.from({ length: panelCols }, (_, c) => (
           <group key={`${r}-${c}`} position={[(c - 2) * 3.2, 0, (r - 1.5) * 3.2]}>
@@ -708,7 +843,7 @@ export function SolarFarm({
               />
             </mesh>
           </group>
-        ))
+        )),
       )}
       <mesh position={[0, 0.02, 0]} rotation={[-Math.PI / 2, 0, 0]}>
         <planeGeometry args={[19, 15]} />
@@ -770,7 +905,13 @@ export function TransmissionPylon({ position }: { position: [number, number, num
 // ---------------------------------------------------------------------------
 // Green Infrastructure Assets: Tree, Park, Pond, Road
 // ---------------------------------------------------------------------------
-export function Tree({ position, scale = 1 }: { position: [number, number, number]; scale?: number }) {
+export function Tree({
+  position,
+  scale = 1,
+}: {
+  position: [number, number, number];
+  scale?: number;
+}) {
   return (
     <group position={position} scale={scale}>
       <mesh position={[0, 1.5, 0]}>
@@ -789,7 +930,13 @@ export function Tree({ position, scale = 1 }: { position: [number, number, numbe
   );
 }
 
-export function Park({ position, size = [20, 12] }: { position: [number, number, number]; size?: [number, number] }) {
+export function Park({
+  position,
+  size = [20, 12],
+}: {
+  position: [number, number, number];
+  size?: [number, number];
+}) {
   return (
     <group position={position}>
       <mesh position={[0, 0.04, 0]} rotation={[-Math.PI / 2, 0, 0]}>
@@ -842,7 +989,15 @@ export function Pond({ position }: { position: [number, number, number] }) {
   );
 }
 
-export function Road({ from, to, width = 2.5 }: { from: [number, number]; to: [number, number]; width?: number }) {
+export function Road({
+  from,
+  to,
+  width = 2.5,
+}: {
+  from: [number, number];
+  to: [number, number];
+  width?: number;
+}) {
   const dx = to[0] - from[0];
   const dz = to[1] - from[1];
   const length = Math.sqrt(dx * dx + dz * dz);

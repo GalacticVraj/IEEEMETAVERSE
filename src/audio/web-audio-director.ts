@@ -52,10 +52,13 @@ export function createAudioDirector(bus: GridEventBus, audioEngine?: AudioEngine
     }
   };
 
+  // Browsers keep an AudioContext suspended until a real user gesture, so the
+  // opening music stem can only start from inside one. This runs once and then
+  // detaches — previously it stayed bound and re-ran on every single pointerdown.
   const onFirstGesture = (): void => {
-    engine.init();
-    engine.attach(bus);
-    // Start initial calm music stem
+    if (typeof document !== 'undefined') {
+      document.removeEventListener('pointerdown', onFirstGesture);
+    }
     engine.playMusic(musicController.getCurrentState());
   };
 
@@ -72,7 +75,7 @@ export function createAudioDirector(bus: GridEventBus, audioEngine?: AudioEngine
       gestureBound = true;
 
       if (typeof document !== 'undefined') {
-        document.addEventListener('pointerdown', onFirstGesture, { passive: true });
+        document.addEventListener('pointerdown', onFirstGesture, { passive: true, once: true });
         document.addEventListener('click', onDocumentClick, { passive: true });
       }
 
@@ -196,6 +199,12 @@ export function createAudioDirector(bus: GridEventBus, audioEngine?: AudioEngine
 
       engine.dispose();
       musicController.reset();
+      // Reset the director's own latches too — leaving these set meant a
+      // restarted session inherited the previous run's stress band and could
+      // skip the escalation cue entirely.
+      previousStressBand = 'calm';
+      lastSeenEventLogSeq = 0;
+      lastOnboardingStep = 1;
       gestureBound = false;
     },
   };

@@ -124,8 +124,10 @@ export function App({ config }: AppProps): ReactElement {
           the old MissionBriefing card, which could only list rules at you. */}
       {isTutorial && !introActive && <TutorialManager />}
 
-      {/* Progressive Step-by-Step Onboarding Tour */}
-      {isConsole && !introActive && <OnboardingTour />}
+      {/* Progressive step-by-step tour, opened on demand from QuickControls.
+          Gated exactly like QuickControls — while Davis is teaching, his dialogue
+          owns the screen and the two must never stack. */}
+      {isConsole && !introActive && !teaching && <OnboardingTour />}
 
       {/* After-Action report layered above the console */}
       {isAfterAction && <AfterActionScreen />}

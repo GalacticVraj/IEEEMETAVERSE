@@ -2,25 +2,28 @@
  * city-layout.tsx — Places all buildings, infrastructure, substations, renewables,
  * and streetlights across the Meridian Bay city map.
  *
- * Responsive in real time to live operator decisions and simulation states with
- * high visual contrast:
- * - Commercial load shedding (DT corporate towers & complexes visibly dim to dark windows)
- * - Residential load shedding (RN & RS estates dim)
- * - Industrial shutdown (IN factories deactivate)
- * - Hospital priority (Hospital stays brightly lit with emergency priority aura while surrounding DT dims)
- * - Generator fault state (Flicker & trip warning)
- * - Battery storage activation (BESS LED pulse)
- * - Solar production increase (Solar array output glow)
- * - Blackout cascades (Progressive wave of light failure)
- * - Grid recovery (Progressive restoration of city lights)
+ * Every reactive behaviour below is derived from live simulation state by
+ * `city-response.ts` — never from the operator's decision history. That matters:
+ * the decision log only ever grows, so anything keyed off it latched on
+ * permanently and could not depict restoration.
+ *
+ * - District brightness tracks served ÷ nominal demand, so shedding dims the
+ *   district and restoration brings it back
+ * - Blackout darkens a district outright
+ * - Hospital priority aura lights while downtown is degraded or dark
+ * - Thermal plant trip drives the industrial flicker and its own fault ring
+ * - BESS pulse follows real storage output; solar glow follows real solar
+ *   output, so the array goes dark at night
+ * - Wind rotor speed scales with real wind output
  */
 import { useFrame } from '@react-three/fiber';
-import { useRef } from 'react';
+import { useMemo, useRef } from 'react';
 import * as THREE from 'three';
 import type { ReactNode } from 'react';
 
-import { useAppFlowStore, useGridStore, useUiStore } from '@state';
+import { useGridStore, useUiStore } from '@state';
 
+import { cityResponseSignature, deriveCityResponse, zoneNominalDemand } from './city-response';
 import { nightFactor, windowGlow } from './time-of-day';
 import { BUILDING_POSITIONS } from './camera/city-positions';
 import {
@@ -53,60 +56,87 @@ const at = (id: string): [number, number, number] => {
   return [p[0], 0, p[1]];
 };
 
+/** One material plus the pristine values it started with. */
+interface TrackedMaterial {
+  readonly material: THREE.MeshStandardMaterial;
+  readonly emissiveIntensity: number;
+  readonly color: THREE.Color;
+}
+
 /**
- * DimGroup — drives high-contrast emissive lighting based on night arc, zone blackout state,
- * and live operator load shedding decisions (commercial, residential, industrial).
+ * Deterministic electrical stutter. The previous implementation drew a fresh
+ * `Math.random()` every frame, which at 60 fps reads as a strobe rather than a
+ * failing circuit — and put non-seeded randomness into the render path. This
+ * holds each sample for ~1/14 s so the flicker has visible steps.
  */
+function flickerAt(seconds: number): number {
+  const step = Math.floor(seconds * FLICKER_HZ);
+  const hashed = Math.sin(step * 127.1) * 43758.5453;
+  return FLICKER_FLOOR + (hashed - Math.floor(hashed)) * (1 - FLICKER_FLOOR);
+}
+
+const FLICKER_HZ = 14;
+const FLICKER_FLOOR = 0.45;
+/** Emissive level for a district that has lost its supply entirely. */
+const DARK_EMISSIVE = 0.02;
+/** Rotor speed at zero output — a parked turbine still drifts a little. */
+const IDLE_SPIN = 0.25;
+/** Additional rotor speed at full rated output. */
+const SPIN_GAIN = 3.0;
+
 function DimGroup({
   dimmed,
-  loadShedFactor = 1,
+  loadFactor = 1,
   flicker = false,
   children,
 }: {
   dimmed: boolean;
-  loadShedFactor?: number;
+  loadFactor?: number;
   flicker?: boolean;
   children: ReactNode;
 }): JSX.Element {
   const ref = useRef<THREE.Group>(null);
   const factorRef = useRef(1);
-  const saved = useRef(
-    new Map<THREE.MeshStandardMaterial, { emissiveIntensity: number; color: THREE.Color }>(),
-  );
+  // Collected once on the first frame. Re-walking the subtree every frame for
+  // six districts was the single largest per-frame CPU cost in the scene.
+  const tracked = useRef<TrackedMaterial[] | null>(null);
 
-  useFrame((_, delta) => {
+  useFrame(({ clock }, delta) => {
     const group = ref.current;
     if (group === null) return;
-    const glow = windowGlow(nightFactor(useGridStore.getState().tick));
-    // High contrast factor: 0.05 when dimmed/blackout, 0.25 when load shed, 1.0 normal
-    const targetFactor = dimmed ? 0.05 : loadShedFactor < 1.0 ? 0.25 * loadShedFactor : 1.0;
-    
-    // Smooth transition
-    factorRef.current += (targetFactor - factorRef.current) * Math.min(1, delta * 4.5);
 
-    const flickerMultiplier = flicker ? 0.2 + Math.random() * 0.8 : 1.0;
-
-    group.traverse((obj) => {
-      if (!(obj instanceof THREE.Mesh)) return;
-      const materials = Array.isArray(obj.material) ? obj.material : [obj.material];
-      for (const material of materials) {
-        if (!(material instanceof THREE.MeshStandardMaterial)) continue;
-        let original = saved.current.get(material);
-        if (original === undefined) {
-          original = {
+    if (tracked.current === null) {
+      const collected: TrackedMaterial[] = [];
+      group.traverse((obj) => {
+        if (!(obj instanceof THREE.Mesh)) return;
+        const materials = Array.isArray(obj.material) ? obj.material : [obj.material];
+        for (const material of materials) {
+          if (!(material instanceof THREE.MeshStandardMaterial)) continue;
+          collected.push({
+            material,
             emissiveIntensity: material.emissiveIntensity,
             color: material.color.clone(),
-          };
-          saved.current.set(material, original);
+          });
         }
+      });
+      tracked.current = collected;
+    }
 
-        const targetEmissive = (dimmed || loadShedFactor < 0.5)
-          ? 0.02
-          : original.emissiveIntensity * glow * loadShedFactor * flickerMultiplier;
-        material.emissiveIntensity += (targetEmissive - material.emissiveIntensity) * Math.min(1, delta * 5.0);
-        material.color.copy(original.color).multiplyScalar(factorRef.current);
-      }
-    });
+    const glow = windowGlow(nightFactor(useGridStore.getState().tick));
+    const targetFactor = dimmed ? 0.05 : loadFactor < 1 ? 0.25 + 0.75 * loadFactor : 1;
+    factorRef.current += (targetFactor - factorRef.current) * Math.min(1, delta * 4.5);
+
+    const flickerMultiplier = flicker ? flickerAt(clock.elapsedTime) : 1;
+    const emissiveLerp = Math.min(1, delta * 5);
+
+    for (const entry of tracked.current) {
+      const targetEmissive = dimmed
+        ? DARK_EMISSIVE
+        : entry.emissiveIntensity * glow * loadFactor * flickerMultiplier;
+      entry.material.emissiveIntensity +=
+        (targetEmissive - entry.material.emissiveIntensity) * emissiveLerp;
+      entry.material.color.copy(entry.color).multiplyScalar(factorRef.current);
+    }
   });
 
   return <group ref={ref}>{children}</group>;
@@ -117,25 +147,21 @@ function DimGroup({
  */
 export function CityLayout(): JSX.Element {
   const selectAsset = useUiStore((s) => s.selectAsset);
-  const zones = useGridStore((s) => s.zones);
-  const generators = useGridStore((s) => s.generators);
-  const decisionLog = useAppFlowStore((s) => s.decisionLog);
 
-  const dark = new Set(
-    zones.filter((z) => z.state === 'Blackout').map((z) => z.zone as string),
-  );
+  // Selecting a quantised signature rather than the `zones`/`generators` arrays
+  // keeps this tree from reconciling on all ten ticks a second — the arrays get
+  // fresh identities every tick even when the picture is unchanged.
+  const signature = useGridStore((s) => cityResponseSignature(s.zones, s.generators));
+  const nominal = useMemo(() => zoneNominalDemand(), []);
+  const response = useMemo(() => {
+    const { zones, generators } = useGridStore.getState();
+    return deriveCityResponse(zones, generators, nominal);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- signature IS the state digest
+  }, [signature, nominal]);
 
-  // Live decision responses from operator decision log
-  const commercialShed = decisionLog.some((d) => d.action.type.includes('commercial'));
-  const residentialShed = decisionLog.some((d) => d.action.type.includes('residential'));
-  const industrialShed = decisionLog.some((d) => d.action.type.includes('industrial'));
-  const hospitalPriority = decisionLog.some((d) => d.action.type.includes('hospital') || d.action.type.includes('priority'));
-  const batteryActive = decisionLog.some((d) => d.action.type.includes('battery') || d.action.type.includes('bess'));
-  const solarActive = decisionLog.some((d) => d.action.type.includes('solar') || d.action.type.includes('renewable'));
-
-  // Thermal Generator state
-  const thermalGen = generators.find((g) => g.id === 'G_THERMAL_1');
-  const isThermalTripped = thermalGen?.tripped ?? false;
+  const { darkZones: dark, zoneLoadFactor, assetOutputFactor, trippedAssets } = response;
+  const loadOf = (zoneId: string): number => zoneLoadFactor[zoneId] ?? 1;
+  const outputOf = (assetId: string): number => assetOutputFactor[assetId] ?? 0;
 
   const select = (id: string) => (e: { stopPropagation(): void }) => {
     e.stopPropagation();
@@ -145,39 +171,102 @@ export function CityLayout(): JSX.Element {
   return (
     <group name="city-layout">
       {/* === DOWNTOWN (DT) — Corporate & Commercial District === */}
-      <DimGroup dimmed={dark.has('DT')} loadShedFactor={commercialShed ? 0.2 : 1.0}>
-        <CorporateTower position={at('DT-Corp1')} height={24} rotation={0.1} onClick={select('DT-Corp1')} />
-        <CorporateTower position={at('DT-Corp2')} height={19} rotation={-0.1} onClick={select('DT-Corp2')} />
-        <CorporateTower position={at('DT-Corp3')} height={28} rotation={0.05} onClick={select('DT-Corp3')} />
-        <CorporateTower position={at('DT-Corp4')} height={17} rotation={-0.15} onClick={select('DT-Corp4')} />
-        <CorporateTower position={at('DT-Corp5')} height={22} rotation={0.2} onClick={select('DT-Corp5')} />
-        <CorporateTower position={at('DT-Corp6')} height={18} rotation={-0.05} onClick={select('DT-Corp6')} />
-        <CorporateTower position={at('DT-Corp7')} height={21} rotation={0.12} onClick={select('DT-Corp7')} />
+      <DimGroup dimmed={dark.has('DT')} loadFactor={loadOf('DT')}>
+        <CorporateTower
+          position={at('DT-Corp1')}
+          height={24}
+          rotation={0.1}
+          onClick={select('DT-Corp1')}
+        />
+        <CorporateTower
+          position={at('DT-Corp2')}
+          height={19}
+          rotation={-0.1}
+          onClick={select('DT-Corp2')}
+        />
+        <CorporateTower
+          position={at('DT-Corp3')}
+          height={28}
+          rotation={0.05}
+          onClick={select('DT-Corp3')}
+        />
+        <CorporateTower
+          position={at('DT-Corp4')}
+          height={17}
+          rotation={-0.15}
+          onClick={select('DT-Corp4')}
+        />
+        <CorporateTower
+          position={at('DT-Corp5')}
+          height={22}
+          rotation={0.2}
+          onClick={select('DT-Corp5')}
+        />
+        <CorporateTower
+          position={at('DT-Corp6')}
+          height={18}
+          rotation={-0.05}
+          onClick={select('DT-Corp6')}
+        />
+        <CorporateTower
+          position={at('DT-Corp7')}
+          height={21}
+          rotation={0.12}
+          onClick={select('DT-Corp7')}
+        />
         <CommercialComplex position={at('DT-Mall1')} onClick={select('DT-Mall1')} />
         <Courthouse position={at('DT-Gov1')} onClick={select('DT-Gov1')} />
       </DimGroup>
 
       {/* Downtown Substation */}
-      <Substation position={at('SUB-DT')} isOverloaded={dark.has('DT')} onClick={select('SUB-DT')} />
+      <Substation
+        position={at('SUB-DT')}
+        isOverloaded={dark.has('DT')}
+        onClick={select('SUB-DT')}
+      />
 
       {/* Hospital — Priority Infrastructure (Remains brightly illuminated) */}
       <Hospital
         position={at('DT-Hosp')}
-        isPrioritized={hospitalPriority}
+        isPrioritized={response.hospitalPrioritized}
         onClick={select('DT-Hosp')}
       />
 
       {/* === INDUSTRIAL DISTRICT (IN) === */}
-      <DimGroup dimmed={dark.has('IN')} loadShedFactor={industrialShed ? 0.1 : 1.0}>
-        <IndustrialFactory position={at('IN-Fact1')} isActive={!industrialShed && !dark.has('IN')} onClick={select('IN-Fact1')} />
-        <IndustrialFactory position={at('IN-Fact2')} isActive={!industrialShed && !dark.has('IN')} onClick={select('IN-Fact2')} />
-        <IndustrialFactory position={at('IN-Fact3')} isActive={!industrialShed && !dark.has('IN')} onClick={select('IN-Fact3')} />
+      <DimGroup
+        dimmed={dark.has('IN')}
+        loadFactor={loadOf('IN')}
+        flicker={trippedAssets.has('GEN-Thermal1')}
+      >
+        <IndustrialFactory
+          position={at('IN-Fac1')}
+          isActive={loadOf('IN') > 0.5 && !dark.has('IN')}
+          onClick={select('IN-Fac1')}
+        />
+        <IndustrialFactory
+          position={at('IN-Fac2')}
+          isActive={loadOf('IN') > 0.5 && !dark.has('IN')}
+          onClick={select('IN-Fac2')}
+        />
+        <IndustrialFactory
+          position={at('IN-Fac3')}
+          isActive={loadOf('IN') > 0.5 && !dark.has('IN')}
+          onClick={select('IN-Fac3')}
+        />
       </DimGroup>
-      <Substation position={at('SUB-IN')} isOverloaded={dark.has('IN')} onClick={select('SUB-IN')} />
-      <ThermalGenerator position={at('GEN-Thermal1')} isTripped={isThermalTripped} onClick={select('GEN-Thermal1')} />
+      <Substation
+        position={at('SUB-IN')}
+        isOverloaded={dark.has('IN')}
+        onClick={select('SUB-IN')}
+      />
+      <ThermalGenerator
+        position={at('GEN-Thermal1')}
+        isTripped={trippedAssets.has('GEN-Thermal1')}
+        onClick={select('GEN-Thermal1')}
+      />
 
       {/* === RESIDENTIAL NORTH (RN) — High Income Estates & Apartments === */}
-      <DimGroup dimmed={dark.has('RN')} loadShedFactor={residentialShed ? 0.4 : 1.0}>
+      <DimGroup dimmed={dark.has('RN')} loadFactor={loadOf('RN')}>
         <School position={at('RN-Sch1')} onClick={select('RN-Sch1')} />
         <EvStation position={at('RN-EV1')} onClick={select('RN-EV1')} />
         <HouseHigh position={at('RN-House1')} onClick={select('RN-House1')} />
@@ -190,10 +279,14 @@ export function CityLayout(): JSX.Element {
         <HighDensityApartment position={at('RN-Apt1')} onClick={select('RN-Apt1')} />
         <HighDensityApartment position={at('RN-Apt2')} onClick={select('RN-Apt2')} />
       </DimGroup>
-      <Substation position={at('SUB-RN')} isOverloaded={dark.has('RN')} onClick={select('SUB-RN')} />
+      <Substation
+        position={at('SUB-RN')}
+        isOverloaded={dark.has('RN')}
+        onClick={select('SUB-RN')}
+      />
 
       {/* === RESIDENTIAL SOUTH (RS) — Community Estates & Apartments === */}
-      <DimGroup dimmed={dark.has('RS')} loadShedFactor={residentialShed ? 0.4 : 1.0}>
+      <DimGroup dimmed={dark.has('RS')} loadFactor={loadOf('RS')}>
         <School position={at('RS-Sch2')} onClick={select('RS-Sch2')} />
         <EvStation position={at('RS-EV2')} onClick={select('RS-EV2')} />
         <HouseLow position={at('RS-House1')} onClick={select('RS-House1')} />
@@ -208,18 +301,54 @@ export function CityLayout(): JSX.Element {
         <HighDensityApartment position={at('RS-Apt1')} onClick={select('RS-Apt1')} />
         <HighDensityApartment position={at('RS-Apt2')} onClick={select('RS-Apt2')} />
       </DimGroup>
-      <Substation position={at('SUB-RS')} isOverloaded={dark.has('RS')} onClick={select('SUB-RS')} />
+      <Substation
+        position={at('SUB-RS')}
+        isOverloaded={dark.has('RS')}
+        onClick={select('SUB-RS')}
+      />
 
       {/* === RENEWABLE ENERGY & BATTERY STORAGE ZONE === */}
-      <SolarFarm position={at('RN-Solar')} isActive={solarActive || !dark.has('RN')} onClick={select('RN-Solar')} />
-      <BatteryStorage position={at('BESS-1')} isActive={batteryActive} onClick={select('BESS-1')} />
-      <BatteryStorage position={at('BESS-2')} isActive={batteryActive} onClick={select('BESS-2')} />
-      <WindTurbine position={at('GEN-Wind1')} speed={2.0} onClick={select('GEN-Wind1')} />
-      <WindTurbine position={at('GEN-Wind2')} speed={1.8} onClick={select('GEN-Wind2')} />
+      <SolarFarm
+        position={at('RN-Solar')}
+        isActive={outputOf('RN-Solar') > 0.02}
+        onClick={select('RN-Solar')}
+      />
+      <BatteryStorage
+        position={at('BESS-1')}
+        isActive={outputOf('BESS-1') > 0.02}
+        onClick={select('BESS-1')}
+      />
+      <BatteryStorage
+        position={at('BESS-2')}
+        isActive={outputOf('BESS-2') > 0.02}
+        onClick={select('BESS-2')}
+      />
+      <WindTurbine
+        position={at('GEN-Wind1')}
+        speed={IDLE_SPIN + outputOf('GEN-Wind1') * SPIN_GAIN}
+        onClick={select('GEN-Wind1')}
+      />
+      <WindTurbine
+        position={at('GEN-Wind2')}
+        speed={IDLE_SPIN + outputOf('GEN-Wind2') * SPIN_GAIN}
+        onClick={select('GEN-Wind2')}
+      />
 
       {/* === AIRPORT INFRASTRUCTURE (AP) === */}
-      <DimGroup dimmed={dark.has('AP')}>
+      <DimGroup dimmed={dark.has('AP')} loadFactor={loadOf('AP')}>
         <EvStation position={at('AP-EV3')} onClick={select('AP-EV3')} />
+        <CommercialComplex position={at('AP-Term')} onClick={select('AP-Term')} />
+      </DimGroup>
+
+      {/* === HARBOR (HB) === The scripted heatwave beat trips harbor
+          generation; without geometry here the run's loudest moment happened
+          off-camera. */}
+      <DimGroup dimmed={dark.has('HB')} loadFactor={loadOf('HB')}>
+        <IndustrialFactory
+          position={at('HB-Fac')}
+          isActive={loadOf('HB') > 0.5 && !dark.has('HB')}
+          onClick={select('HB-Fac')}
+        />
       </DimGroup>
 
       {/* === GREEN INFRASTRUCTURE & PARKS === */}
@@ -246,11 +375,11 @@ export function CityLayout(): JSX.Element {
       <TransmissionPylon position={[70, 0, 45]} />
 
       {/* Streetlights along primary transport corridors */}
-      <StreetLight position={[-10, 0, 78]} intensity={dark.has('DT') ? 0.05 : commercialShed ? 0.25 : 1.0} />
-      <StreetLight position={[10, 0, 78]} intensity={dark.has('DT') ? 0.05 : commercialShed ? 0.25 : 1.0} />
-      <StreetLight position={[-45, 0, 35]} intensity={dark.has('RN') ? 0.05 : residentialShed ? 0.35 : 1.0} />
-      <StreetLight position={[-30, 0, -38]} intensity={dark.has('RS') ? 0.05 : residentialShed ? 0.35 : 1.0} />
-      <StreetLight position={[60, 0, 32]} intensity={dark.has('IN') ? 0.05 : industrialShed ? 0.15 : 1.0} />
+      <StreetLight position={[-10, 0, 78]} intensity={dark.has('DT') ? 0.05 : loadOf('DT')} />
+      <StreetLight position={[10, 0, 78]} intensity={dark.has('DT') ? 0.05 : loadOf('DT')} />
+      <StreetLight position={[-45, 0, 35]} intensity={dark.has('RN') ? 0.05 : loadOf('RN')} />
+      <StreetLight position={[-30, 0, -38]} intensity={dark.has('RS') ? 0.05 : loadOf('RS')} />
+      <StreetLight position={[60, 0, 32]} intensity={dark.has('IN') ? 0.05 : loadOf('IN')} />
 
       {/* === ROADS connecting zones === */}
       <Road from={[-25, 75]} to={[25, 75]} width={3.5} />

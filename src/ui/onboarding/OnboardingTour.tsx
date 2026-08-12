@@ -1,5 +1,5 @@
 import { useUiStore } from '@state';
-import { useEffect, type ReactElement } from 'react';
+import { useCallback, useEffect, type ReactElement } from 'react';
 
 interface StepInfo {
   readonly step: number;
@@ -25,7 +25,7 @@ const TOUR_STEPS: readonly StepInfo[] = [
     targetName: 'Live Network Telemetry',
     body: 'This panel shows live Demand, Generation, Balance, and Corridor Stress.',
     tip: 'Watch Corridor Stress carefully — protective relays trip lines at 100% thermal capacity!',
-    position: { top: '100px', left: '330px' },
+    position: { top: '100px', left: 'clamp(16px, 330px, calc(100vw - 396px))' },
   },
   {
     step: 3,
@@ -33,7 +33,7 @@ const TOUR_STEPS: readonly StepInfo[] = [
     targetName: 'Grid Control Levers',
     body: 'Select crisis scenarios (Heatwave, Storm) and execute operator actions to rebalance the grid.',
     tip: 'Operator interventions carry costs, benefits, and risks. Choose carefully under crisis pressure.',
-    position: { top: '280px', left: '330px' },
+    position: { top: '280px', left: 'clamp(16px, 330px, calc(100vw - 396px))' },
   },
   {
     step: 4,
@@ -49,7 +49,7 @@ const TOUR_STEPS: readonly StepInfo[] = [
     targetName: 'Interactive City Infrastructure',
     body: 'Click any transmission line, substation bus, or power plant directly on the 3D map.',
     tip: 'Selecting an asset smoothly reveals its Asset Inspector card with live flow telemetry.',
-    position: { top: '100px', right: '350px' },
+    position: { top: '100px', right: 'clamp(16px, 350px, calc(100vw - 396px))' },
   },
   {
     step: 6,
@@ -57,18 +57,10 @@ const TOUR_STEPS: readonly StepInfo[] = [
     targetName: 'Evidence-Based Mentor Insights',
     body: 'When events occur, the Understanding panel explains what happened, why, and recommended fixes.',
     tip: 'No toast spam — just clear, actionable teaching cards when grid disturbances fire.',
-    position: { top: '240px', right: '350px' },
+    position: { top: '240px', right: 'clamp(16px, 350px, calc(100vw - 396px))' },
   },
   {
     step: 7,
-    title: 'DEVELOPER DEBUG TOOLS',
-    targetName: 'Collapsible Telemetry Overlay',
-    body: 'A compact floating debug pill is docked in the top-right corner.',
-    tip: 'Click 🛠 DEBUG anytime to inspect seed, tick timing, and solver performance.',
-    position: { top: '80px', right: '20px' },
-  },
-  {
-    step: 8,
     title: 'OUTCOMES PRIMER',
     targetName: 'Measured After-Action Scorecard',
     body: 'Every decision you make here is measured, not graded on vibes. When your shift ends, you will see how well you kept the grid stable, how sound your trade-offs were, and how equitably the outcome landed across districts — the same numbers, run after run, so you can see yourself get better.',
@@ -101,21 +93,24 @@ export function OnboardingTour(): ReactElement | null {
   const prevStep = useUiStore((s) => s.prevOnboardingStep);
   const endTour = useUiStore((s) => s.endOnboarding);
 
+  const isLastStep = onboardingStep >= TOUR_STEPS.length;
+  const advance = useCallback((): void => {
+    if (onboardingStep >= TOUR_STEPS.length) endTour();
+    else nextStep();
+  }, [onboardingStep, endTour, nextStep]);
+
   useEffect(() => {
     if (!onboardingActive) return;
 
-    const handleKeyDown = (e: KeyboardEvent) => {
+    const handleKeyDown = (e: KeyboardEvent): void => {
+      // Space is deliberately NOT bound here. It is the simulation's pause
+      // shortcut — which this tour itself teaches — and swallowing it made the
+      // tour contradict its own instructions.
       if (e.key === 'Escape') {
         endTour();
-      } else if (
-        e.key === 'Enter' ||
-        e.key === ' ' ||
-        e.code === 'Space' ||
-        e.key === 'ArrowRight' ||
-        e.key === 'ArrowDown'
-      ) {
+      } else if (e.key === 'Enter' || e.key === 'ArrowRight' || e.key === 'ArrowDown') {
         e.preventDefault();
-        nextStep();
+        advance();
       } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
         e.preventDefault();
         prevStep();
@@ -124,7 +119,7 @@ export function OnboardingTour(): ReactElement | null {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [onboardingActive, endTour, nextStep, prevStep]);
+  }, [onboardingActive, endTour, advance, prevStep]);
 
   if (!onboardingActive) return null;
 
@@ -136,9 +131,11 @@ export function OnboardingTour(): ReactElement | null {
         position: 'absolute',
         inset: 0,
         zIndex: 50,
-        pointerEvents: 'auto',
-        background: 'rgba(15, 23, 42, 0.45)',
-        backdropFilter: 'blur(3px)',
+        // The scrim must not swallow clicks: the tour tells the operator to
+        // click lines and substations on the 3D map, and a blocking overlay
+        // made those instructions impossible to follow while it was open.
+        pointerEvents: 'none',
+        background: 'rgba(15, 23, 42, 0.28)',
       }}
       className="animate-fade-in"
     >
@@ -148,6 +145,7 @@ export function OnboardingTour(): ReactElement | null {
         style={{
           position: 'absolute',
           ...current.position,
+          pointerEvents: 'auto',
           width: 380,
           maxWidth: 'calc(100vw - 32px)',
           padding: '16px 18px',
@@ -247,9 +245,9 @@ export function OnboardingTour(): ReactElement | null {
             <button
               className="console-btn-primary"
               style={{ padding: '4px 14px', fontSize: 11, minHeight: 28 }}
-              onClick={nextStep}
+              onClick={advance}
             >
-              {current.step === TOUR_STEPS.length ? 'Finish Tour ✓' : 'Next Step ▸'}
+              {isLastStep ? 'Finish Tour ✓' : 'Next Step ▸'}
             </button>
           </div>
         </div>

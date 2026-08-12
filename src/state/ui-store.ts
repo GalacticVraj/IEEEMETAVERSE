@@ -60,13 +60,11 @@ export const useUiStore = create<UiState>()((set) => ({
   startOnboarding: () => {
     set({ onboardingActive: true, onboardingStep: 1 });
   },
+  // Deliberately unbounded: the tour component owns its own length and calls
+  // `endOnboarding` on the last step. A step count duplicated here could — and
+  // did — drift out of sync with the actual number of steps.
   nextOnboardingStep: () => {
-    set((state) => {
-      if (state.onboardingStep >= 8) {
-        return { onboardingActive: false, onboardingStep: 1 };
-      }
-      return { onboardingStep: state.onboardingStep + 1 };
-    });
+    set((state) => ({ onboardingStep: state.onboardingStep + 1 }));
   },
   prevOnboardingStep: () => {
     set((state) => ({ onboardingStep: Math.max(1, state.onboardingStep - 1) }));

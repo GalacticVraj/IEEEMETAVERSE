@@ -3,6 +3,8 @@
  * Evaluates corridor stress ratio and frequency deviation to determine music tier.
  */
 
+import { NOMINAL_FREQUENCY } from '@constants';
+
 import type { MusicKey } from '../manifest';
 
 export interface MusicStateThresholds {
@@ -39,7 +41,7 @@ export function getMusicState(
   freqHz: number,
   thresholds: MusicStateThresholds = DEFAULT_MUSIC_THRESHOLDS,
 ): MusicKey {
-  const freqDeviation = Math.abs(freqHz - 50.0);
+  const freqDeviation = Math.abs(freqHz - (NOMINAL_FREQUENCY as number));
 
   if (
     stressRatio >= thresholds.criticalStressMin ||

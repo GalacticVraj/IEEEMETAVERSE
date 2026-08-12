@@ -17,10 +17,10 @@ export const BUILDING_POSITIONS: Readonly<Record<string, readonly [number, numbe
   'DT-Gov1': [15, 45],
   'SUB-DT': [0, 48],
 
-  // Industrial District (IN)
-  'IN-Fact1': [60, 35],
-  'IN-Fact2': [75, 20],
-  'IN-Fact3': [65, -5],
+  // Industrial District (IN) — ids match the topology's zone.buildingIds
+  'IN-Fac1': [60, 35],
+  'IN-Fac2': [75, 20],
+  'IN-Fac3': [65, -5],
   'SUB-IN': [78, 35],
   'GEN-Thermal1': [85, 65],
 
@@ -56,13 +56,18 @@ export const BUILDING_POSITIONS: Readonly<Record<string, readonly [number, numbe
 
   // Airport & EV Infrastructure (AP)
   'AP-EV3': [-40, -25],
+  'AP-Term': [16, -57],
+
+  // Harbor (HB) — the scripted heatwave beat trips generation here, so the
+  // district needs geometry the camera can actually be pointed at.
+  'HB-Fac': [56, -50],
 
   // Renewable Energy Park (Solar, Wind, Battery Storage)
   'RN-Solar': [-80, 75],
   'BESS-1': [-72, 55],
   'BESS-2': [45, 75],
   'GEN-Wind1': [-90, 30],
-  'GEN-Wind2': [-95, 0],
+  'GEN-Wind2': [-88, 0],
 };
 
 /** Building world position as a three-tuple (y = ground). */

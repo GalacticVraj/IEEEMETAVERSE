@@ -52,10 +52,10 @@ export function DebugOverlay({ seed }: DebugOverlayProps): ReactElement | null {
   const maxLoading = useSimulationStore((state) => state.maxLineLoading);
 
   const onboardingActive = useUiStore((s) => s.onboardingActive);
-  const onboardingStep = useUiStore((s) => s.onboardingStep);
 
-  // Keep debug hidden during onboarding steps 1-6 to avoid visual clutter
-  if (onboardingActive && onboardingStep < 7) {
+  // The developer overlay is not part of the player-facing tour — it stays out
+  // of the way for the whole of it rather than reappearing on a hardcoded step.
+  if (onboardingActive) {
     return null;
   }
 

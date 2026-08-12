@@ -9,13 +9,18 @@ import { MERIDIAN_BAY_TOPOLOGY } from '@engine/topology/meridian-bay';
 import { useGridStore, useUiStore } from '@state';
 import { Text } from '@react-three/drei';
 import { useFrame } from '@react-three/fiber';
-import * as THREE from 'three';
+import type * as THREE from 'three';
 import { useMemo, useRef } from 'react';
 import { BUS_POSITIONS, BUS_ZONE, ZONE_COLOR } from './layout';
 
 // ---------------------------------------------------------------------------
 // Line Loading Color Spectrum
 // ---------------------------------------------------------------------------
+
+/** Pulse travel speed (corridor lengths per second) at zero loading. */
+const PULSE_BASE_SPEED = 0.4;
+/** Additional pulse speed at full thermal loading. */
+const PULSE_LOAD_GAIN = 1.8;
 
 function loadingColor(loading: number, isOpen: boolean): string {
   if (isOpen) return '#ef4444';
@@ -133,7 +138,7 @@ export function BusMarkers(): JSX.Element {
             key={node.id}
             onClick={(e) => {
               e.stopPropagation();
-              selectAsset({ kind: 'bus', id: node.id as string });
+              selectAsset({ kind: 'bus', id: node.id });
             }}
           >
             <StylizedSubstationMarker zone={zone} color={color} pos={pos} />
@@ -176,8 +181,7 @@ function AnimatedTurbine({
       bladesRef.current.rotation.z -= delta * speed;
     }
     if (faultRingRef.current && isTripped) {
-      faultRingRef.current.emissiveIntensity =
-        0.5 + Math.sin(performance.now() * 0.008) * 0.5;
+      faultRingRef.current.emissiveIntensity = 0.5 + Math.sin(performance.now() * 0.008) * 0.5;
     }
   });
 
@@ -189,7 +193,11 @@ function AnimatedTurbine({
       </mesh>
       <mesh position={[0, 14, 0]} rotation={[Math.PI / 2, 0, 0]}>
         <cylinderGeometry args={[1.1, 1.1, 3.5, 8]} />
-        <meshStandardMaterial color="#334155" emissive={color} emissiveIntensity={isTripped ? 0.9 : 0.4} />
+        <meshStandardMaterial
+          color="#334155"
+          emissive={color}
+          emissiveIntensity={isTripped ? 0.9 : 0.4}
+        />
       </mesh>
       <group ref={bladesRef} position={[0, 14, 1.8]}>
         <mesh position={[0, 4.5, 0]}>
@@ -243,7 +251,7 @@ export function GeneratorMarkers(): JSX.Element {
             key={gen.id}
             onClick={(e) => {
               e.stopPropagation();
-              selectAsset({ kind: 'generator', id: gen.id as string });
+              selectAsset({ kind: 'generator', id: gen.id });
             }}
           >
             <AnimatedTurbine
@@ -264,41 +272,54 @@ export function GeneratorMarkers(): JSX.Element {
 function AnimatedLineCorridor({
   line,
   loading,
+  flowMw,
   isOpen,
   onClick,
 }: {
   line: (typeof MERIDIAN_BAY_TOPOLOGY.lines)[number];
   loading: number;
+  /** Signed: negative means power is flowing from `line.to` back toward `line.from`. */
+  flowMw: number;
   isOpen: boolean;
   onClick: (e: { stopPropagation(): void }) => void;
 }) {
   const from = BUS_POSITIONS[line.from];
   const to = BUS_POSITIONS[line.to];
   const pulseRef = useRef<THREE.Mesh>(null);
+  // Phase is integrated rather than derived from elapsed time, so a change in
+  // loading changes the pulse's SPEED instead of teleporting it: with
+  // `(elapsedTime * speed) % 1` every loading update (10 Hz) jumped the phase.
+  const phaseRef = useRef(0);
 
-  if (!from || !to) return null;
+  const geometry = useMemo(() => {
+    if (!from || !to) return null;
+    const dx = to[0] - from[0];
+    const dz = to[1] - from[1];
+    return {
+      mx: (from[0] + to[0]) / 2,
+      mz: (from[1] + to[1]) / 2,
+      length: Math.sqrt(dx * dx + dz * dz),
+      angle: Math.atan2(dx, dz),
+    };
+  }, [from, to]);
+
+  // Pulses travel the corridor in the direction power is actually flowing. The
+  // solver's flow is signed; the renderer used to drop the sign and animate
+  // every corridor one way regardless, which misreports reversal during a
+  // cascade — exactly the moment direction matters most.
+  useFrame((_, delta) => {
+    const mesh = pulseRef.current;
+    if (mesh === null || geometry === null || isOpen) return;
+    const direction = flowMw < 0 ? -1 : 1;
+    const speed = PULSE_BASE_SPEED + loading * PULSE_LOAD_GAIN;
+    phaseRef.current = (phaseRef.current + delta * speed * direction + 1) % 1;
+    mesh.position.set(0, 0, (phaseRef.current - 0.5) * geometry.length);
+  });
+
+  if (geometry === null) return null;
 
   const color = loadingColor(loading, isOpen);
-  const fx = from[0],
-    fz = from[1];
-  const tx = to[0],
-    tz = to[1];
-  const mx = (fx + tx) / 2;
-  const mz = (fz + tz) / 2;
-  const dx = tx - fx,
-    dz = tz - fz;
-  const length = Math.sqrt(dx * dx + dz * dz);
-  const angle = Math.atan2(dx, dz);
-
-  // Path A: Power flow pulses move horizontally along line corridors (z-axis) as live renewable/load flow indicators.
-  useFrame(({ clock }) => {
-    if (pulseRef.current && !isOpen) {
-      const speed = 0.4 + loading * 1.8;
-      const progress = (clock.elapsedTime * speed) % 1;
-      const offset = (progress - 0.5) * length;
-      pulseRef.current.position.set(0, 0, offset);
-    }
-  });
+  const { mx, mz, length, angle } = geometry;
 
   return (
     <group position={[mx, 1.8, mz]} rotation={[0, angle, 0]} onClick={onClick}>
@@ -336,7 +357,12 @@ function AnimatedLineCorridor({
       {isOpen && (
         <mesh rotation={[Math.PI / 2, 0, 0]} scale={[2, 1, 2]}>
           <cylinderGeometry args={[1, 1, length, 4]} />
-          <meshStandardMaterial color="#ef4444" emissive="#ef4444" emissiveIntensity={0.9} wireframe />
+          <meshStandardMaterial
+            color="#ef4444"
+            emissive="#ef4444"
+            emissiveIntensity={0.9}
+            wireframe
+          />
         </mesh>
       )}
     </group>
@@ -347,8 +373,8 @@ export function TransmissionLines(): JSX.Element {
   const lines = MERIDIAN_BAY_TOPOLOGY.lines;
   const flows = useGridStore((s) => s.lines);
   const flowMap = useMemo(() => {
-    const m: Record<string, number> = {};
-    for (const f of flows) m[f.line] = f.loading;
+    const m: Record<string, { loading: number; flowMw: number }> = {};
+    for (const f of flows) m[f.line] = { loading: f.loading, flowMw: f.flow };
     return m;
   }, [flows]);
   const openLines = useGridStore((s) => s.openLines);
@@ -360,11 +386,12 @@ export function TransmissionLines(): JSX.Element {
         <AnimatedLineCorridor
           key={line.id}
           line={line}
-          loading={flowMap[line.id] ?? 0}
+          loading={flowMap[line.id]?.loading ?? 0}
+          flowMw={flowMap[line.id]?.flowMw ?? 0}
           isOpen={openLines.has(line.id)}
           onClick={(e) => {
             e.stopPropagation();
-            selectAsset({ kind: 'line', id: line.id as string });
+            selectAsset({ kind: 'line', id: line.id });
           }}
         />
       ))}
