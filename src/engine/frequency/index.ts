@@ -17,3 +17,6 @@ export type {
   FrequencyStepInput,
   FrequencyStepOutput,
 } from './frequency-model';
+
+export { projectAction } from './what-if';
+export type { WhatIfInput, WhatIfProjection } from './what-if';
