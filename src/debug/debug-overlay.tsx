@@ -56,6 +56,10 @@ export function DebugOverlay({ seed }: DebugOverlayProps): ReactElement | null {
   // These rows used to be hardcoded to "60" and "18.4 MB" — a debug overlay
   // that reports invented telemetry is worse than none.
   const stats = useRenderStatsStore();
+  const setDebugOverlay = useUiStore((state) => state.setDebugOverlay);
+  const close = (): void => {
+    setDebugOverlay(false);
+  };
 
   const onboardingActive = useUiStore((s) => s.onboardingActive);
 
@@ -135,6 +139,28 @@ export function DebugOverlay({ seed }: DebugOverlayProps): ReactElement | null {
           <span>DEBUG</span>
           <span style={{ opacity: 0.6, fontSize: 9 }}>T+{tick}</span>
         </button>
+        {/* A real dismiss. The pill previously offered only "click to expand",
+            so once the overlay was up the sole way to remove it was
+            Ctrl+Shift+D — undiscoverable, and it read as stuck on screen. */}
+        <button
+          onClick={close}
+          aria-label="Close debug overlay"
+          title="Close debug overlay (Ctrl+Shift+D)"
+          style={{
+            marginLeft: 4,
+            background: 'rgba(15, 23, 42, 0.85)',
+            border: '1px solid rgba(255, 255, 255, 0.15)',
+            borderRadius: 20,
+            color: '#E2E8F0',
+            cursor: 'pointer',
+            fontFamily: "'JetBrains Mono', monospace",
+            fontSize: 10,
+            lineHeight: 1,
+            padding: '5px 7px',
+          }}
+        >
+          ✕
+        </button>
       </div>
     );
   }
@@ -188,21 +214,43 @@ export function DebugOverlay({ seed }: DebugOverlayProps): ReactElement | null {
             GridGuard Debug
           </span>
         </div>
-        <button
-          onClick={() => setExpanded(false)}
-          style={{
-            background: 'transparent',
-            border: 'none',
-            color: '#94A3B8',
-            cursor: 'pointer',
-            fontSize: 12,
-            padding: '0 4px',
-            lineHeight: 1,
-          }}
-          title="Collapse debug overlay"
-        >
-          ✕
-        </button>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+          {/* Minimise back to the pill. This control used to be an ✕, which
+              read as "close" but only shrank the panel — the overlay never
+              actually went away. */}
+          <button
+            onClick={() => setExpanded(false)}
+            style={{
+              background: 'transparent',
+              border: 'none',
+              color: '#94A3B8',
+              cursor: 'pointer',
+              fontSize: 12,
+              padding: '0 4px',
+              lineHeight: 1,
+            }}
+            aria-label="Minimise debug overlay"
+            title="Minimise to pill"
+          >
+            —
+          </button>
+          <button
+            onClick={close}
+            style={{
+              background: 'transparent',
+              border: 'none',
+              color: '#94A3B8',
+              cursor: 'pointer',
+              fontSize: 12,
+              padding: '0 4px',
+              lineHeight: 1,
+            }}
+            aria-label="Close debug overlay"
+            title="Close debug overlay (Ctrl+Shift+D)"
+          >
+            ✕
+          </button>
+        </div>
       </div>
 
       <MetricRow label="seed" value={String(seed)} />

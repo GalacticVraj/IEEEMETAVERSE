@@ -128,7 +128,7 @@ export function bindEventLog(bus: GridEventBus): Unsubscribe {
       generatorTripped.set(id, generator.tripped);
       if (previous === undefined || previous === generator.tripped) continue;
       const name = GENERATOR_NAMES[id] ?? id;
-      const capacity = Math.round(generator.capacityMw as number);
+      const capacity = Math.round(generator.capacityMw);
       if (generator.tripped) {
         push(state.tick, {
           severity: 'critical',
@@ -184,7 +184,8 @@ export function bindEventLog(bus: GridEventBus): Unsubscribe {
           p.cause === 'Overload'
             ? 'Its protective relay detected current above the thermal limit and opened the breaker before the conductor could be damaged.'
             : 'Its breaker was opened by command or as part of a wider disturbance.',
-        action: 'Power reroutes over neighboring corridors — watch them for follow-on overloads, and reduce demand feeding this corridor.',
+        action:
+          'Power reroutes over neighboring corridors — watch them for follow-on overloads, and reduce demand feeding this corridor.',
       });
     }),
 
@@ -253,6 +254,37 @@ export function bindEventLog(bus: GridEventBus): Unsubscribe {
         what: `Zone ${zone} is receiving power again.`,
         why: 'A transmission path into the zone was re-established.',
         action: 'Ramp demand back gradually — a cold-load pickup surge can re-trip lines.',
+      });
+    }),
+
+    // Automatic under-frequency load shedding. This is the grid saving itself
+    // without asking, and it is the single most teachable moment in a run:
+    // it always "works", and it works by making a district dark.
+    bus.on(GRID_EVENT.LoadShedAutomatic, (p) => {
+      const percent = Math.round(p.shedFraction * 100);
+      push(currentTick, {
+        severity: 'critical',
+        title: `Automatic load shedding — stage ${String(p.stage)}`,
+        detail: `${p.thresholdHz.toFixed(1)} Hz · ${String(percent)}% of load dropped`,
+        what: `Frequency fell to ${p.thresholdHz.toFixed(1)} Hz, so under-frequency relays disconnected ${String(percent)}% of system load automatically.`,
+        why: 'Below this threshold governors can no longer arrest the fall. Relays shed load to rebalance supply and demand before the whole system collapses.',
+        action:
+          'This was not your decision — it fired because the gap was not closed in time. Restore generation or shed flexible load earlier to keep the next stage from firing.',
+      });
+    }),
+
+    // N-1: whether the system would survive losing its largest in-feed.
+    bus.on(GRID_EVENT.SecurityChanged, (p) => {
+      const insecure = p.verdict === 'Insecure';
+      push(currentTick, {
+        severity: insecure ? 'warning' : p.verdict === 'AtRisk' ? 'caution' : 'recovery',
+        title: `N-1 security: ${p.verdict}`,
+        detail: `reserve ${Math.round(p.reserveMw)} MW vs largest in-feed ${Math.round(p.largestInfeedMw)} MW`,
+        what: `Contingency screening now reads ${p.verdict}: ${Math.round(p.reserveMw)} MW of reserve against a largest single in-feed of ${Math.round(p.largestInfeedMw)} MW.`,
+        why: 'Operators do not only watch what is happening — they watch what WOULD happen if the biggest source vanished in the next second. Reserve below that figure means one trip takes the city.',
+        action: insecure
+          ? 'Free up reserve now: trim flexible demand or bring more dispatchable generation online.'
+          : 'Keep reserve above the largest in-feed as demand climbs.',
       });
     }),
 

@@ -495,6 +495,11 @@ export const HEALTH_MEANINGS = {
   generation: 'What all plants are producing together.',
   balance: 'Supply minus demand — negative means the grid is strained.',
   frequency: '60 Hz means balanced; drift shows supply/demand mismatch.',
+  rocof: 'How fast frequency is moving. A big number means a big loss, just now.',
+  inertia:
+    'Spinning mass resisting change. Wind and solar add none — losing a thermal plant hurts twice.',
+  security: 'Whether you would survive losing your biggest single source right now.',
+  ufls: 'Relays dropped load automatically to stop the fall. The grid saved itself by going dark.',
   renewables: 'Share of clean energy in the current mix.',
   corridorStress: 'Loading of the busiest transmission line.',
   zonesDark: 'Districts currently without power.',

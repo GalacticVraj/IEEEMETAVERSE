@@ -11,7 +11,11 @@ import { useGridStore, useSimulationStore, useTutorialStore } from '@state';
 import { useState } from 'react';
 import type { ReactElement } from 'react';
 
+import { NOMINAL_FREQUENCY } from '@constants';
+
 import { HEALTH_MEANINGS, estimateHouseholdsAffected } from './learning-copy';
+
+const NOMINAL_HZ = NOMINAL_FREQUENCY as number;
 
 function Row({
   label,
@@ -49,12 +53,28 @@ export function GridHealthPanel(): ReactElement {
   const totalGeneration = useGridStore((s) => s.totalGeneration);
   const renewableGeneration = useGridStore((s) => s.renewableGeneration);
   const frequency = useGridStore((s) => s.frequency);
+  const rocof = useGridStore((s) => s.rocof);
+  const security = useGridStore((s) => s.security);
+  const reserveMw = useGridStore((s) => s.reserveMw);
+  const largestInfeedMw = useGridStore((s) => s.largestInfeedMw);
+  const inertiaMwS = useGridStore((s) => s.inertiaMwS);
+  const uflsStage = useGridStore((s) => s.uflsStage);
   const zones = useGridStore((s) => s.zones);
   const maxLineLoading = useSimulationStore((s) => s.maxLineLoading);
   const teaching = useTutorialStore((s) => s.active);
   // Explanations follow the teaching by default; an explicit toggle wins.
   const [override, setOverride] = useState<boolean | null>(null);
   const showMeanings = override ?? teaching;
+
+  // Frequency is the instrument an operator reads first. Deviation, not the
+  // absolute number, is what tells them how much trouble they are in.
+  const deviationHz = Math.abs(frequency - NOMINAL_HZ);
+  const freqTone = deviationHz >= 0.5 ? '#B3261E' : deviationHz >= 0.2 ? '#9A6B15' : undefined;
+  // RoCoF only means anything while it is actually moving the number.
+  const rocofTone =
+    Math.abs(rocof) >= 0.5 ? '#B3261E' : Math.abs(rocof) >= 0.15 ? '#9A6B15' : undefined;
+  const securityTone =
+    security === 'Insecure' ? '#B3261E' : security === 'AtRisk' ? '#9A6B15' : '#217A56';
 
   const balance = totalGeneration - totalLoad;
   const renewablePct = totalGeneration > 0 ? (renewableGeneration / totalGeneration) * 100 : 0;
@@ -117,7 +137,41 @@ export function GridHealthPanel(): ReactElement {
         value={`${frequency.toFixed(2)} Hz`}
         meaning={HEALTH_MEANINGS.frequency}
         showMeaning={showMeanings}
+        tone={freqTone}
       />
+      <Row
+        label="RoCoF"
+        value={`${rocof >= 0 ? '+' : '−'}${Math.abs(rocof).toFixed(2)} Hz/s`}
+        meaning={HEALTH_MEANINGS.rocof}
+        showMeaning={showMeanings}
+        tone={rocofTone}
+      />
+      <Row
+        label="System inertia"
+        value={`${Math.round(inertiaMwS).toLocaleString()} MW·s`}
+        meaning={HEALTH_MEANINGS.inertia}
+        showMeaning={showMeanings}
+      />
+      <Row
+        label="N-1 security"
+        value={
+          security === 'Secure'
+            ? `Secure · ${Math.round(reserveMw)} MW reserve`
+            : `${security} · ${Math.round(reserveMw)} vs ${Math.round(largestInfeedMw)} MW`
+        }
+        meaning={HEALTH_MEANINGS.security}
+        showMeaning={showMeanings}
+        tone={securityTone}
+      />
+      {uflsStage > 0 && (
+        <Row
+          label="Auto load shed"
+          value={`Stage ${String(uflsStage)} fired`}
+          meaning={HEALTH_MEANINGS.ufls}
+          showMeaning={showMeanings}
+          tone="#B3261E"
+        />
+      )}
       <Row
         label="Renewables"
         value={`${Math.round(renewablePct)} %`}

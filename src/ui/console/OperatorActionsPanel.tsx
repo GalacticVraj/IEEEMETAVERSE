@@ -8,8 +8,11 @@
  */
 import { asDecisionId, asSeconds } from '@app-types';
 import { GRID_EVENT } from '@constants';
+import { projectAction } from '@engine/frequency';
+import type { FrequencyMachine } from '@engine/frequency';
+import { MERIDIAN_BAY_TOPOLOGY } from '@engine/topology/meridian-bay';
 import { useAppFlowStore, useGridStore, useSimulationStore } from '@state';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import type { ReactElement } from 'react';
 
 import type { AppRuntime } from '@infra';
@@ -19,6 +22,61 @@ import { useRuntime } from '../../runtime-context';
 import { simClock } from './learning-copy';
 import { OPERATOR_ACTIONS } from './operator-actions';
 import type { OperatorAction } from './operator-actions';
+
+/** Kind lookup so the projection can weigh inertia per machine. */
+const GENERATOR_KIND: Readonly<Record<string, string>> = Object.fromEntries(
+  MERIDIAN_BAY_TOPOLOGY.generators.map((g) => [g.id as string, g.kind as string]),
+);
+
+/** How far ahead the projection looks: 5 s at the 10 Hz tick rate. */
+const PROJECTION_TICKS = 50;
+const PROJECTION_TIMESTEP_S = 0.1;
+
+interface LeverProjection {
+  readonly deltaHz: number;
+  readonly avertsShedding: boolean;
+  readonly wouldShed: boolean;
+}
+
+/**
+ * What a lever would buy, computed by the SAME physics that will judge the
+ * operator afterwards. Estimating this in the UI would eventually disagree
+ * with the simulation, and a teaching tool that lies about consequence stops
+ * teaching — so this calls the engine's what-if API against a copy of the
+ * live operating point and never touches live state.
+ */
+function useProjection(reliefMw: number): LeverProjection | null {
+  const generators = useGridStore((s) => s.generators);
+  const frequency = useGridStore((s) => s.frequency);
+  const totalGeneration = useGridStore((s) => s.totalGeneration);
+  const totalLoad = useGridStore((s) => s.totalLoad);
+
+  return useMemo(() => {
+    if (generators.length === 0) return null;
+    const machines: FrequencyMachine[] = generators.map((g) => ({
+      id: g.id,
+      kind: GENERATOR_KIND[g.id as string] ?? 'Peaker',
+      ratedMw: g.capacityMw,
+      outputMw: g.outputMw,
+      online: !g.tripped,
+    }));
+    const base = {
+      machines,
+      generationMw: totalGeneration,
+      demandMw: totalLoad,
+      frequencyHz: frequency,
+      timestepS: PROJECTION_TIMESTEP_S,
+      horizonTicks: PROJECTION_TICKS,
+    };
+    const doNothing = projectAction({ ...base, loadReliefMw: 0 });
+    const withAction = projectAction({ ...base, loadReliefMw: reliefMw });
+    return {
+      deltaHz: withAction.finalFrequencyHz - doNothing.finalFrequencyHz,
+      avertsShedding: doNothing.uflsWouldFire && !withAction.uflsWouldFire,
+      wouldShed: withAction.uflsWouldFire,
+    };
+  }, [generators, frequency, totalGeneration, totalLoad, reliefMw]);
+}
 
 /** Emit a DecisionCommitted with REAL tick + telemetry, and journal it. */
 function commitDecision(
@@ -106,6 +164,7 @@ function ActionRow({
   onExecute: () => void;
 }): ReactElement {
   const committed = committedAtTick !== undefined;
+  const projection = useProjection(action.reliefMw);
   return (
     <div style={{ borderBottom: '1px solid #E7E9E6', padding: '7px 0' }}>
       <div
@@ -143,6 +202,34 @@ function ActionRow({
       <div style={{ display: 'flex', gap: 10, fontSize: 10, color: '#8B97A3' }}>
         <span style={{ color: '#9A6B15' }}>Risk: {action.risk}</span>
       </div>
+      {!committed && projection !== null && (
+        <div
+          className="console-value"
+          style={{
+            marginTop: 4,
+            paddingTop: 4,
+            borderTop: '1px solid #E4E8E3',
+            fontSize: 10,
+            display: 'flex',
+            gap: 10,
+            flexWrap: 'wrap',
+            alignItems: 'center',
+          }}
+        >
+          <span style={{ color: '#5A6774' }}>Projected</span>
+          <span style={{ color: '#1C2530', fontWeight: 700 }}>−{action.reliefMw} MW</span>
+          <span style={{ color: projection.deltaHz > 0.001 ? '#217A56' : '#8B97A3' }}>
+            {projection.deltaHz >= 0 ? '+' : '−'}
+            {Math.abs(projection.deltaHz).toFixed(2)} Hz
+          </span>
+          {projection.avertsShedding && (
+            <span style={{ color: '#217A56', fontWeight: 700 }}>avoids load shedding</span>
+          )}
+          {!projection.avertsShedding && projection.wouldShed && (
+            <span style={{ color: '#B3261E', fontWeight: 700 }}>still sheds</span>
+          )}
+        </div>
+      )}
     </div>
   );
 }

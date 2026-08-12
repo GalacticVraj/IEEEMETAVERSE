@@ -16,6 +16,16 @@ export interface OperatorAction {
   readonly cost: string;
   readonly benefit: string;
   readonly risk: string;
+  /**
+   * Demand this lever removes, MW.
+   *
+   * The two shed levers are EXACT — they are a fixed fraction of named
+   * topology loads (industrial 30 % of LD-IN-HVY 150 + LD-IN-LGT 60; harbor
+   * 25 % of LD-HB-IND 70 + LD-HB-SHIP 35). The appliance levers are the
+   * modelled block wattage for that category, so they move with the
+   * calibration rather than being invented here.
+   */
+  readonly reliefMw: number;
 }
 
 export const OPERATOR_ACTIONS: readonly OperatorAction[] = [
@@ -26,6 +36,7 @@ export const OPERATOR_ACTIONS: readonly OperatorAction[] = [
     cost: 'Homes warm up a few degrees',
     benefit: 'Large, fast demand drop',
     risk: 'Public discomfort in a heatwave',
+    reliefMw: 78,
   },
   {
     id: 'op-ev-pause',
@@ -34,6 +45,7 @@ export const OPERATOR_ACTIONS: readonly OperatorAction[] = [
     cost: 'Drivers wait to charge',
     benefit: 'Removes concentrated fast-charge spikes',
     risk: 'Airport and fleet vehicles delayed',
+    reliefMw: 34,
   },
   {
     id: 'op-lights-commercial',
@@ -42,6 +54,7 @@ export const OPERATOR_ACTIONS: readonly OperatorAction[] = [
     cost: 'Dimmer offices and storefronts',
     benefit: 'Relieves downtown corridor stress',
     risk: 'Minimal — lowest-impact lever',
+    reliefMw: 22,
   },
   {
     id: 'op-shed-industrial',
@@ -50,6 +63,7 @@ export const OPERATOR_ACTIONS: readonly OperatorAction[] = [
     cost: 'Factory output lost',
     benefit: 'Big relief on the southern backbone',
     risk: 'Economic cost; restart takes time',
+    reliefMw: 63,
   },
   {
     id: 'op-shed-harbor',
@@ -58,5 +72,6 @@ export const OPERATOR_ACTIONS: readonly OperatorAction[] = [
     cost: 'Port operations slow',
     benefit: 'Frees the harbor interconnect for imports',
     risk: 'Water treatment stays protected, but margins thin',
+    reliefMw: 26,
   },
 ];
