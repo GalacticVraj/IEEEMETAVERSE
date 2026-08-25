@@ -180,10 +180,10 @@ export function OperatorActionsPanel({ armed = true }: { armed?: boolean }): Rea
         overflowY: 'auto',
       }}
     >
-      <div className="console-section-title">Operator Actions</div>
+      <div className="console-section-title">🎛️ Operator Actions</div>
       {!armed && (
         <div style={{ fontSize: 10.5, color: '#8B97A3', lineHeight: 1.45 }}>
-          These arm the moment your shift starts.
+          These levers arm the moment your shift starts.
         </div>
       )}
       <DirectorPrompt />

@@ -72,6 +72,14 @@ export function GridHealthPanel(): ReactElement {
           ? '#9A6B15'
           : '#217A56';
 
+  // Supply/demand ratio for the gauge
+  const supplyRatio =
+    totalGeneration > 0 && totalLoad > 0
+      ? Math.min(totalGeneration / totalLoad, 2) / 2 // normalized 0-1 where 0.5 = balanced
+      : 0.5;
+  const gaugeColor = balance < -50 ? '#B3261E' : balance < 0 ? '#9A6B15' : '#217A56';
+  const gaugeLabel = balance >= 0 ? 'SURPLUS' : balance > -50 ? 'TIGHT' : 'DEFICIT';
+
   return (
     <div className="console-panel" style={{ padding: '10px 14px' }}>
       <div
@@ -82,7 +90,7 @@ export function GridHealthPanel(): ReactElement {
           marginBottom: 4,
         }}
       >
-        <span className="console-section-title">Grid Health</span>
+        <span className="console-section-title">⚡ Grid Health</span>
         <button
           className="console-btn"
           style={{ padding: '1px 7px', fontSize: 10, lineHeight: 1.5 }}
@@ -92,6 +100,61 @@ export function GridHealthPanel(): ReactElement {
         >
           {showMeanings ? '−' : '?'}
         </button>
+      </div>
+      {/* Supply vs Demand gauge — instant visual comprehension */}
+      <div style={{ marginBottom: 8 }}>
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            fontSize: 10,
+            color: '#8B97A3',
+            marginBottom: 3,
+          }}
+        >
+          <span>DEMAND {Math.round(totalLoad)} MW</span>
+          <span
+            className="console-value"
+            style={{ fontWeight: 700, color: gaugeColor, fontSize: 10 }}
+          >
+            {gaugeLabel}
+          </span>
+          <span>SUPPLY {Math.round(totalGeneration)} MW</span>
+        </div>
+        <div
+          style={{
+            height: 6,
+            background: '#E7E9E6',
+            borderRadius: 1,
+            position: 'relative',
+            overflow: 'hidden',
+          }}
+        >
+          <div
+            style={{
+              position: 'absolute',
+              left: 0,
+              top: 0,
+              height: '100%',
+              width: `${Math.round(supplyRatio * 100)}%`,
+              background: gaugeColor,
+              borderRadius: 1,
+              transition: 'width 0.3s ease, background 0.3s ease',
+            }}
+          />
+          {/* Center line = balance point */}
+          <div
+            style={{
+              position: 'absolute',
+              left: '50%',
+              top: 0,
+              width: 1,
+              height: '100%',
+              background: '#1C2530',
+              opacity: 0.3,
+            }}
+          />
+        </div>
       </div>
       <Row
         label="Demand"

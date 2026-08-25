@@ -24,6 +24,7 @@
 ---
 
 ## 📑 Table of Contents
+
 - [The Problem](#-the-problem)
 - [The Solution](#-the-solution)
 - [Key Features](#-key-features)
@@ -72,14 +73,14 @@ flowchart LR
 
 ## ✨ Key Features
 
-| Icon | Feature | Description |
-| :---: | :--- | :--- |
-| 🎲 | **Monte Carlo Scenario Engine** | Procedurally generates realistic, unpredictable crisis events (e.g., sudden heatwaves, plant failures) ensuring no two playthroughs are exactly alike. |
-| 👤 | **Real-Time Learner Twin** | Continuously profiles user decisions, tracking reaction times, risk tolerance, and accuracy to adapt difficulty on the fly. |
-| 🤖 | **AI Advisor Agent** | Powered by Gemini API, offers dynamic, context-aware coaching and explains the *why* behind grid failures without giving away the answers. |
-| ⚖️ | **Ethics Dashboard** | Visualizes the socio-economic impacts of decisions, such as which neighborhoods suffer most during rolling blackouts. |
-| ⚡ | **Zero-Backend Architecture** | Runs entirely in the browser using React and client-side logic, eliminating server costs and ensuring zero latency during simulations. |
-| 🎬 | **Live Consequence Animation** | Provides immediate, visceral visual feedback on the City Map UI (e.g., zones going dark, critical facilities alarming) when bad trade-offs are made. |
+| Icon | Feature                         | Description                                                                                                                                            |
+| :--: | :------------------------------ | :----------------------------------------------------------------------------------------------------------------------------------------------------- |
+|  🎲  | **Monte Carlo Scenario Engine** | Procedurally generates realistic, unpredictable crisis events (e.g., sudden heatwaves, plant failures) ensuring no two playthroughs are exactly alike. |
+|  👤  | **Real-Time Learner Twin**      | Continuously profiles user decisions, tracking reaction times, risk tolerance, and accuracy to adapt difficulty on the fly.                            |
+|  🤖  | **AI Advisor Agent**            | Powered by Gemini API, offers dynamic, context-aware coaching and explains the _why_ behind grid failures without giving away the answers.             |
+|  ⚖️  | **Ethics Dashboard**            | Visualizes the socio-economic impacts of decisions, such as which neighborhoods suffer most during rolling blackouts.                                  |
+|  ⚡  | **Zero-Backend Architecture**   | Runs entirely in the browser using React and client-side logic, eliminating server costs and ensuring zero latency during simulations.                 |
+|  🎬  | **Live Consequence Animation**  | Provides immediate, visceral visual feedback on the City Map UI (e.g., zones going dark, critical facilities alarming) when bad trade-offs are made.   |
 
 <div align="right"><a href="#-table-of-contents">⬆️ Back to top</a></div>
 
@@ -141,13 +142,13 @@ graph TD
 
 ## 🛠️ Tech Stack
 
-| Technology | Purpose | Badge |
-| :--- | :--- | :--- |
-| **React (Vite)** | Core frontend framework and build tool | <img src="https://img.shields.io/badge/React-20232A?style=flat&logo=react&logoColor=61DAFB" alt="React"> <img src="https://img.shields.io/badge/Vite-B73BFE?style=flat&logo=vite&logoColor=FFD62E" alt="Vite"> |
-| **Tailwind CSS** | Rapid UI styling and responsive design | <img src="https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=flat&logo=tailwind-css&logoColor=white" alt="Tailwind"> |
-| **Google Gemini API** | Contextual AI coaching and dynamic dialogue | <img src="https://img.shields.io/badge/Google_Gemini-8E75B2?style=flat&logo=google&logoColor=white" alt="Gemini"> |
-| **Recharts** | Rendering live analytics and data visualization | <img src="https://img.shields.io/badge/Recharts-22B5BF?style=flat&logo=react&logoColor=white" alt="Recharts"> |
-| **Vercel** | Edge deployment and continuous integration | <img src="https://img.shields.io/badge/Vercel-000000?style=flat&logo=vercel&logoColor=white" alt="Vercel"> |
+| Technology            | Purpose                                         | Badge                                                                                                                                                                                                          |
+| :-------------------- | :---------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **React (Vite)**      | Core frontend framework and build tool          | <img src="https://img.shields.io/badge/React-20232A?style=flat&logo=react&logoColor=61DAFB" alt="React"> <img src="https://img.shields.io/badge/Vite-B73BFE?style=flat&logo=vite&logoColor=FFD62E" alt="Vite"> |
+| **Tailwind CSS**      | Rapid UI styling and responsive design          | <img src="https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=flat&logo=tailwind-css&logoColor=white" alt="Tailwind">                                                                                       |
+| **Google Gemini API** | Contextual AI coaching and dynamic dialogue     | <img src="https://img.shields.io/badge/Google_Gemini-8E75B2?style=flat&logo=google&logoColor=white" alt="Gemini">                                                                                              |
+| **Recharts**          | Rendering live analytics and data visualization | <img src="https://img.shields.io/badge/Recharts-22B5BF?style=flat&logo=react&logoColor=white" alt="Recharts">                                                                                                  |
+| **Vercel**            | Edge deployment and continuous integration      | <img src="https://img.shields.io/badge/Vercel-000000?style=flat&logo=vercel&logoColor=white" alt="Vercel">                                                                                                     |
 
 <div align="right"><a href="#-table-of-contents">⬆️ Back to top</a></div>
 
@@ -156,29 +157,34 @@ graph TD
 ## 🚀 Getting Started
 
 ### Prerequisites
+
 - Node.js (v18.0.0 or higher)
 - npm (v9.0.0 or higher)
 
 ### Installation
 
 1. **Clone the repository**
+
 ```bash
 git clone https://github.com/YourOrganization/GridGuard.git
 cd GridGuard
 ```
 
 2. **Install dependencies**
+
 ```bash
 npm install
 ```
 
 3. **Configure Environment Variables**
-Create a `.env` file in the root directory and add your Gemini API key:
+   Create a `.env` file in the root directory and add your Gemini API key:
+
 ```bash
 echo "VITE_GEMINI_API_KEY=your_api_key_here" > .env
 ```
 
 4. **Run the development server**
+
 ```bash
 npm run dev
 ```
@@ -190,14 +196,14 @@ npm run dev
 ## 📊 Learning Evidence & Results
 
 > **"GridGuard transforms abstract concepts into visceral experiences."**
-> 
+>
 > Preliminary testing with 50 undergraduate engineering students demonstrated significant improvements in crisis management intuition.
 
-| Metric | Before GridGuard | After GridGuard | Improvement |
-| :--- | :--- | :--- | :--- |
-| **Average Blackouts Caused** | 4.2 per session | 1.1 per session | 🟢 73% Reduction |
-| **Decision Reaction Time** | 18 seconds | 7 seconds | 🟢 61% Faster |
-| **Policy Accuracy Score** | 45% | 88% | 🟢 95% Better |
+| Metric                       | Before GridGuard | After GridGuard | Improvement      |
+| :--------------------------- | :--------------- | :-------------- | :--------------- |
+| **Average Blackouts Caused** | 4.2 per session  | 1.1 per session | 🟢 73% Reduction |
+| **Decision Reaction Time**   | 18 seconds       | 7 seconds       | 🟢 61% Faster    |
+| **Policy Accuracy Score**    | 45%              | 88%             | 🟢 95% Better    |
 
 <details>
 <summary><b>View Visual Data (Click to expand)</b></summary>
@@ -218,8 +224,9 @@ pie title Average Blackouts Caused Per Session
 
 > [!IMPORTANT]  
 > **Responsible Simulation Design**
+>
 > - **Data Privacy:** The Learner Digital Twin processes all behavioral data locally in the browser; no personal identifiable information (PII) is transmitted to external servers.
-> - **Guidance, Not Command:** The AI Advisor is strictly sandboxed to provide Socratic prompts and contextual facts, preventing it from making decisions *for* the user.
+> - **Guidance, Not Command:** The AI Advisor is strictly sandboxed to provide Socratic prompts and contextual facts, preventing it from making decisions _for_ the user.
 > - **Equity Insight:** The simulation intentionally penalizes strategies that disproportionately shift grid failures onto lower-income zones, enforcing a holistic view of energy policy.
 
 <div align="right"><a href="#-table-of-contents">⬆️ Back to top</a></div>
@@ -253,13 +260,24 @@ GridGuard/
 ├── tailwind.config.js     # Tailwind configuration
 └── vite.config.js         # Vite configuration
 ```
+
 </details>
 
 <div align="right"><a href="#-table-of-contents">⬆️ Back to top</a></div>
 
 ---
 
+## 👥 Team
 
+|                                              Avatar                                              | Name         | Role                  | GitHub           |
+| :----------------------------------------------------------------------------------------------: | :----------- | :-------------------- | :--------------- |
+| <img src="https://ui-avatars.com/api/?name=Member+1&background=random&rounded=true" width="40"/> | **Member 1** | Frontend Lead & UX    | [@GitHubLink](#) |
+| <img src="https://ui-avatars.com/api/?name=Member+2&background=random&rounded=true" width="40"/> | **Member 2** | AI / Data Systems     | [@GitHubLink](#) |
+| <img src="https://ui-avatars.com/api/?name=Member+3&background=random&rounded=true" width="40"/> | **Member 3** | Simulation Logic      | [@GitHubLink](#) |
+| <img src="https://ui-avatars.com/api/?name=Member+4&background=random&rounded=true" width="40"/> | **Member 4** | Systems Architecture  | [@GitHubLink](#) |
+| <img src="https://ui-avatars.com/api/?name=Member+5&background=random&rounded=true" width="40"/> | **Member 5** | Design & Storytelling | [@GitHubLink](#) |
+
+<div align="right"><a href="#-table-of-contents">⬆️ Back to top</a></div>
 
 ---
 
