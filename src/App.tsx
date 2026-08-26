@@ -19,6 +19,10 @@ import {
   GroundPlane,
   TransmissionLines,
 } from './rendering/grid-scene';
+import { BusLabels } from './rendering/bus-labels';
+import { CameraShake } from './rendering/camera/camera-shake';
+import { EventFlashes } from './rendering/visual-effects/event-flashes';
+import { StormEffects } from './rendering/visual-effects/storm';
 import { CameraDirector } from './rendering/camera/CameraDirector';
 import { CameraHud } from './rendering/camera/CameraHud';
 import { useCameraStore } from './rendering/camera/camera-store';
@@ -98,10 +102,18 @@ export function App({ config }: AppProps): ReactElement {
         <TransmissionLines />
         <BusMarkers />
         <GeneratorMarkers />
+        <BusLabels />
 
         {/* City dressing (always visible) */}
         <CityLayout />
         <Atmosphere />
+
+        {/* Cause, drawn where it happened: a flash and a shock ring at the
+            exact point of every real trip, loss, blackout and restoration. */}
+        <EventFlashes />
+
+        {/* Lightning, but only while the weather model reports a Storm. */}
+        <StormEffects />
 
         {/* The selected asset labels itself where it stands — the answer
             starts at the object, the depth continues in the left rail. */}
@@ -115,6 +127,11 @@ export function App({ config }: AppProps): ReactElement {
         {/* ALL camera behavior — hero orbit, intro, focus, choreography — is
             owned by the one CameraDirector. Never mount another camera. */}
         <CameraDirector />
+
+        {/* Mounted AFTER the director on purpose: shake is an additive
+            rotation offset applied on top of whatever pose the director just
+            produced. See camera-shake.tsx. */}
+        <CameraShake />
 
         {/* Renderer instrumentation — must live inside the Canvas to reach
             `gl.info`. Renders nothing. */}

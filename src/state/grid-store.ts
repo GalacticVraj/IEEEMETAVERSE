@@ -35,6 +35,13 @@ export interface GridProjection {
   /** Set of line IDs that are currently open (tripped or commanded open). */
   readonly openLines: ReadonlySet<string>;
   readonly trippedCount: number;
+  /**
+   * Latest weather from the model. Projected here so the SCENE can react to
+   * it: until now `WeatherChanged` was consumed only by the event log, so a
+   * named "Coastal Storm" scenario looked exactly like a clear afternoon.
+   */
+  readonly weatherKind: string;
+  readonly temperatureC: number;
 }
 
 const INITIAL: GridProjection = {
@@ -55,6 +62,8 @@ const INITIAL: GridProjection = {
   generators: [],
   openLines: new Set(),
   trippedCount: 0,
+  weatherKind: 'Clear',
+  temperatureC: 20,
 };
 
 export const useGridStore = create<GridProjection>()(() => INITIAL);
@@ -91,6 +100,13 @@ export function bindGridStore(bus: GridEventBus, engine: ISimulationEngine): Uns
       const openLines = new Set<string>(prev.openLines);
       openLines.add(p.line);
       useGridStore.setState({ openLines, trippedCount: openLines.size });
+    }),
+
+    bus.on(GRID_EVENT.WeatherChanged, (p) => {
+      useGridStore.setState({
+        weatherKind: String(p.kind),
+        temperatureC: p.temperature,
+      });
     }),
 
     bus.on(GRID_EVENT.LineRecovered, (p) => {

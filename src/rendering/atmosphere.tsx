@@ -60,9 +60,15 @@ function Clouds(): JSX.Element {
 const SHORELINE_X = 90;
 /** How far the water tucks under the shore so the seam cannot show a gap. */
 const SHORE_OVERLAP = 6;
-const SEA_WIDTH = 1600;
-/** Wider than the terrain in Z so the water runs out to fog, not to a visible edge. */
-const SEA_DEPTH = 1600;
+/**
+ * The bay has to out-run the fog, not just the terrain. At 1600 x 1600 the
+ * water's northern corner sat at z = -800, well inside the 1100-unit fog
+ * distance — so from the hero camera you could see the sea END and green land
+ * resume beyond it, as a hard diagonal across the top of the frame. Sized past
+ * the fog plane, the water simply dissolves into the horizon.
+ */
+const SEA_WIDTH = 3400;
+const SEA_DEPTH = 3400;
 const SEA_CENTER_X = SHORELINE_X - SHORE_OVERLAP + SEA_WIDTH / 2;
 
 function CoastalSea(): JSX.Element {
@@ -81,14 +87,23 @@ function CoastalSea(): JSX.Element {
         receiveShadow={false}
       >
         <planeGeometry args={[SEA_WIDTH, SEA_DEPTH]} />
+        {/* OPAQUE and diffuse, both deliberately.
+            `transparent` on a plane this large put the bay into the blended
+            render pass, where it is depth-sorted against the shore shelf and
+            the far terrain by object centre — and a 3,400-unit plane has a
+            centre nowhere near the water you are actually looking at. The
+            result was a hard-edged dark wedge across the bay that moved with
+            the camera.
+            The low roughness / high metalness was the other half: with no
+            environment map there is nothing for a mirror-like surface to
+            reflect, so under the dim crisis light the water fell to almost
+            black instead of fogging into the horizon with everything else. */}
         <meshStandardMaterial
-          color="#0284c7"
-          emissive="#38bdf8"
-          emissiveIntensity={0.12}
-          roughness={0.25}
-          metalness={0.3}
-          transparent
-          opacity={0.92}
+          color="#0E6E9B"
+          emissive="#2E7FA8"
+          emissiveIntensity={0.16}
+          roughness={0.72}
+          metalness={0.05}
         />
       </mesh>
     </group>

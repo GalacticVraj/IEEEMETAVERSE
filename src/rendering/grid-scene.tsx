@@ -7,10 +7,10 @@
  */
 import { MERIDIAN_BAY_TOPOLOGY } from '@engine/topology/meridian-bay';
 import { useGridStore, useUiStore } from '@state';
-import { Text } from '@react-three/drei';
 import { useFrame } from '@react-three/fiber';
 import type * as THREE from 'three';
 import { useMemo, useRef } from 'react';
+import { groundTexture } from './ground-texture';
 import { BUS_POSITIONS, BUS_ZONE, ZONE_COLOR } from './layout';
 
 // ---------------------------------------------------------------------------
@@ -22,6 +22,8 @@ const FAR_TERRAIN_SIZE = 4000;
 /** City terrain — sized to the built area; the only plane taking shadows. */
 const CITY_TERRAIN_W = 220;
 const CITY_TERRAIN_D = 260;
+/** Where the land stops and the bay begins (mirrors atmosphere.tsx). */
+const SHORE_X = 90;
 
 /** Pulse travel speed (corridor lengths per second) at zero loading. */
 const PULSE_BASE_SPEED = 0.4;
@@ -148,17 +150,9 @@ export function BusMarkers(): JSX.Element {
             }}
           >
             <StylizedSubstationMarker zone={zone} color={color} pos={pos} />
-            <Text
-              position={[pos[0], 20, pos[1]]}
-              fontSize={2.6}
-              color="white"
-              anchorX="center"
-              anchorY="middle"
-              outlineWidth={0.25}
-              outlineColor="#000000"
-            >
-              {node.id}
-            </Text>
+            {/* The name chip lives in `bus-labels.tsx` now: as fixed-size world
+                text it grew to dominate the frame whenever the camera closed
+                in on an event. */}
           </group>
         );
       })}
@@ -406,44 +400,122 @@ export function TransmissionLines(): JSX.Element {
 }
 
 // ---------------------------------------------------------------------------
-// Ground plane (Tightly scaled 180x180 grid framing the city footprint)
+// Ground: one continuous lit surface, no slab, no unlit grid
 // ---------------------------------------------------------------------------
+
+/**
+ * Distant ridge line, ringing the landward side of the bay.
+ *
+ * Three lone cones read as three cones; a run of overlapping ones at varied
+ * scale reads as terrain. Deterministic — the numbers are a fixed table, never
+ * `Math.random()`, so every run and every replay frames the same horizon.
+ *
+ * The distances matter as much as the shapes. Placed near the city these are
+ * unmistakably cones sitting in frame; placed out at 750–1050 units they fall
+ * deep into the fog and become a soft ridge behind the skyline. Fog does most
+ * of the work here — the geometry is only a silhouette.
+ *
+ * The eastern arc is deliberately empty: that is the open bay.
+ */
+const RIDGE: readonly { x: number; z: number; r: number; h: number; rot: number }[] = [
+  { x: -980, z: -180, r: 260, h: 122, rot: 0.4 },
+  { x: -820, z: -520, r: 230, h: 98, rot: 1.1 },
+  { x: -500, z: -800, r: 285, h: 132, rot: 2.0 },
+  { x: -160, z: -900, r: 240, h: 104, rot: 0.7 },
+  { x: 200, z: -880, r: 205, h: 86, rot: 1.7 },
+  { x: 520, z: -770, r: 185, h: 74, rot: 2.6 },
+  { x: -1010, z: 260, r: 245, h: 106, rot: 0.2 },
+  { x: -880, z: 560, r: 215, h: 88, rot: 1.4 },
+  { x: -560, z: 820, r: 250, h: 112, rot: 2.2 },
+  { x: -200, z: 900, r: 200, h: 82, rot: 0.9 },
+];
+
+function Ridge(): JSX.Element {
+  return (
+    <group name="ridge">
+      {RIDGE.map((peak, index) => (
+        <mesh key={index} position={[peak.x, peak.h / 2 - 6, peak.z]} rotation={[0, peak.rot, 0]}>
+          <coneGeometry args={[peak.r, peak.h, 6]} />
+          <meshStandardMaterial
+            color={index % 2 === 0 ? '#263B31' : '#2B4237'}
+            roughness={1}
+            flatShading
+          />
+        </mesh>
+      ))}
+    </group>
+  );
+}
+
+/**
+ * Where the land meets the water. The sea plane used to butt straight into the
+ * terrain, producing a razor diagonal with no shore at all. A sand band and a
+ * paler shallow shelf give the coast somewhere to happen.
+ */
+function Shoreline(): JSX.Element {
+  return (
+    <group name="shoreline">
+      {/* Beach: a narrow warm band right at the waterline. */}
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[SHORE_X - 2.5, 0.02, 0]} receiveShadow>
+        <planeGeometry args={[6, CITY_TERRAIN_D + 40]} />
+        <meshStandardMaterial color="#4E5747" roughness={1} />
+      </mesh>
+
+      {/* Shallow shelf: lighter water hugging the beach, so the sea reads as
+          having a depth gradient rather than being one flat blue sheet. */}
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[SHORE_X + 16, -0.09, 0]}>
+        <planeGeometry args={[36, CITY_TERRAIN_D + 80]} />
+        <meshStandardMaterial
+          color="#2E8FB8"
+          roughness={0.35}
+          metalness={0.15}
+          transparent
+          opacity={0.72}
+        />
+      </mesh>
+    </group>
+  );
+}
+
 export function GroundPlane(): JSX.Element {
+  // Null under jsdom (no canvas 2D context); the plane then falls back to a
+  // flat colour, which is exactly the pre-texture behaviour.
+  const surface = useMemo(() => groundTexture(), []);
+
   return (
     <group name="ground-terrain">
-      {/* Far terrain. The city plane's edge was visible from the hero camera,
-          floating against void. This extends past every camera station in
-          shots.ts; fog closes the rest. Sits lowest so the city plane and the
-          coastal sea both draw over it. */}
+      {/* Far terrain, out to the fog line. Now the SAME tone as the city
+          ground: the two planes used to be different colours at different
+          heights, which is what made the built area read as a slab lying on
+          top of the world. */}
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.75, 0]}>
         <planeGeometry args={[FAR_TERRAIN_SIZE, FAR_TERRAIN_SIZE]} />
-        <meshStandardMaterial color="#22392f" roughness={1} metalness={0} />
+        <meshStandardMaterial color="#2C4438" roughness={1} metalness={0} />
       </mesh>
 
-      {/* City terrain — the only plane that receives building shadows. */}
+      {/* City ground. Carries the survey grid as part of its MAP, so the grid
+          is LIT — it dims into the night with the buildings standing on it,
+          instead of glowing at full daylight brightness after dark the way the
+          old `gridHelper` did. The map also fades out at three of its edges,
+          which is what dissolves the slab. */}
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[-20, -0.05, 0]} receiveShadow>
         <planeGeometry args={[CITY_TERRAIN_W, CITY_TERRAIN_D]} />
-        <meshStandardMaterial color="#2d4a3e" roughness={0.92} metalness={0.0} />
+        {surface === null ? (
+          <meshStandardMaterial color="#35513F" roughness={0.92} metalness={0} />
+        ) : (
+          <meshStandardMaterial
+            map={surface}
+            transparent
+            roughness={0.92}
+            metalness={0}
+            polygonOffset
+            polygonOffsetFactor={-1}
+          />
+        )}
       </mesh>
 
-      {/* Survey grid at city scale — a scale reference, not wallpaper. */}
-      <gridHelper args={[180, 18, '#15803d', '#1e3a2b']} position={[0, 0.02, 0]} />
-
-      {/* Mountain Framing Ridges along North & West */}
-      <group position={[-150, 0, -140]}>
-        <mesh position={[0, 22, 0]}>
-          <coneGeometry args={[45, 40, 7]} />
-          <meshStandardMaterial color="#1e3a2b" roughness={0.9} />
-        </mesh>
-        <mesh position={[50, 16, -20]}>
-          <coneGeometry args={[38, 30, 7]} />
-          <meshStandardMaterial color="#166534" roughness={0.9} />
-        </mesh>
-        <mesh position={[-60, 19, 40]}>
-          <coneGeometry args={[42, 34, 7]} />
-          <meshStandardMaterial color="#1b3327" roughness={0.9} />
-        </mesh>
-      </group>
+      <Shoreline />
+      <Ridge />
     </group>
   );
 }
