@@ -96,16 +96,27 @@ export function CameraDirector(): ReactElement {
 
   const scripted = request !== null;
 
-  // ── Start the intro once, on Hero → console transition ──
-  const prevModeRef = useRef(mode);
+  // ── Start the intro once, when the console first opens ──
+  //
+  // This used to watch for the Hero → Tutorial TRANSITION via a previous-mode
+  // ref, which quietly depends on this component being mounted before the mode
+  // changes. It is not: CameraDirector lives inside <Canvas>, and R3F mounts
+  // canvas children only after the WebGL context exists. On a slow context —
+  // software rendering, a cold shader cache, a heavy first frame — the mode was
+  // already Tutorial by the time this first ran, `prevModeRef` initialised to
+  // Tutorial, the transition was never observed, and the intro simply never
+  // played. `?demo` then waited forever on an `introDone` that could not arrive.
+  //
+  // Asking the STATE ("should an intro still play?") instead of watching for an
+  // edge removes the timing dependency entirely.
+  const introRequestedRef = useRef(false);
   useEffect(() => {
-    const wasHero = prevModeRef.current === AppMode.Hero;
-    prevModeRef.current = mode;
+    if (mode !== AppMode.Tutorial || introRequestedRef.current) return;
     const store = useCameraStore.getState();
-    if (wasHero && mode === AppMode.Tutorial && !store.introDone) {
-      store.setIntroActive(true);
-      store.requestShot(INTRO_SHOT, { priority: 100, timing: 'CINEMATIC' });
-    }
+    if (store.introDone || store.introActive) return;
+    introRequestedRef.current = true;
+    store.setIntroActive(true);
+    store.requestShot(INTRO_SHOT, { priority: 100, timing: 'CINEMATIC' });
   }, [mode]);
 
   // ── Translate store requests into flights ──
