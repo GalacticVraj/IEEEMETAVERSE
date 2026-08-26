@@ -40,6 +40,9 @@ Thumbs.db
 .env.*
 !.env.example
 
+# Agent scratch — .claude/worktrees holds real git worktrees
+.claude/
+
 # Misc
 .cache/
 .temp/
