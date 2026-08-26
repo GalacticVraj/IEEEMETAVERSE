@@ -2,10 +2,15 @@
  * GridHealthPanel — compact vital signs. Every metric is live simulation
  * output, and every row carries a one-line meaning so the numbers teach.
  *
- * The meanings are what make this panel teach — and also what make it 420px
- * tall, which is most of the rail. So they show while the persona is teaching
- * and collapse afterwards, leaving the numbers themselves always visible. The
+ * The meanings are what make this panel teach — and also what make it tall,
+ * which is most of the rail. So they show while the persona is teaching and
+ * collapse afterwards, leaving the numbers themselves always visible. The
  * player can toggle them back at any time.
+ *
+ * Collapsed, the vitals lay out as a TWO-COLUMN instrument cluster rather than
+ * a single stack. The stack measured 323px, which at 1366×768 left the rail's
+ * scroll area only 191px for the inspector AND all five operator levers — the
+ * levers were effectively invisible. Paired, the same numbers cost ~200px.
  */
 import { useGridStore, useSimulationStore, useTutorialStore } from '@state';
 import { useState } from 'react';
@@ -17,33 +22,74 @@ import { HEALTH_MEANINGS, estimateHouseholdsAffected } from './learning-copy';
 
 const NOMINAL_HZ = NOMINAL_FREQUENCY as number;
 
-function Row({
-  label,
-  value,
-  meaning,
-  showMeaning,
-  tone,
-}: {
-  label: string;
-  value: string;
-  meaning: string;
-  showMeaning: boolean;
-  tone?: string | undefined;
-}): ReactElement {
+interface Vital {
+  readonly label: string;
+  readonly value: string;
+  readonly meaning: string;
+  readonly tone?: string | undefined;
+  /** Wide vitals keep the full row even in the paired layout. */
+  readonly wide?: boolean;
+}
+
+function Row({ vital, showMeaning }: { vital: Vital; showMeaning: boolean }): ReactElement {
   return (
     <div style={{ padding: showMeaning ? '6px 0' : '3px 0', borderBottom: '1px solid #E7E9E6' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
-        <span style={{ fontSize: 12, color: '#5A6774' }}>{label}</span>
+        <span style={{ fontSize: 12, color: '#5A6774' }}>{vital.label}</span>
         <span
           className="console-value"
-          style={{ fontSize: 13, fontWeight: 600, color: tone ?? '#1C2530' }}
+          style={{ fontSize: 13, fontWeight: 600, color: vital.tone ?? '#1C2530' }}
         >
-          {value}
+          {vital.value}
         </span>
       </div>
       {showMeaning && (
-        <div style={{ fontSize: 10.5, color: '#8B97A3', marginTop: 1 }}>{meaning}</div>
+        <div style={{ fontSize: 10.5, color: '#8B97A3', marginTop: 1 }}>{vital.meaning}</div>
       )}
+    </div>
+  );
+}
+
+/** Paired layout: label above value, two per line, no wasted horizontal run. */
+function Cell({ vital }: { vital: Vital }): ReactElement {
+  return (
+    <div
+      title={vital.meaning}
+      style={{
+        padding: '3px 0',
+        borderBottom: '1px solid #E7E9E6',
+        gridColumn: vital.wide === true ? '1 / -1' : undefined,
+        minWidth: 0,
+      }}
+    >
+      <div
+        style={{
+          fontSize: 10,
+          lineHeight: 1.2,
+          color: '#8B97A3',
+          textTransform: 'uppercase',
+          letterSpacing: '0.05em',
+          whiteSpace: 'nowrap',
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
+        }}
+      >
+        {vital.label}
+      </div>
+      <div
+        className="console-value"
+        style={{
+          fontSize: 13,
+          lineHeight: 1.25,
+          fontWeight: 700,
+          color: vital.tone ?? '#1C2530',
+          whiteSpace: 'nowrap',
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
+        }}
+      >
+        {vital.value}
+      </div>
     </div>
   );
 }
@@ -92,6 +138,80 @@ export function GridHealthPanel(): ReactElement {
           ? '#9A6B15'
           : '#217A56';
 
+  const vitals: readonly Vital[] = [
+    { label: 'Demand', value: `${Math.round(totalLoad)} MW`, meaning: HEALTH_MEANINGS.demand },
+    {
+      label: 'Generation',
+      value: `${Math.round(totalGeneration)} MW`,
+      meaning: HEALTH_MEANINGS.generation,
+    },
+    {
+      label: 'Balance',
+      value: `${balance >= 0 ? '+' : '−'}${Math.abs(Math.round(balance))} MW`,
+      meaning: HEALTH_MEANINGS.balance,
+      tone: balanceTone,
+    },
+    {
+      label: 'Frequency',
+      value: `${frequency.toFixed(2)} Hz`,
+      meaning: HEALTH_MEANINGS.frequency,
+      tone: freqTone,
+    },
+    {
+      label: 'RoCoF',
+      value: `${rocof >= 0 ? '+' : '−'}${Math.abs(rocof).toFixed(2)} Hz/s`,
+      meaning: HEALTH_MEANINGS.rocof,
+      tone: rocofTone,
+    },
+    {
+      label: 'System inertia',
+      value: `${Math.round(inertiaMwS).toLocaleString()} MW·s`,
+      meaning: HEALTH_MEANINGS.inertia,
+    },
+    {
+      label: 'N-1 security',
+      value:
+        security === 'Secure'
+          ? `Secure · ${Math.round(reserveMw)} MW reserve`
+          : `${security} · ${Math.round(reserveMw)} vs ${Math.round(largestInfeedMw)} MW`,
+      meaning: HEALTH_MEANINGS.security,
+      tone: securityTone,
+      wide: true,
+    },
+    ...(uflsStage > 0
+      ? [
+          {
+            label: 'Auto load shed',
+            value: `Stage ${String(uflsStage)} fired`,
+            meaning: HEALTH_MEANINGS.ufls,
+            tone: '#B3261E',
+            wide: true,
+          } as const,
+        ]
+      : []),
+    {
+      label: 'Renewables',
+      value: `${Math.round(renewablePct)} %`,
+      meaning: HEALTH_MEANINGS.renewables,
+    },
+    {
+      label: 'Corridor stress',
+      value: `${stressPct} %`,
+      meaning: HEALTH_MEANINGS.corridorStress,
+      tone: stressTone,
+    },
+    {
+      label: 'Zones dark',
+      value:
+        darkZones.length === 0
+          ? '0'
+          : `${darkZones.length} · ≈${estimateHouseholdsAffected(unservedMw).toLocaleString()} homes`,
+      meaning: HEALTH_MEANINGS.zonesDark,
+      tone: darkZones.length > 0 ? '#B3261E' : undefined,
+      wide: darkZones.length > 0,
+    },
+  ];
+
   return (
     <div className="console-panel" style={{ padding: '10px 14px' }}>
       <div
@@ -113,89 +233,22 @@ export function GridHealthPanel(): ReactElement {
           {showMeanings ? '−' : '?'}
         </button>
       </div>
-      <Row
-        label="Demand"
-        value={`${Math.round(totalLoad)} MW`}
-        meaning={HEALTH_MEANINGS.demand}
-        showMeaning={showMeanings}
-      />
-      <Row
-        label="Generation"
-        value={`${Math.round(totalGeneration)} MW`}
-        meaning={HEALTH_MEANINGS.generation}
-        showMeaning={showMeanings}
-      />
-      <Row
-        label="Balance"
-        value={`${balance >= 0 ? '+' : '−'}${Math.abs(Math.round(balance))} MW`}
-        meaning={HEALTH_MEANINGS.balance}
-        showMeaning={showMeanings}
-        tone={balanceTone}
-      />
-      <Row
-        label="Frequency"
-        value={`${frequency.toFixed(2)} Hz`}
-        meaning={HEALTH_MEANINGS.frequency}
-        showMeaning={showMeanings}
-        tone={freqTone}
-      />
-      <Row
-        label="RoCoF"
-        value={`${rocof >= 0 ? '+' : '−'}${Math.abs(rocof).toFixed(2)} Hz/s`}
-        meaning={HEALTH_MEANINGS.rocof}
-        showMeaning={showMeanings}
-        tone={rocofTone}
-      />
-      <Row
-        label="System inertia"
-        value={`${Math.round(inertiaMwS).toLocaleString()} MW·s`}
-        meaning={HEALTH_MEANINGS.inertia}
-        showMeaning={showMeanings}
-      />
-      <Row
-        label="N-1 security"
-        value={
-          security === 'Secure'
-            ? `Secure · ${Math.round(reserveMw)} MW reserve`
-            : `${security} · ${Math.round(reserveMw)} vs ${Math.round(largestInfeedMw)} MW`
-        }
-        meaning={HEALTH_MEANINGS.security}
-        showMeaning={showMeanings}
-        tone={securityTone}
-      />
-      {uflsStage > 0 && (
-        <Row
-          label="Auto load shed"
-          value={`Stage ${String(uflsStage)} fired`}
-          meaning={HEALTH_MEANINGS.ufls}
-          showMeaning={showMeanings}
-          tone="#B3261E"
-        />
+
+      {showMeanings ? (
+        vitals.map((vital) => <Row key={vital.label} vital={vital} showMeaning />)
+      ) : (
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: '1fr 1fr',
+            columnGap: 14,
+          }}
+        >
+          {vitals.map((vital) => (
+            <Cell key={vital.label} vital={vital} />
+          ))}
+        </div>
       )}
-      <Row
-        label="Renewables"
-        value={`${Math.round(renewablePct)} %`}
-        meaning={HEALTH_MEANINGS.renewables}
-        showMeaning={showMeanings}
-      />
-      <Row
-        label="Corridor stress"
-        value={`${stressPct} %`}
-        meaning={HEALTH_MEANINGS.corridorStress}
-        showMeaning={showMeanings}
-        tone={stressTone}
-      />
-      <Row
-        label="Zones dark"
-        value={
-          darkZones.length === 0
-            ? '0'
-            : `${darkZones.length} · ≈${estimateHouseholdsAffected(unservedMw).toLocaleString()} homes`
-        }
-        meaning={HEALTH_MEANINGS.zonesDark}
-        showMeaning={showMeanings}
-        tone={darkZones.length > 0 ? '#B3261E' : undefined}
-      />
     </div>
   );
 }

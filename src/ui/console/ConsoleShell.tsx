@@ -75,6 +75,11 @@ export function ConsoleShell({ mode }: { mode: AppMode }): ReactElement {
         </Reveal>
 
         <div
+          // `console-rail-scroll` was defined in index.css but never applied to
+          // anything, so the rail scrolled with NO scrollbar and no other hint
+          // that content continued below the fold. At 1366×768 that hid ~690px
+          // of the operator's five levers behind an invisible scroll.
+          className="console-rail-scroll"
           style={{
             display: 'flex',
             flexDirection: 'column',
@@ -126,13 +131,19 @@ export function ConsoleShell({ mode }: { mode: AppMode }): ReactElement {
       <Reveal
         id="timeline"
         from="right"
+        className="console-rail-scroll"
         style={{
           position: 'absolute',
           right: 14,
-          // Clears the QuickControls chip row, which sits at bottom: 190.
-          bottom: 226,
+          // Clears the QuickControls chip row: it sits at bottom 192 and stands
+          // ~34px tall, so anything above 226 collides with it on hover.
+          bottom: 236,
           width: 320,
-          maxHeight: 240,
+          // Was a hard 240px against 281px of content — which clipped the body
+          // of "What you can do" at every viewport. That truncation is what
+          // read as "the advisor panel renders empty". The card must be able
+          // to show all three of its answers; it only scrolls on tiny screens.
+          maxHeight: 'min(44vh, 380px)',
           overflowY: 'auto',
           zIndex: 21,
         }}

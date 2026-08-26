@@ -132,27 +132,91 @@ function DirectorPrompt(): ReactElement | null {
   );
 }
 
+function Chevron({ open }: { open: boolean }): ReactElement {
+  return (
+    <span
+      aria-hidden
+      style={{
+        display: 'inline-block',
+        width: 9,
+        color: '#8B97A3',
+        fontSize: 9,
+        transform: open ? 'rotate(90deg)' : 'none',
+        transition: 'transform 160ms cubic-bezier(0.16, 1, 0.3, 1)',
+      }}
+    >
+      ▸
+    </span>
+  );
+}
+
+/**
+ * One lever.
+ *
+ * Collapsed it shows the two things that decide the next thirty seconds: what
+ * the lever is, and what the engine's own what-if says it would buy. The
+ * cost/benefit/risk copy expands on demand.
+ *
+ * This is not a cosmetic choice. Fully expanded, five of these measured 871px
+ * inside a rail that is 191px tall at 1366x768 - four of the five levers were
+ * below an invisible fold. Collapsed they all fit on screen, and no
+ * information was removed to get there.
+ */
 function ActionRow({
   action,
   committedAtTick,
   armed,
+  expanded,
+  onToggle,
   onExecute,
 }: {
   action: OperatorAction;
   committedAtTick: number | undefined;
   armed: boolean;
+  expanded: boolean;
+  onToggle: () => void;
   onExecute: () => void;
 }): ReactElement {
   const committed = committedAtTick !== undefined;
   const projection = useProjection(action.reliefMw);
+
   return (
-    <div style={{ borderBottom: '1px solid #E7E9E6', padding: '7px 0' }}>
+    <div style={{ borderBottom: '1px solid #E7E9E6', padding: '6px 0' }}>
       <div
         style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8 }}
       >
-        <span style={{ fontSize: 12, fontWeight: 600, color: committed ? '#8B97A3' : '#1C2530' }}>
-          {action.label}
-        </span>
+        <button
+          onClick={onToggle}
+          aria-expanded={expanded}
+          title={expanded ? 'Hide cost, benefit and risk' : 'Show cost, benefit and risk'}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 6,
+            background: 'none',
+            border: 'none',
+            padding: 0,
+            cursor: 'pointer',
+            textAlign: 'left',
+            minWidth: 0,
+            flex: 1,
+            font: 'inherit',
+          }}
+        >
+          <Chevron open={expanded} />
+          <span
+            style={{
+              fontSize: 12,
+              fontWeight: 600,
+              color: committed ? '#8B97A3' : '#1C2530',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap',
+            }}
+          >
+            {action.label}
+          </span>
+        </button>
         {committed ? (
           <span
             className="console-value"
@@ -163,7 +227,7 @@ function ActionRow({
         ) : (
           <button
             className="console-btn"
-            style={{ padding: '3px 10px', fontSize: 11 }}
+            style={{ padding: '3px 10px', fontSize: 11, minHeight: 24, flexShrink: 0 }}
             onClick={onExecute}
             disabled={!armed}
             title={armed ? undefined : 'Levers arm when the shift starts'}
@@ -172,42 +236,37 @@ function ActionRow({
           </button>
         )}
       </div>
-      <div style={{ fontSize: 10.5, color: '#5A6774', marginTop: 2 }}>{action.plainEffect}</div>
-      <div style={{ display: 'flex', gap: 10, marginTop: 3, fontSize: 10, color: '#8B97A3' }}>
-        <span>Cost: {action.cost}</span>
-      </div>
-      <div style={{ display: 'flex', gap: 10, fontSize: 10, color: '#8B97A3' }}>
-        <span style={{ color: '#217A56' }}>Benefit: {action.benefit}</span>
-      </div>
-      <div style={{ display: 'flex', gap: 10, fontSize: 10, color: '#8B97A3' }}>
-        <span style={{ color: '#9A6B15' }}>Risk: {action.risk}</span>
-      </div>
+
+      {/* The measured consequence stays visible whether or not the row is
+          open - it is the number the decision actually turns on. */}
       {!committed && projection !== null && (
         <div
           className="console-value"
           style={{
-            marginTop: 4,
-            paddingTop: 4,
-            borderTop: '1px solid #E4E8E3',
+            marginTop: 2,
+            marginLeft: 15,
             fontSize: 10,
+            lineHeight: 1.35,
             display: 'flex',
-            gap: 10,
+            gap: 8,
             flexWrap: 'wrap',
             alignItems: 'center',
           }}
         >
-          <span style={{ color: '#5A6774' }}>Projected</span>
           <span style={{ color: '#1C2530', fontWeight: 700 }}>−{action.reliefMw} MW</span>
           {projection.overshoots ? (
             // Shedding a grid that is already balanced pushes frequency ABOVE
             // nominal. Reporting the raw rise as a gain would recommend
             // causing an over-frequency excursion.
+            // Kept to one line on a 260px rail on purpose: wrapped, five of
+            // these rows push the last lever back below the fold. The amber
+            // already says "don't"; the expanded detail carries the rest.
             <span style={{ color: '#9A6B15', fontWeight: 700 }}>
-              not needed — would overshoot to {projection.projectedHz.toFixed(2)} Hz
+              overshoots to {projection.projectedHz.toFixed(2)} Hz
             </span>
           ) : projection.helps ? (
             <span style={{ color: '#217A56', fontWeight: 700 }}>
-              +{projection.deviationImprovementHz.toFixed(2)} Hz toward 60.00
+              +{projection.deviationImprovementHz.toFixed(2)} Hz toward 60
             </span>
           ) : (
             <span style={{ color: '#8B97A3' }}>no measurable change</span>
@@ -218,6 +277,17 @@ function ActionRow({
           {!projection.avertsShedding && projection.wouldStillShed && (
             <span style={{ color: '#B3261E', fontWeight: 700 }}>still sheds</span>
           )}
+        </div>
+      )}
+
+      {expanded && (
+        <div style={{ marginLeft: 15, marginTop: 4 }}>
+          <div style={{ fontSize: 10.5, color: '#5A6774', lineHeight: 1.4 }}>
+            {action.plainEffect}
+          </div>
+          <div style={{ fontSize: 10, color: '#8B97A3', marginTop: 3 }}>Cost: {action.cost}</div>
+          <div style={{ fontSize: 10, color: '#217A56' }}>Benefit: {action.benefit}</div>
+          <div style={{ fontSize: 10, color: '#9A6B15' }}>Risk: {action.risk}</div>
         </div>
       )}
     </div>
@@ -234,6 +304,9 @@ export function OperatorActionsPanel({ armed = true }: { armed?: boolean }): Rea
   const runtime = useRuntime();
   const selectedCrisis = useAppFlowStore((s) => s.selectedCrisis);
   const [committed, setCommitted] = useState<Record<string, number>>({});
+  // Accordion: at most one lever's detail copy is open at a time, so the panel
+  // cannot grow back past the fold it was just rescued from.
+  const [expandedId, setExpandedId] = useState<string | null>(null);
 
   // A new run re-arms every action.
   useEffect(() => {
@@ -257,7 +330,12 @@ export function OperatorActionsPanel({ armed = true }: { armed?: boolean }): Rea
         overflowY: 'auto',
       }}
     >
-      <div className="console-section-title">Operator Actions</div>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+        <span className="console-section-title">Operator Actions</span>
+        <span style={{ fontSize: 9.5, color: '#8B97A3' }}>
+          {OPERATOR_ACTIONS.length} levers · click a name for detail
+        </span>
+      </div>
       {!armed && (
         <div style={{ fontSize: 10.5, color: '#8B97A3', lineHeight: 1.45 }}>
           These arm the moment your shift starts.
@@ -271,6 +349,10 @@ export function OperatorActionsPanel({ armed = true }: { armed?: boolean }): Rea
             action={action}
             committedAtTick={committed[action.id]}
             armed={armed}
+            expanded={expandedId === action.id}
+            onToggle={() =>
+              setExpandedId((previous) => (previous === action.id ? null : action.id))
+            }
             onExecute={() => execute(action)}
           />
         ))}

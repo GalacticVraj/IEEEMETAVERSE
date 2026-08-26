@@ -3,7 +3,14 @@
  * stability chip, playback control. All values from projections; the stability
  * label is a pure DISPLAY mapping of live telemetry (no logic feeds back).
  */
-import { AppMode, CRISIS_CARDS, useAppFlowStore, useGridStore, useSimulationStore } from '@state';
+import {
+  AppMode,
+  CRISIS_CARDS,
+  useAppFlowStore,
+  useGridStore,
+  useRunStatsStore,
+  useSimulationStore,
+} from '@state';
 import type { ReactElement } from 'react';
 
 import { useRuntime } from '../../runtime-context';
@@ -20,10 +27,14 @@ const STABILITY_STYLE: Record<Stability, { color: string; bg: string }> = {
 };
 
 const STABILITY_TOOLTIP: Record<Stability, string> = {
-  NORMAL: 'Grid operating within safe limits. Corridor loading is below 80% and frequency is nominal at 60.00 Hz.',
-  ELEVATED: 'Corridor loading exceeds 80% or supply deficit exceeds 40 MW. Monitor corridors closely for trip risks.',
-  EMERGENCY: 'Critical overload! Line tripped or corridor at 100%. Execute operator actions immediately to avoid cascade blackout.',
-  BLACKOUT: 'One or more city districts have lost power. Reconnect transmission lines to restore power to affected homes.',
+  NORMAL:
+    'Grid operating within safe limits. Corridor loading is below 80% and frequency is nominal at 60.00 Hz.',
+  ELEVATED:
+    'Corridor loading exceeds 80% or supply deficit exceeds 40 MW. Monitor corridors closely for trip risks.',
+  EMERGENCY:
+    'Critical overload! Line tripped or corridor at 100%. Execute operator actions immediately to avoid cascade blackout.',
+  BLACKOUT:
+    'One or more city districts have lost power. Reconnect transmission lines to restore power to affected homes.',
 };
 
 /** Pure display mapping — reads telemetry, renders a label. */
@@ -53,6 +64,56 @@ function ShieldIcon(): ReactElement {
     >
       <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
     </svg>
+  );
+}
+
+/**
+ * The running consequence counter: how many of Meridian Bay's districts you
+ * have kept lit for the whole shift. `zonesEverDark` is a run-stats
+ * accumulation of REAL ZoneBlackout observations - a district that went dark
+ * and was restored still counts as lost, because it was. This is the number
+ * the after-action Resilience score is built from, surfaced live so the player
+ * can see the stake before the debrief tells them about it.
+ */
+function DistrictScore(): ReactElement | null {
+  const zones = useGridStore((s) => s.zones);
+  const everDark = useRunStatsStore((s) => s.zonesEverDark);
+
+  const total = zones.length;
+  if (total === 0) return null;
+  const lost = everDark.length;
+  const held = Math.max(0, total - lost);
+  const color = lost === 0 ? '#217A56' : lost >= total / 2 ? '#B3261E' : '#B4531F';
+
+  return (
+    <Tooltip
+      title="Districts held"
+      content="Districts that have never lost power this shift. A district that blacked out counts as lost even after you restore it - the outage already happened."
+      position="bottom"
+    >
+      <span
+        className="console-value"
+        style={{
+          display: 'inline-flex',
+          alignItems: 'baseline',
+          gap: 5,
+          fontSize: 11,
+          fontWeight: 700,
+          color,
+          background: 'rgba(28, 37, 48, 0.04)',
+          border: '1px solid #E2E6E1',
+          borderRadius: 6,
+          padding: '4px 10px',
+          whiteSpace: 'nowrap',
+          cursor: 'help',
+        }}
+      >
+        <span>
+          {held}/{total}
+        </span>
+        <span style={{ fontSize: 9.5, color: '#5A6774', letterSpacing: '0.06em' }}>HELD</span>
+      </span>
+    </Tooltip>
   );
 }
 
@@ -123,8 +184,27 @@ export function CommandBar(): ReactElement {
           </span>
         </div>
         <span style={{ color: '#D3D7D2', fontWeight: 300 }}>|</span>
-        <span className="console-section-title" style={{ fontSize: 11, color: '#5A6774' }}>
-          MERIDIAN BAY OPERATIONS
+        {/* The standing objective. The hero screen states the role once and
+            then you leave it behind; nothing in the console used to say what
+            the job actually was. One line, always visible, never a modal. */}
+        <span
+          style={{
+            fontSize: 11.5,
+            color: '#5A6774',
+            fontWeight: 500,
+            whiteSpace: 'nowrap',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+          }}
+        >
+          {active ? (
+            <>
+              <span style={{ color: '#1C2530', fontWeight: 600 }}>You are the grid operator</span>
+              {' — keep every district powered to T+03:00'}
+            </>
+          ) : (
+            'MERIDIAN BAY OPERATIONS'
+          )}
         </span>
         {scenarioName !== null && (
           <>
@@ -165,6 +245,7 @@ export function CommandBar(): ReactElement {
 
       {/* Status + controls */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+        {active && <DistrictScore />}
         <Tooltip
           title={`Grid State: ${stability}`}
           content={STABILITY_TOOLTIP[stability]}

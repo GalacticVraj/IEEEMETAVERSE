@@ -3,8 +3,15 @@
  *
  * Shows the clicked timeline entry, or else the most recent warning/critical
  * event. Three labeled rows answer: what happened, why, what can you do.
+ *
+ * Davis and this card used to narrate the SAME event at the SAME moment - his
+ * card top-centre, this one right - which read as the console repeating itself
+ * rather than as two voices. So the auto-selected entry stands down while he is
+ * speaking and takes over when he finishes: he says it conversationally, then
+ * the structured answer persists. An entry the player clicked in the timeline
+ * is an explicit request and always wins.
  */
-import { useEventLogStore } from '@state';
+import { useAdvisorStore, useEventLogStore } from '@state';
 import { useState } from 'react';
 import type { ReactElement } from 'react';
 
@@ -33,13 +40,14 @@ export function LearningFeedback(): ReactElement | null {
   const entries = useEventLogStore((s) => s.entries);
   const focusedSeq = useEventLogStore((s) => s.focusedSeq);
   const focusEntry = useEventLogStore((s) => s.focusEntry);
+  const advisorSpeaking = useAdvisorStore((s) => s.current !== null);
   const [dismissedSeq, setDismissedSeq] = useState(0);
 
   const focused = focusedSeq === null ? undefined : entries.find((e) => e.seq === focusedSeq);
   const latestImportant = [...entries]
     .reverse()
     .find((e) => (e.severity === 'warning' || e.severity === 'critical') && e.seq > dismissedSeq);
-  const entry = focused ?? latestImportant;
+  const entry = focused ?? (advisorSpeaking ? undefined : latestImportant);
 
   if (entry === undefined) return null;
 

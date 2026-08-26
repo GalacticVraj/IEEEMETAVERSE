@@ -38,29 +38,36 @@ body {
 
 /* ── Custom Console Scrollbars & Smooth Scrolling ────────────────────── */
 
+/* The rail scrolls. Until now it did so with NO visible scrollbar, which hid
+   most of the operator's levers behind a fold nothing signposted. The gutter is
+   reserved permanently so panels never reflow when the bar appears. */
 .console-rail-scroll {
   scroll-behavior: smooth;
   overscroll-behavior: contain;
   -webkit-overflow-scrolling: touch;
+  scrollbar-gutter: stable;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(90, 103, 116, 0.55) rgba(28, 37, 48, 0.06);
 }
 
 .console-rail-scroll::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 8px;
+  height: 8px;
 }
 
 .console-rail-scroll::-webkit-scrollbar-track {
-  background: transparent;
+  background: rgba(28, 37, 48, 0.06);
+  border-radius: 4px;
 }
 
 .console-rail-scroll::-webkit-scrollbar-thumb {
-  background: rgba(139, 151, 163, 0.4);
+  background: rgba(90, 103, 116, 0.55);
   border-radius: 4px;
   transition: background 0.2s ease;
 }
 
 .console-rail-scroll::-webkit-scrollbar-thumb:hover {
-  background: rgba(139, 151, 163, 0.7);
+  background: rgba(90, 103, 116, 0.85);
 }
 
 /* ── Console primitives ──────────────────────────────────────────────── */

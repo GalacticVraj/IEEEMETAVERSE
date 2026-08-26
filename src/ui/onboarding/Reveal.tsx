@@ -35,9 +35,10 @@ export interface RevealProps {
   readonly from: RevealFrom;
   readonly children: ReactNode;
   readonly style?: CSSProperties;
+  readonly className?: string;
 }
 
-export function Reveal({ id, from, children, style }: RevealProps): ReactElement {
+export function Reveal({ id, from, children, style, className }: RevealProps): ReactElement {
   const teaching = useTutorialStore((s) => s.active);
   const disclosed = useTutorialStore((s) => s.revealed.has(id));
   const ref = useRef<HTMLDivElement>(null);
@@ -64,6 +65,7 @@ export function Reveal({ id, from, children, style }: RevealProps): ReactElement
   return (
     <div
       ref={ref}
+      className={className}
       aria-hidden={!visible}
       data-panel={id}
       data-revealed={visible ? 'true' : 'false'}
