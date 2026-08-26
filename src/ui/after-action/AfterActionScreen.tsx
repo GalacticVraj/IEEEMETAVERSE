@@ -28,6 +28,8 @@ import { DavisPortrait } from '../onboarding/DavisPortrait';
 import { requestAdvisorNarrative } from '../advisor/advisor-client';
 import { buildAdvisorContext, buildDeterministicNarrative } from '../advisor/narrative';
 
+import { selectLesson } from './real-world-lesson';
+
 const VERDICT_STYLE: Record<string, { label: string; color: string }> = {
   improved: { label: 'IMPROVED', color: '#217A56' },
   'no-effect': { label: 'NO EFFECT', color: '#9A6B15' },
@@ -150,16 +152,38 @@ export function AfterActionScreen(): ReactElement {
   const importantEntries = entries.filter((entry) => entry.severity !== 'info').slice(-14);
   const unservedMwS = Math.round(stats.unservedEnergyMwTicks / 10);
 
+  // Every input below is an observation, never an assumption: UFLS is read off
+  // the log entries the engine actually published, not inferred from frequency.
+  const lesson = selectLesson({
+    uflsFired: entries.some((entry) => entry.title.startsWith('Automatic load shedding')),
+    zonesDarkened: stats.zonesEverDark.length,
+    lineTrips: stats.lineTrips,
+    peakCorridorStress: stats.peakCorridorStress,
+    renewableShare: stats.renewableShareAvg,
+    improvedDecisions: records.filter((record) => record.verdict === 'improved').length,
+    totalDecisions: records.length,
+    held,
+  });
+
   return (
     <div
       className="absolute inset-0 z-40 pointer-events-auto"
-      style={{ background: 'rgba(28, 37, 48, 0.55)', overflowY: 'auto' }}
+      // A true modal layer. At 0.55 alpha the live console rails read straight
+      // through the review — two interfaces at once, and the screenshot judges
+      // take home has a half-visible operator panel across it. Deeper scrim
+      // plus a blur puts everything below decisively BEHIND this.
+      style={{
+        background: 'rgba(18, 25, 33, 0.88)',
+        backdropFilter: 'blur(7px)',
+        WebkitBackdropFilter: 'blur(7px)',
+        overflowY: 'auto',
+      }}
     >
       <div
         style={{
           maxWidth: 1180,
           margin: '28px auto',
-          padding: '0 20px',
+          padding: '0 20px 32px',
           display: 'flex',
           flexDirection: 'column',
           gap: 12,
@@ -239,6 +263,37 @@ export function AfterActionScreen(): ReactElement {
             </div>
           </div>
         </Panel>
+
+        {/* ── The real-world lesson ──
+            The single strongest piece of "effectiveness of learning" evidence
+            in the build: it names what the player just did in the language the
+            industry uses for it. Selected by a pure function of measured run
+            facts, so the lesson is always the one this run earned. */}
+        <div
+          className="console-panel"
+          style={{
+            padding: '14px 18px',
+            borderLeft: '3px solid #22637E',
+            // OPAQUE. `.console-panel` supplies its own near-solid surface, so
+            // a low-alpha tint here does not sit on top of it - it REPLACES it,
+            // and the modal scrim behind then shows straight through, leaving
+            // dark text on a dark ground.
+            background: '#EEF4F6',
+          }}
+        >
+          <div
+            className="console-section-title"
+            style={{ fontSize: 10, color: '#22637E', marginBottom: 4 }}
+          >
+            What this means on a real grid
+          </div>
+          <div style={{ fontSize: 15, fontWeight: 600, color: '#1C2530', marginBottom: 6 }}>
+            {lesson.title}
+          </div>
+          <p style={{ fontSize: 13, lineHeight: 1.7, color: '#3B4855', margin: 0 }}>
+            {lesson.body}
+          </p>
+        </div>
 
         {/* ── Scores ── */}
         <div
