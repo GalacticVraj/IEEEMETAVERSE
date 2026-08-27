@@ -33,7 +33,7 @@ if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
 
 // `?demo` — hands-free competition walkthrough from a cold start.
 if (new URLSearchParams(window.location.search).has('demo')) {
-  setTimeout(() => startDemo(runtime), 1500);
+  setTimeout(() => startDemo(runtime, { presentation: true }), 1500);
 }
 
 const rootElement = document.getElementById('root');

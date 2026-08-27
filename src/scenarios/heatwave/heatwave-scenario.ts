@@ -1,7 +1,13 @@
 import { Severity, asGeneratorId, asScenarioId } from '@app-types';
 import type { TickContext } from '@core';
+import { HEATWAVE_ARC } from '@engine';
 
-import type { ICrisisScenario, ScenarioContext, ScenarioFaultApi, ScenarioMetadata } from '../crisis-scenario';
+import type {
+  ICrisisScenario,
+  ScenarioContext,
+  ScenarioFaultApi,
+  ScenarioMetadata,
+} from '../crisis-scenario';
 
 /**
  * **Record Heatwave** — the flagship scenario, choreographed for a 3-minute
@@ -26,8 +32,8 @@ export class HeatwaveScenario implements ICrisisScenario {
     id: asScenarioId('heatwave'),
     name: 'Record Heatwave',
     summary:
-      'A record heatwave drives cooling demand past safe limits across Meridian Bay, '
-      + 'then a baseload generator trips its cooling system, forcing the grid toward cascade failure.',
+      'A record heatwave drives cooling demand past safe limits across Meridian Bay, ' +
+      'then a baseload generator trips its cooling system, forcing the grid toward cascade failure.',
     difficulty: Severity.Warning,
   };
 
@@ -37,6 +43,10 @@ export class HeatwaveScenario implements ICrisisScenario {
 
   public setup(context: ScenarioContext): void {
     this.faults = context.faults;
+    // The heat is the scenario. Until the arc could be declared here, this ran
+    // on the generic 25 °C profile — a "record heatwave" with no heat build,
+    // and therefore none of the cooling-demand ramp the whole arc depends on.
+    context.weather.setArc(HEATWAVE_ARC);
     this.baseloadTripped = false;
     this.gasHarborTripped = false;
   }

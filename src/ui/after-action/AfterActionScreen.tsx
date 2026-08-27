@@ -7,7 +7,7 @@
  * local evidence; Gemini (when reachable) rewrites the SAME evidence and
  * swaps in seamlessly. Nothing is mocked, nothing is invented.
  */
-import { useEffect, useMemo, useState, type ReactElement } from 'react';
+import { useEffect, useMemo, useRef, useState, type ReactElement } from 'react';
 
 import { EVIDENCE_ENGINE, LEARNER_TWIN, scoreRun } from '@learning';
 import type { CategoryScore, DecisionEvidence, LearnerTwinState } from '@learning';
@@ -17,6 +17,9 @@ import {
   recoveryTicksOf,
   useAppFlowStore,
   useEventLogStore,
+  rankOf,
+  useCareerStore,
+  useGridStore,
   useRunStatsStore,
 } from '@state';
 
@@ -29,6 +32,8 @@ import { requestAdvisorNarrative } from '../advisor/advisor-client';
 import { buildAdvisorContext, buildDeterministicNarrative } from '../advisor/narrative';
 
 import { selectLesson } from './real-world-lesson';
+import { MasteryDashboard } from './MasteryDashboard';
+import { ShareResultCard } from './ShareResultCard';
 
 const VERDICT_STYLE: Record<string, { label: string; color: string }> = {
   improved: { label: 'IMPROVED', color: '#217A56' },
@@ -88,6 +93,8 @@ export function AfterActionScreen(): ReactElement {
   const stats = useRunStatsStore();
   const entries = useEventLogStore((s) => s.entries);
   const runtime = useRuntime();
+  const career = useCareerStore();
+  const districtsTotal = useGridStore((s) => s.zones.length) || 6;
 
   const [twinState, setTwinState] = useState<LearnerTwinState | null>(null);
   const [records, setRecords] = useState<readonly DecisionEvidence[]>([]);
@@ -148,6 +155,38 @@ export function AfterActionScreen(): ReactElement {
 
   const held = outcome === 'Held';
   const overall = scores.find((score) => score.id === 'overall');
+
+  // Bank the shift into the career record, exactly once.
+  //
+  // The guard is a ref rather than a dependency-array trick because `scores`
+  // is recomputed whenever the Gemini narrative swaps in — without it, the
+  // player's career total would grow by another 80 points every time the
+  // advisor text updated behind them.
+  const banked = useRef(false);
+  useEffect(() => {
+    if (banked.current || overall === undefined || selectedCrisis === null) return;
+    banked.current = true;
+    useCareerStore.getState().recordRun({
+      scenarioId: selectedCrisis,
+      score: overall.score,
+      zonesEverDark: stats.zonesEverDark.length,
+      worstFrequencyDeviationHz: stats.worstFrequencyDeviationHz,
+      lineTrips: stats.lineTrips,
+      renewableShareAvg: stats.renewableShareAvg,
+      totalScenarioCount: CRISIS_CARDS.length,
+    });
+    // The twin is in-memory and dies on refresh; this is the durable copy the
+    // mastery dashboard reads.
+    if (twinState !== null) {
+      useCareerStore.getState().recordConcepts(
+        twinState.concepts.map((entry) => ({
+          concept: entry.concept,
+          mastery: entry.mastery,
+          evidenceCount: entry.evidenceCount,
+        })),
+      );
+    }
+  }, [overall, selectedCrisis, stats, twinState]);
   const recoveryTicks = recoveryTicksOf(stats);
   const importantEntries = entries.filter((entry) => entry.severity !== 'info').slice(-14);
   const unservedMwS = Math.round(stats.unservedEnergyMwTicks / 10);
@@ -511,8 +550,22 @@ export function AfterActionScreen(): ReactElement {
           )}
         </Panel>
 
+        {/* ── Grid mastery, across every shift on record ── */}
+        <Panel title="Your Grid Mastery">
+          <MasteryDashboard />
+        </Panel>
+
         {/* ── Actions ── */}
-        <div style={{ display: 'flex', gap: 10, justifyContent: 'center', paddingBottom: 24 }}>
+        <div
+          style={{
+            display: 'flex',
+            gap: 10,
+            justifyContent: 'center',
+            alignItems: 'flex-start',
+            paddingBottom: 24,
+            flexWrap: 'wrap',
+          }}
+        >
           <button
             className="console-btn-primary"
             style={{ padding: '10px 32px', fontSize: 13 }}
@@ -520,6 +573,24 @@ export function AfterActionScreen(): ReactElement {
           >
             Run Another Scenario
           </button>
+          {overall !== undefined && (
+            <ShareResultCard
+              data={{
+                operatorName: career.operatorName,
+                rank: rankOf(career.totalScore),
+                scenarioName,
+                score: overall.score,
+                outcome,
+                // District count comes from the projection, not a literal —
+                // the topology is the thing that decides how many there are.
+                districtsHeld: Math.max(0, districtsTotal - stats.zonesEverDark.length),
+                districtsTotal,
+                worstFrequencyDeviationHz: stats.worstFrequencyDeviationHz,
+                peakCorridorStress: stats.peakCorridorStress,
+                unservedMwS,
+              }}
+            />
+          )}
           <button
             className="console-btn"
             style={{ padding: '10px 32px', fontSize: 13 }}

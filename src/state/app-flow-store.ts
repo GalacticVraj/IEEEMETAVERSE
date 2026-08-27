@@ -63,6 +63,32 @@ export const CRISIS_CARDS: CrisisCard[] = [
       'A transformer internal fault trips the DT4-HB1 main infeed, forcing power ' +
       're-routing that thermally overloads backup paths in sequential failure.',
   },
+  // These three were registered in the composition root but never offered to
+  // the player — five of the eight scenarios were unreachable from the UI.
+  {
+    id: 'cyber-attack',
+    label: 'Coordinated Cyber Attack',
+    difficulty: 'Critical',
+    description:
+      'A SCADA intrusion corrupts corridor telemetry, then opens critical breakers in ' +
+      'sequence and kills the import interconnect while the operator is flying blind.',
+  },
+  {
+    id: 'demand-surge',
+    label: 'Renewable Intermittency Cascade',
+    difficulty: 'Warning',
+    description:
+      'A cloud bank crosses the solar array while the wind forecast misses low, and the ' +
+      'evening demand ramp arrives on top of both. The duck curve, at full scale.',
+  },
+  {
+    id: 'cold-snap',
+    label: 'Cold Snap Demand Spike',
+    difficulty: 'Critical',
+    description:
+      'Temperature collapses and heating demand climbs with it, distribution corridors ' +
+      'overload, then gas pipeline pressure drops and takes the peakers with it.',
+  },
 ];
 
 export type BuildingType =

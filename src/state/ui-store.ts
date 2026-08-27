@@ -3,7 +3,13 @@ import { create } from 'zustand';
 
 /** A selectable 3D asset — feeds the AssetInspector. */
 export interface SelectedAsset {
-  readonly kind: 'line' | 'bus' | 'generator' | 'building';
+  /**
+   * `zone` selects a whole DISTRICT rather than one piece of plant. It is the
+   * altitude at which load shedding is actually decided — an operator sheds
+   * Residential North, not bus RN2 — so the district had to become a thing you
+   * can click, not just a colour the buildings happen to share.
+   */
+  readonly kind: 'line' | 'bus' | 'generator' | 'building' | 'zone';
   readonly id: string;
 }
 

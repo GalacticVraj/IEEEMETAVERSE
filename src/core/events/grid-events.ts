@@ -32,6 +32,10 @@ import type { KernelEventMap } from './kernel-events';
 export interface WeatherChangedPayload {
   readonly kind: WeatherKind;
   readonly temperature: Celsius;
+  /** Solar irradiance, 0..1 of clear-sky peak. Drives Solar output. */
+  readonly irradiance: Ratio;
+  /** Wind availability, 0..1 of rated. Drives Wind output. */
+  readonly wind: Ratio;
 }
 
 export interface LoadChangedPayload {
@@ -117,12 +121,53 @@ export interface DecisionRequestedPayload {
   readonly decisionId: DecisionId;
   readonly prompt: string;
   readonly options: readonly string[];
+  /** Tick the prompt was raised at. The console counts down from here. */
+  readonly requestedAtTick: number;
+  /** How long the operator has to answer, in ticks. */
+  readonly windowTicks: number;
+  /**
+   * The option that happens if nobody answers.
+   *
+   * Declared by the simulation rather than guessed by the console. Every
+   * prompt today happens to put its passive option last, which is exactly the
+   * kind of coincidence a UI would encode as `options.length - 1` and then be
+   * silently wrong about the first time a prompt is reordered.
+   */
+  readonly defaultOptionIndex: number;
 }
 
 export interface DecisionCommittedPayload {
   readonly decisionId: DecisionId;
   readonly optionIndex: number;
   readonly simTime: Seconds;
+}
+
+/**
+ * How a committed decision actually turned out, measured 30 simulated seconds
+ * later against a snapshot taken at the moment it was committed.
+ *
+ * Deliberately separate from the evidence engine's 5-second reading. That one
+ * answers "did the lever move the needle at all"; this one answers "and did it
+ * hold" — which for a grid intervention is a different, later question.
+ */
+export interface DecisionConsequencePayload {
+  readonly decisionId: DecisionId;
+  readonly optionIndex: number;
+  /** Tick at which the decision was committed. */
+  readonly committedTick: number;
+  /** Frequency deviation from nominal at commit, and now. Hz. */
+  readonly deviationBeforeHz: number;
+  readonly deviationAfterHz: number;
+  /** Worst corridor loading at commit, and now. Per unit. */
+  readonly loadingBefore: number;
+  readonly loadingAfter: number;
+  /** Districts dark at commit, and now. */
+  readonly darkZonesBefore: number;
+  readonly darkZonesAfter: number;
+  /** Measured verdict. Derived only from the numbers above. */
+  readonly verdict: 'improved' | 'held' | 'worsened';
+  /** Operator-facing sentence quoting the measurement that decided it. */
+  readonly summary: string;
 }
 
 export interface LearningUpdatedPayload {
@@ -168,6 +213,7 @@ export interface GridEventMap extends KernelEventMap {
   SecurityChanged: SecurityChangedPayload;
   DecisionRequested: DecisionRequestedPayload;
   DecisionCommitted: DecisionCommittedPayload;
+  DecisionConsequence: DecisionConsequencePayload;
   LearningUpdated: LearningUpdatedPayload;
   ReplayStarted: ReplayStartedPayload;
   ReplayFinished: ReplayFinishedPayload;

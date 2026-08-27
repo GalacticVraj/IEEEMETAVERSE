@@ -13,7 +13,7 @@
 import { GRID_EVENT } from '@constants';
 import type { GridEventBus, Unsubscribe } from '@core';
 import type { ISimulationEngine } from '@engine';
-import type { GeneratorStatus, LineFlow, ZoneStatus } from '@engine';
+import type { GeneratorStatus, LineFlow, LineRestoration, ZoneStatus } from '@engine';
 import { create } from 'zustand';
 
 export interface GridProjection {
@@ -30,6 +30,11 @@ export interface GridProjection {
   readonly largestInfeedMw: number;
   readonly renewableGeneration: number;
   readonly lines: readonly LineFlow[];
+  /**
+   * Per-corridor reclose readiness for every line currently open. Computed by
+   * the protection engine — the console only displays it.
+   */
+  readonly restoration: readonly LineRestoration[];
   readonly zones: readonly ZoneStatus[];
   readonly generators: readonly GeneratorStatus[];
   /** Set of line IDs that are currently open (tripped or commanded open). */
@@ -42,6 +47,10 @@ export interface GridProjection {
    */
   readonly weatherKind: string;
   readonly temperatureC: number;
+  /** Solar irradiance, 0..1 of clear-sky peak. Drives the Solar farm. */
+  readonly irradiance: number;
+  /** Wind availability, 0..1 of rated. Drives the wind farm and the rain. */
+  readonly wind: number;
 }
 
 const INITIAL: GridProjection = {
@@ -58,11 +67,14 @@ const INITIAL: GridProjection = {
   largestInfeedMw: 0,
   renewableGeneration: 0,
   lines: [],
+  restoration: [],
   zones: [],
   generators: [],
   openLines: new Set(),
   trippedCount: 0,
   weatherKind: 'Clear',
+  irradiance: 0.7,
+  wind: 0.3,
   temperatureC: 20,
 };
 
@@ -90,6 +102,7 @@ export function bindGridStore(bus: GridEventBus, engine: ISimulationEngine): Uns
         largestInfeedMw: gs.largestInfeedMw,
         renewableGeneration: gs.renewableGeneration,
         lines: gs.lines,
+        restoration: gs.restoration,
         zones: gs.zones,
         generators: gs.generators,
       });
@@ -106,6 +119,8 @@ export function bindGridStore(bus: GridEventBus, engine: ISimulationEngine): Uns
       useGridStore.setState({
         weatherKind: String(p.kind),
         temperatureC: p.temperature,
+        irradiance: p.irradiance,
+        wind: p.wind,
       });
     }),
 

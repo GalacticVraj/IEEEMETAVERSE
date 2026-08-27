@@ -1,7 +1,14 @@
 import { Severity, asGeneratorId, asLineId, asLoadId, asScenarioId } from '@app-types';
 import type { TickContext } from '@core';
+import { CLEAR_ARC } from '@engine';
 
-import type { ICrisisScenario, ScenarioContext, ScenarioFaultApi, ScenarioMetadata } from '../crisis-scenario';
+import type {
+  ICrisisScenario,
+  ScenarioContext,
+  ScenarioFaultApi,
+  ScenarioMetadata,
+} from '../crisis-scenario';
+import { at } from '../shift-clock';
 
 /**
  * **Transformer Failure** — EHV autotransformer turn-to-turn fault.
@@ -29,8 +36,8 @@ export class TransformerFailureScenario implements ICrisisScenario {
     id: asScenarioId('transformer-failure'),
     name: 'EHV Autotransformer Turn-to-Turn Fault',
     summary:
-      'A turn-to-turn fault on the GS1 autotransformer trips both 400 MW infeed paths, '
-      + 'stranding the southern generation hub and forcing emergency load shedding.',
+      'A turn-to-turn fault on the GS1 autotransformer trips both 400 MW infeed paths, ' +
+      'stranding the southern generation hub and forcing emergency load shedding.',
     difficulty: Severity.Critical,
   };
 
@@ -41,6 +48,9 @@ export class TransformerFailureScenario implements ICrisisScenario {
 
   public setup(context: ScenarioContext): void {
     this.faults = context.faults;
+    // Every scenario declares its own environment; the app used to run one
+    // generic weather model for all of them.
+    context.weather.setArc(CLEAR_ARC);
     this.transformerCleared = false;
     this.generationIslanded = false;
     this.loadShed = false;
@@ -50,7 +60,7 @@ export class TransformerFailureScenario implements ICrisisScenario {
     const { tick } = context;
 
     // Tick 45: Differential protection clears both GS1 infeed lines
-    if (tick === 45 && !this.transformerCleared) {
+    if (tick === at(0, 35) && !this.transformerCleared) {
       this.faults.commandOpenLine(asLineId('GS1-DT1'));
       this.faults.commandOpenLine(asLineId('GS1-IN1'));
       this.faults.commandOpenLine(asLineId('GS1-RS1'));
@@ -58,18 +68,18 @@ export class TransformerFailureScenario implements ICrisisScenario {
     }
 
     // Tick 55: Islanded generators trip on loss of excitation
-    if (tick === 55 && !this.generationIslanded) {
+    if (tick === at(1, 10) && !this.generationIslanded) {
       this.faults.tripGenerator(asGeneratorId('G-BASE-S'));
       this.faults.tripGenerator(asGeneratorId('G-PEAK-S'));
       this.generationIslanded = true;
     }
 
     // Tick 80: Emergency load shedding
-    if (tick === 80 && !this.loadShed) {
-      this.faults.shedLoad(asLoadId('LD-IN-HVY'), 0.50);
-      this.faults.shedLoad(asLoadId('LD-IN-LGT'), 0.50);
-      this.faults.shedLoad(asLoadId('LD-HB-IND'), 0.40);
-      this.faults.shedLoad(asLoadId('LD-HB-SHIP'), 0.40);
+    if (tick === at(1, 50) && !this.loadShed) {
+      this.faults.shedLoad(asLoadId('LD-IN-HVY'), 0.5);
+      this.faults.shedLoad(asLoadId('LD-IN-LGT'), 0.5);
+      this.faults.shedLoad(asLoadId('LD-HB-IND'), 0.4);
+      this.faults.shedLoad(asLoadId('LD-HB-SHIP'), 0.4);
       this.loadShed = true;
     }
   }

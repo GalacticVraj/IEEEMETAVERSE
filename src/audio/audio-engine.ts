@@ -13,7 +13,11 @@ export interface IAudioEngine {
   detach(): void;
   dispose(): void;
 
-  playSfx(key: SfxKey): void;
+  /**
+   * @param rate Optional playback rate (1 = nominal). Used to give each
+   * generator its own voice — see `voice-rate.ts`.
+   */
+  playSfx(key: SfxKey, rate?: number): void;
   playMusic(stem: MusicKey, crossfadeSec?: number): void;
   stopMusic(fadeSec?: number): void;
   duck(active: boolean, durationSec?: number): void;
@@ -129,7 +133,7 @@ export class AudioEngine implements IAudioEngine {
     this.initialized = false;
   }
 
-  public playSfx(key: SfxKey): void {
+  public playSfx(key: SfxKey, rate = 1): void {
     if (this.muted) return;
 
     const howl = this.sfxHowls.get(key);
@@ -138,10 +142,14 @@ export class AudioEngine implements IAudioEngine {
     if (howl !== undefined && !this.sfxLoadFailed.has(key) && howl.state() === 'loaded') {
       const vol = this.sfxVolume * (def.volume ?? 1.0);
       howl.volume(vol);
+      // Howler's rate is per-Howl, not per-play, so it must be set on every
+      // call — otherwise one detuned cue would retune every later use of the
+      // same sample.
+      howl.rate(rate);
       howl.play();
     } else {
       // Fallback to Web Audio procedural tone generator if asset missing or loading
-      this.playProceduralFallback(key);
+      this.playProceduralFallback(key, rate);
     }
   }
 
@@ -237,7 +245,7 @@ export class AudioEngine implements IAudioEngine {
     return this.musicVolume * duckMultiplier;
   }
 
-  private playProceduralFallback(key: SfxKey): void {
+  private playProceduralFallback(key: SfxKey, rate = 1): void {
     if (typeof window === 'undefined') return;
     try {
       if (this.audioCtx === null) {
@@ -260,7 +268,10 @@ export class AudioEngine implements IAudioEngine {
       const gain = ctx.createGain();
 
       osc.type = tone.type ?? 'sine';
-      osc.frequency.value = tone.freq;
+      // The synthesized fallback has no sample to resample, so the rate is
+      // applied as a straight frequency scale — the same interval the Howl
+      // path would produce, so a unit's voice is identical either way.
+      osc.frequency.value = tone.freq * rate;
 
       const peakGain = this.sfxVolume * (def.volume ?? 1.0) * 0.15;
       gain.gain.setValueAtTime(0, start);

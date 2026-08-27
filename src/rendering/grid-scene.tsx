@@ -9,7 +9,7 @@ import { MERIDIAN_BAY_TOPOLOGY } from '@engine/topology/meridian-bay';
 import { useGridStore, useUiStore } from '@state';
 import { useFrame } from '@react-three/fiber';
 import type * as THREE from 'three';
-import { useMemo, useRef } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { groundTexture } from './ground-texture';
 import { BUS_POSITIONS, BUS_ZONE, ZONE_COLOR } from './layout';
 
@@ -30,13 +30,30 @@ const PULSE_BASE_SPEED = 0.4;
 /** Additional pulse speed at full thermal loading. */
 const PULSE_LOAD_GAIN = 1.8;
 
+/**
+ * Corridor loading → colour.
+ *
+ * The breakpoints are 60 / 80 / 100 % so the city agrees with the console:
+ * GridHealthPanel tones corridor stress at exactly those numbers, and the
+ * crisis ladder escalates on them. Before this they were 55 / 75 / 95, which
+ * meant a corridor could be amber in the 3D view while the rail still called
+ * it green — two instruments, one grid, two answers.
+ *
+ * Saturated hues rather than the console's muted palette on purpose: these are
+ * read at distance, across a lit city, at a glance.
+ */
 function loadingColor(loading: number, isOpen: boolean): string {
   if (isOpen) return '#ef4444';
-  if (loading < 0.55) return '#22c55e';
-  if (loading < 0.75) return '#eab308';
-  if (loading < 0.95) return '#f97316';
+  if (loading < 0.6) return '#22c55e';
+  if (loading < 0.8) return '#eab308';
+  if (loading < 1.0) return '#f97316';
   return '#dc2626';
 }
+
+/** At or above this the corridor is past its thermal rating and pulses. */
+const OVERLOAD_PU = 1.0;
+/** Overload pulse rate, radians/second — an alarm cadence, not a shimmer. */
+const OVERLOAD_PULSE_RATE = 6.5;
 
 function StylizedSubstationMarker({
   zone,
@@ -253,6 +270,14 @@ export function GeneratorMarkers(): JSX.Element {
               e.stopPropagation();
               selectAsset({ kind: 'generator', id: gen.id });
             }}
+            onPointerOver={(e) => {
+              e.stopPropagation();
+              document.body.style.cursor = 'pointer';
+            }}
+            onPointerOut={(e) => {
+              e.stopPropagation();
+              document.body.style.cursor = 'auto';
+            }}
           >
             <AnimatedTurbine
               pos={pos}
@@ -286,6 +311,8 @@ function AnimatedLineCorridor({
   const from = BUS_POSITIONS[line.from];
   const to = BUS_POSITIONS[line.to];
   const pulseRef = useRef<THREE.Mesh>(null);
+  const glowRef = useRef<THREE.MeshStandardMaterial>(null);
+  const [hovered, setHovered] = useState(false);
   // Phase is integrated rather than derived from elapsed time, so a change in
   // loading changes the pulse's SPEED instead of teleporting it: with
   // `(elapsedTime * speed) % 1` every loading update (10 Hz) jumped the phase.
@@ -307,13 +334,29 @@ function AnimatedLineCorridor({
   // solver's flow is signed; the renderer used to drop the sign and animate
   // every corridor one way regardless, which misreports reversal during a
   // cascade — exactly the moment direction matters most.
-  useFrame((_, delta) => {
+  useFrame(({ clock }, delta) => {
+    if (geometry === null || isOpen) return;
+
     const mesh = pulseRef.current;
-    if (mesh === null || geometry === null || isOpen) return;
-    const direction = flowMw < 0 ? -1 : 1;
-    const speed = PULSE_BASE_SPEED + loading * PULSE_LOAD_GAIN;
-    phaseRef.current = (phaseRef.current + delta * speed * direction + 1) % 1;
-    mesh.position.set(0, 0, (phaseRef.current - 0.5) * geometry.length);
+    if (mesh !== null) {
+      const direction = flowMw < 0 ? -1 : 1;
+      const speed = PULSE_BASE_SPEED + loading * PULSE_LOAD_GAIN;
+      phaseRef.current = (phaseRef.current + delta * speed * direction + 1) % 1;
+      mesh.position.set(0, 0, (phaseRef.current - 0.5) * geometry.length);
+    }
+
+    // An overloaded corridor pulses. This is the one corridor state the
+    // operator has seconds rather than minutes to answer, and a static red
+    // does not distinguish "at its limit" from "past it".
+    const glow = glowRef.current;
+    if (glow !== null) {
+      const base = loading * 0.85 + 0.25;
+      const alarm =
+        loading >= OVERLOAD_PU
+          ? 0.55 + Math.sin(clock.elapsedTime * OVERLOAD_PULSE_RATE) * 0.45
+          : 0;
+      glow.emissiveIntensity = base + alarm + (hovered ? 0.6 : 0);
+    }
   });
 
   if (geometry === null) return null;
@@ -322,16 +365,38 @@ function AnimatedLineCorridor({
   const { mx, mz, length, angle } = geometry;
 
   return (
-    <group position={[mx, 1.8, mz]} rotation={[0, angle, 0]} onClick={onClick}>
+    <group
+      position={[mx, 1.8, mz]}
+      rotation={[0, angle, 0]}
+      onClick={onClick}
+      // Hover is what tells the player a corridor is a THING you can ask
+      // about. Without it the lines read as scenery and the detail panel
+      // behind them is never discovered.
+      onPointerOver={(e) => {
+        e.stopPropagation();
+        setHovered(true);
+        document.body.style.cursor = 'pointer';
+      }}
+      onPointerOut={(e) => {
+        e.stopPropagation();
+        setHovered(false);
+        document.body.style.cursor = 'auto';
+      }}
+    >
       <mesh rotation={[Math.PI / 2, 0, 0]}>
         <cylinderGeometry args={[0.55, 0.55, length, 6]} />
-        <meshStandardMaterial color="#334155" transparent={isOpen} opacity={isOpen ? 0.25 : 0.9} />
+        <meshStandardMaterial
+          color={hovered ? '#64748b' : '#334155'}
+          transparent={isOpen}
+          opacity={isOpen ? 0.25 : 0.9}
+        />
       </mesh>
 
       {!isOpen && (
-        <mesh rotation={[Math.PI / 2, 0, 0]} scale={[1.15, 1, 1.15]}>
+        <mesh rotation={[Math.PI / 2, 0, 0]} scale={hovered ? [1.75, 1, 1.75] : [1.15, 1, 1.15]}>
           <cylinderGeometry args={[0.38, 0.38, length, 6]} />
           <meshStandardMaterial
+            ref={glowRef}
             color={color}
             emissive={color}
             emissiveIntensity={loading * 0.85 + 0.25}

@@ -22,6 +22,8 @@ import {
 
 import { useCameraStore } from '../../rendering/camera/camera-store';
 
+import { PRESENTATION_SPEED, useDemoStore } from './demo-store';
+
 /**
  * Fallback ticks if a stress threshold is never reached (still a real run).
  * Tuned to the C3 arc: harbor trip @300, baseload trip @600 — the demo acts
@@ -44,19 +46,61 @@ const commit = (runtime: AppRuntime, actionId: string): void => {
   );
 };
 
+export interface DemoOptions {
+  /**
+   * Unattended presentation mode: watermark, 1.5× clock, and a restart from
+   * the hero screen once the after-action review has been on screen long
+   * enough to read. This is the `?demo` URL mode a judge leaves running.
+   */
+  readonly presentation?: boolean;
+}
+
+/** How long the after-action review holds before a presentation loop restarts. */
+const AFTER_ACTION_DWELL_MS = 22_000;
+
 /** Start the scripted demo. Returns a cancel function. */
-export function startDemo(runtime: AppRuntime): () => void {
+export function startDemo(runtime: AppRuntime, options: DemoOptions = {}): () => void {
   let cancelled = false;
   let firstActionDone = false;
   let secondActionDone = false;
   let ended = false;
   const cleanups: (() => void)[] = [];
 
+  const presentation = options.presentation ?? false;
+  useDemoStore.getState().setActive(true);
+  useDemoStore.getState().setPresentation(presentation);
+
+  // Speed lives on the session, which scales the INTERVAL between ticks, not
+  // the timestep inside them — so a 1.5× demo runs the same physics as a
+  // played run, just sooner.
+  runtime.session.setSpeed(presentation ? PRESENTATION_SPEED : 1);
+  cleanups.push(() => {
+    runtime.session.setSpeed(1);
+    useDemoStore.getState().setActive(false);
+    useDemoStore.getState().setPresentation(false);
+  });
+
   const later = (ms: number, fn: () => void): void => {
     const timer = setTimeout(() => {
       if (!cancelled) fn();
     }, ms);
     cleanups.push(() => clearTimeout(timer));
+  };
+
+  /**
+   * The next cycle of a presentation loop.
+   *
+   * Held so the canceller returned below stops the WHOLE loop, not just the
+   * cycle that happened to be running when the caller cancelled — otherwise
+   * pressing stop during cycle three would let cycle four start anyway.
+   */
+  let successorCancel: (() => void) | null = null;
+  const restart = (): void => {
+    // Retire this cycle cleanly first: its subscriptions are still attached,
+    // and two drivers pressing the same buttons would double every decision.
+    cancelled = true;
+    for (const cleanup of cleanups) cleanup();
+    successorCancel = startDemo(runtime, options);
   };
 
   // Step 1: Hero → Tutorial (the intro flight starts itself). The demo is a
@@ -116,13 +160,32 @@ export function startDemo(runtime: AppRuntime): () => void {
 
   // The director may end the run on its own (GameEnded) — that path already
   // flows through bindAppFlow; the driver simply stops scheduling.
+  let looping = false;
   const unsubscribeMode = useAppFlowStore.subscribe((state) => {
-    if (state.mode === AppMode.AfterAction) ended = true;
+    if (state.mode !== AppMode.AfterAction) return;
+    ended = true;
+
+    // Presentation mode loops: hold the review long enough to read, return to
+    // the hero screen, then run the whole thing again. `looping` guards the
+    // subscription firing more than once for the same arrival.
+    if (!presentation || looping || cancelled) return;
+    looping = true;
+    later(AFTER_ACTION_DWELL_MS, () => {
+      useAppFlowStore.getState().returnToHero();
+      // A beat on the hero screen before the next run — the loop should read
+      // as a product restarting, not as a stutter.
+      later(3500, () => {
+        if (cancelled) return;
+        restart();
+      });
+    });
   });
   cleanups.push(unsubscribeMode);
 
   return () => {
     cancelled = true;
     for (const cleanup of cleanups) cleanup();
+    successorCancel?.();
+    successorCancel = null;
   };
 }

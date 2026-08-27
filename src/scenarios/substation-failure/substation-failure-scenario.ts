@@ -1,7 +1,14 @@
 import { Severity, asLineId, asLoadId, asScenarioId } from '@app-types';
 import type { TickContext } from '@core';
+import { CLEAR_ARC } from '@engine';
 
-import type { ICrisisScenario, ScenarioContext, ScenarioFaultApi, ScenarioMetadata } from '../crisis-scenario';
+import type {
+  ICrisisScenario,
+  ScenarioContext,
+  ScenarioFaultApi,
+  ScenarioMetadata,
+} from '../crisis-scenario';
+import { at } from '../shift-clock';
 
 /**
  * **Substation Fire** — a fire in the IN2 switchyard isolates the industrial hub.
@@ -22,8 +29,8 @@ export class SubstationFailureScenario implements ICrisisScenario {
     id: asScenarioId('substation-failure'),
     name: 'Substation Fire — IN2 Switchyard',
     summary:
-      'A fire in the IN2 industrial substation triggers automatic bus protection, '
-      + 'islanding the Industrial North cluster and degrading residential south supply.',
+      'A fire in the IN2 industrial substation triggers automatic bus protection, ' +
+      'islanding the Industrial North cluster and degrading residential south supply.',
     difficulty: Severity.Warning,
   };
 
@@ -33,6 +40,9 @@ export class SubstationFailureScenario implements ICrisisScenario {
 
   public setup(context: ScenarioContext): void {
     this.faults = context.faults;
+    // Every scenario declares its own environment; the app used to run one
+    // generic weather model for all of them.
+    context.weather.setArc(CLEAR_ARC);
     this.substationTripped = false;
     this.partialRestore = false;
   }
@@ -41,7 +51,7 @@ export class SubstationFailureScenario implements ICrisisScenario {
     const { tick } = context;
 
     // Tick 35: Fire protection opens all IN2 breakers
-    if (tick === 35 && !this.substationTripped) {
+    if (tick === at(0, 40) && !this.substationTripped) {
       this.faults.commandOpenLine(asLineId('IN1-IN2'));
       this.faults.commandOpenLine(asLineId('IN2-IN3'));
       this.faults.commandOpenLine(asLineId('IN2-RS1'));
@@ -49,8 +59,8 @@ export class SubstationFailureScenario implements ICrisisScenario {
     }
 
     // Tick 75: Emergency load shedding for remaining industrial load
-    if (tick === 75 && !this.partialRestore) {
-      this.faults.shedLoad(asLoadId('LD-IN-HVY'), 0.50);
+    if (tick === at(1, 30) && !this.partialRestore) {
+      this.faults.shedLoad(asLoadId('LD-IN-HVY'), 0.5);
       this.partialRestore = true;
     }
   }

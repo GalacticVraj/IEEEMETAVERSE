@@ -1,0 +1,5347 @@
+{
+  "timeline": [
+    {
+      "simSeconds": 1,
+      "chip": "WARNING",
+      "banners": [],
+      "railBorder": "3px solid rgb(180, 83, 31)",
+      "vignette": 0,
+      "tripFlash": 0,
+      "wallS": 0
+    },
+    {
+      "simSeconds": 1,
+      "chip": "WARNING",
+      "banners": [],
+      "railBorder": "3px solid rgb(180, 83, 31)",
+      "vignette": 0,
+      "tripFlash": 0,
+      "wallS": 1
+    },
+    {
+      "simSeconds": 1,
+      "chip": "WARNING",
+      "banners": [],
+      "railBorder": "3px solid rgb(180, 83, 31)",
+      "vignette": 0,
+      "tripFlash": 0,
+      "wallS": 1
+    },
+    {
+      "simSeconds": 1,
+      "chip": "WARNING",
+      "banners": [],
+      "railBorder": "3px solid rgb(180, 83, 31)",
+      "vignette": 0,
+      "tripFlash": 0,
+      "wallS": 2
+    },
+    {
+      "simSeconds": 1,
+      "chip": "WARNING",
+      "banners": [],
+      "railBorder": "3px solid rgb(180, 83, 31)",
+      "vignette": 0,
+      "tripFlash": 0,
+      "wallS": 2
+    },
+    {
+      "simSeconds": 1,
+      "chip": "WARNING",
+      "banners": [],
+      "railBorder": "3px solid rgb(180, 83, 31)",
+      "vignette": 0,
+      "tripFlash": 0,
+      "wallS": 3
+    },
+    {
+      "simSeconds": 1,
+      "chip": "WARNING",
+      "banners": [],
+      "railBorder": "3px solid rgb(180, 83, 31)",
+      "vignette": 0,
+      "tripFlash": 0,
+      "wallS": 3
+    },
+    {
+      "simSeconds": 1,
+      "chip": "CRITICAL",
+      "banners": ["CRITICAL Frequency 59.48 Hz — outside 59.5–60.5."],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 3
+    },
+    {
+      "simSeconds": 1,
+      "chip": "CRITICAL",
+      "banners": ["CRITICAL Frequency 59.48 Hz — outside 59.5–60.5."],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 4
+    },
+    {
+      "simSeconds": 1,
+      "chip": "CRITICAL",
+      "banners": ["CRITICAL Frequency 59.48 Hz — outside 59.5–60.5."],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 4
+    },
+    {
+      "simSeconds": 1,
+      "chip": "CRITICAL",
+      "banners": ["CRITICAL Frequency 59.48 Hz — outside 59.5–60.5."],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 5
+    },
+    {
+      "simSeconds": 1,
+      "chip": "CRITICAL",
+      "banners": ["CRITICAL Frequency 59.48 Hz — outside 59.5–60.5."],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 5
+    },
+    {
+      "simSeconds": 1,
+      "chip": "CRITICAL",
+      "banners": ["CRITICAL Frequency 59.48 Hz — outside 59.5–60.5."],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 5
+    },
+    {
+      "simSeconds": 1,
+      "chip": "CRITICAL",
+      "banners": ["CRITICAL Frequency 59.48 Hz — outside 59.5–60.5."],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 6
+    },
+    {
+      "simSeconds": 2,
+      "chip": "CRITICAL",
+      "banners": ["CRITICAL Frequency 59.48 Hz — outside 59.5–60.5."],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 6
+    },
+    {
+      "simSeconds": 2,
+      "chip": "CRITICAL",
+      "banners": ["CRITICAL Frequency 59.48 Hz — outside 59.5–60.5."],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 7
+    },
+    {
+      "simSeconds": 2,
+      "chip": "CRITICAL",
+      "banners": ["CRITICAL Frequency 59.48 Hz — outside 59.5–60.5."],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 7
+    },
+    {
+      "simSeconds": 2,
+      "chip": "CRITICAL",
+      "banners": ["CRITICAL Frequency 59.48 Hz — outside 59.5–60.5."],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 8
+    },
+    {
+      "simSeconds": 2,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 8
+    },
+    {
+      "simSeconds": 2,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 9
+    },
+    {
+      "simSeconds": 2,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 9
+    },
+    {
+      "simSeconds": 2,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 9
+    },
+    {
+      "simSeconds": 2,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 10
+    },
+    {
+      "simSeconds": 2,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 10
+    },
+    {
+      "simSeconds": 2,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 10
+    },
+    {
+      "simSeconds": 2,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 11
+    },
+    {
+      "simSeconds": 3,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 11
+    },
+    {
+      "simSeconds": 3,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 12
+    },
+    {
+      "simSeconds": 3,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 12
+    },
+    {
+      "simSeconds": 3,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 13
+    },
+    {
+      "simSeconds": 3,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 13
+    },
+    {
+      "simSeconds": 3,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 13
+    },
+    {
+      "simSeconds": 3,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 14
+    },
+    {
+      "simSeconds": 3,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 14
+    },
+    {
+      "simSeconds": 3,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 15
+    },
+    {
+      "simSeconds": 3,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 15
+    },
+    {
+      "simSeconds": 3,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 15
+    },
+    {
+      "simSeconds": 3,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 16
+    },
+    {
+      "simSeconds": 3,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 16
+    },
+    {
+      "simSeconds": 4,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 17
+    },
+    {
+      "simSeconds": 4,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 17
+    },
+    {
+      "simSeconds": 4,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 17
+    },
+    {
+      "simSeconds": 4,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 18
+    },
+    {
+      "simSeconds": 4,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 18
+    },
+    {
+      "simSeconds": 4,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 19
+    },
+    {
+      "simSeconds": 4,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 19
+    },
+    {
+      "simSeconds": 4,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 19
+    },
+    {
+      "simSeconds": 4,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 20
+    },
+    {
+      "simSeconds": 4,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 20
+    },
+    {
+      "simSeconds": 4,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 21
+    },
+    {
+      "simSeconds": 5,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 21
+    },
+    {
+      "simSeconds": 5,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 21
+    },
+    {
+      "simSeconds": 5,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 22
+    },
+    {
+      "simSeconds": 5,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 22
+    },
+    {
+      "simSeconds": 5,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 23
+    },
+    {
+      "simSeconds": 5,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 23
+    },
+    {
+      "simSeconds": 5,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 23
+    },
+    {
+      "simSeconds": 5,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 24
+    },
+    {
+      "simSeconds": 5,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 24
+    },
+    {
+      "simSeconds": 5,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 25
+    },
+    {
+      "simSeconds": 5,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 25
+    },
+    {
+      "simSeconds": 5,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 25
+    },
+    {
+      "simSeconds": 5,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 26
+    },
+    {
+      "simSeconds": 5,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 26
+    },
+    {
+      "simSeconds": 5,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 27
+    },
+    {
+      "simSeconds": 5,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 27
+    },
+    {
+      "simSeconds": 5,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 27
+    },
+    {
+      "simSeconds": 5,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 28
+    },
+    {
+      "simSeconds": 6,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 28
+    },
+    {
+      "simSeconds": 6,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 29
+    },
+    {
+      "simSeconds": 6,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 29
+    },
+    {
+      "simSeconds": 6,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 29
+    },
+    {
+      "simSeconds": 6,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 30
+    },
+    {
+      "simSeconds": 6,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 30
+    },
+    {
+      "simSeconds": 6,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 30
+    },
+    {
+      "simSeconds": 6,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 31
+    },
+    {
+      "simSeconds": 6,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 31
+    },
+    {
+      "simSeconds": 6,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 31
+    },
+    {
+      "simSeconds": 6,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 32
+    },
+    {
+      "simSeconds": 6,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 32
+    },
+    {
+      "simSeconds": 7,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 33
+    },
+    {
+      "simSeconds": 7,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 33
+    },
+    {
+      "simSeconds": 7,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 33
+    },
+    {
+      "simSeconds": 7,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 34
+    },
+    {
+      "simSeconds": 7,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 34
+    },
+    {
+      "simSeconds": 7,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 35
+    },
+    {
+      "simSeconds": 7,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 35
+    },
+    {
+      "simSeconds": 7,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 35
+    },
+    {
+      "simSeconds": 7,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 36
+    },
+    {
+      "simSeconds": 7,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 36
+    },
+    {
+      "simSeconds": 7,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 36
+    },
+    {
+      "simSeconds": 7,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 37
+    },
+    {
+      "simSeconds": 7,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 37
+    },
+    {
+      "simSeconds": 7,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 38
+    },
+    {
+      "simSeconds": 8,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 38
+    },
+    {
+      "simSeconds": 8,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 38
+    },
+    {
+      "simSeconds": 8,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 39
+    },
+    {
+      "simSeconds": 8,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 39
+    },
+    {
+      "simSeconds": 8,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 40
+    },
+    {
+      "simSeconds": 8,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 40
+    },
+    {
+      "simSeconds": 8,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 40
+    },
+    {
+      "simSeconds": 8,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 41
+    },
+    {
+      "simSeconds": 8,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 41
+    },
+    {
+      "simSeconds": 8,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 42
+    },
+    {
+      "simSeconds": 9,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 42
+    },
+    {
+      "simSeconds": 9,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 43
+    },
+    {
+      "simSeconds": 9,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 43
+    },
+    {
+      "simSeconds": 9,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 43
+    },
+    {
+      "simSeconds": 9,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 44
+    },
+    {
+      "simSeconds": 9,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 44
+    },
+    {
+      "simSeconds": 9,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 45
+    },
+    {
+      "simSeconds": 9,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 45
+    },
+    {
+      "simSeconds": 9,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 45
+    },
+    {
+      "simSeconds": 9,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 46
+    },
+    {
+      "simSeconds": 9,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 46
+    },
+    {
+      "simSeconds": 9,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 47
+    },
+    {
+      "simSeconds": 10,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 47
+    },
+    {
+      "simSeconds": 10,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 47
+    },
+    {
+      "simSeconds": 10,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 48
+    },
+    {
+      "simSeconds": 10,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 48
+    },
+    {
+      "simSeconds": 10,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 49
+    },
+    {
+      "simSeconds": 10,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 49
+    },
+    {
+      "simSeconds": 10,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 49
+    },
+    {
+      "simSeconds": 10,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 50
+    },
+    {
+      "simSeconds": 10,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 50
+    },
+    {
+      "simSeconds": 10,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 51
+    },
+    {
+      "simSeconds": 10,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 51
+    },
+    {
+      "simSeconds": 10,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 51
+    },
+    {
+      "simSeconds": 11,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 52
+    },
+    {
+      "simSeconds": 11,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 52
+    },
+    {
+      "simSeconds": 11,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 53
+    },
+    {
+      "simSeconds": 11,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 53
+    },
+    {
+      "simSeconds": 11,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 54
+    },
+    {
+      "simSeconds": 11,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 54
+    },
+    {
+      "simSeconds": 12,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 54
+    },
+    {
+      "simSeconds": 12,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 55
+    },
+    {
+      "simSeconds": 12,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 55
+    },
+    {
+      "simSeconds": 12,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 56
+    },
+    {
+      "simSeconds": 12,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 56
+    },
+    {
+      "simSeconds": 12,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 57
+    },
+    {
+      "simSeconds": 12,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 57
+    },
+    {
+      "simSeconds": 13,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 57
+    },
+    {
+      "simSeconds": 13,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 58
+    },
+    {
+      "simSeconds": 13,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 58
+    },
+    {
+      "simSeconds": 13,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 59
+    },
+    {
+      "simSeconds": 13,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 59
+    },
+    {
+      "simSeconds": 13,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 60
+    },
+    {
+      "simSeconds": 14,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 60
+    },
+    {
+      "simSeconds": 14,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 60
+    },
+    {
+      "simSeconds": 14,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 61
+    },
+    {
+      "simSeconds": 14,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 61
+    },
+    {
+      "simSeconds": 14,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 62
+    },
+    {
+      "simSeconds": 15,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 62
+    },
+    {
+      "simSeconds": 15,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 63
+    },
+    {
+      "simSeconds": 15,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 63
+    },
+    {
+      "simSeconds": 15,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 64
+    },
+    {
+      "simSeconds": 15,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 64
+    },
+    {
+      "simSeconds": 15,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 65
+    },
+    {
+      "simSeconds": 15,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 65
+    },
+    {
+      "simSeconds": 16,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 65
+    },
+    {
+      "simSeconds": 16,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 66
+    },
+    {
+      "simSeconds": 16,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 66
+    },
+    {
+      "simSeconds": 16,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 67
+    },
+    {
+      "simSeconds": 16,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 67
+    },
+    {
+      "simSeconds": 17,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 68
+    },
+    {
+      "simSeconds": 17,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 68
+    },
+    {
+      "simSeconds": 17,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 69
+    },
+    {
+      "simSeconds": 17,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 69
+    },
+    {
+      "simSeconds": 17,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 70
+    },
+    {
+      "simSeconds": 17,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 70
+    },
+    {
+      "simSeconds": 18,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 71
+    },
+    {
+      "simSeconds": 18,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 71
+    },
+    {
+      "simSeconds": 18,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 72
+    },
+    {
+      "simSeconds": 18,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 72
+    },
+    {
+      "simSeconds": 18,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 73
+    },
+    {
+      "simSeconds": 18,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 73
+    },
+    {
+      "simSeconds": 19,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 74
+    },
+    {
+      "simSeconds": 19,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 74
+    },
+    {
+      "simSeconds": 19,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 74
+    },
+    {
+      "simSeconds": 19,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 75
+    },
+    {
+      "simSeconds": 19,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 75
+    },
+    {
+      "simSeconds": 19,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 76
+    },
+    {
+      "simSeconds": 20,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 76
+    },
+    {
+      "simSeconds": 20,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 77
+    },
+    {
+      "simSeconds": 20,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 77
+    },
+    {
+      "simSeconds": 20,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 77
+    },
+    {
+      "simSeconds": 20,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 78
+    },
+    {
+      "simSeconds": 21,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 78
+    },
+    {
+      "simSeconds": 21,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 79
+    },
+    {
+      "simSeconds": 21,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 79
+    },
+    {
+      "simSeconds": 21,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 80
+    },
+    {
+      "simSeconds": 21,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 80
+    },
+    {
+      "simSeconds": 22,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 81
+    },
+    {
+      "simSeconds": 22,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 81
+    },
+    {
+      "simSeconds": 22,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 82
+    },
+    {
+      "simSeconds": 22,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 82
+    },
+    {
+      "simSeconds": 22,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 82
+    },
+    {
+      "simSeconds": 23,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 83
+    },
+    {
+      "simSeconds": 23,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 83
+    },
+    {
+      "simSeconds": 23,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 84
+    },
+    {
+      "simSeconds": 23,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 84
+    },
+    {
+      "simSeconds": 23,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 84
+    },
+    {
+      "simSeconds": 23,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 85
+    },
+    {
+      "simSeconds": 23,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 85
+    },
+    {
+      "simSeconds": 24,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 86
+    },
+    {
+      "simSeconds": 24,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 86
+    },
+    {
+      "simSeconds": 24,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 86
+    },
+    {
+      "simSeconds": 24,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 87
+    },
+    {
+      "simSeconds": 24,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 87
+    },
+    {
+      "simSeconds": 24,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 88
+    },
+    {
+      "simSeconds": 24,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 88
+    },
+    {
+      "simSeconds": 24,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 89
+    },
+    {
+      "simSeconds": 24,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 89
+    },
+    {
+      "simSeconds": 24,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 89
+    },
+    {
+      "simSeconds": 25,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 90
+    },
+    {
+      "simSeconds": 25,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 90
+    },
+    {
+      "simSeconds": 25,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 91
+    },
+    {
+      "simSeconds": 25,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 91
+    },
+    {
+      "simSeconds": 25,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 92
+    },
+    {
+      "simSeconds": 25,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 92
+    },
+    {
+      "simSeconds": 25,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 92
+    },
+    {
+      "simSeconds": 25,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 93
+    },
+    {
+      "simSeconds": 25,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 93
+    },
+    {
+      "simSeconds": 25,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 94
+    },
+    {
+      "simSeconds": 25,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 94
+    },
+    {
+      "simSeconds": 25,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 94
+    },
+    {
+      "simSeconds": 25,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 95
+    },
+    {
+      "simSeconds": 26,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 95
+    },
+    {
+      "simSeconds": 26,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 96
+    },
+    {
+      "simSeconds": 26,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 96
+    },
+    {
+      "simSeconds": 26,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 97
+    },
+    {
+      "simSeconds": 26,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 97
+    },
+    {
+      "simSeconds": 26,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 98
+    },
+    {
+      "simSeconds": 26,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 98
+    },
+    {
+      "simSeconds": 26,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 98
+    },
+    {
+      "simSeconds": 26,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 99
+    },
+    {
+      "simSeconds": 26,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 99
+    },
+    {
+      "simSeconds": 27,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 100
+    },
+    {
+      "simSeconds": 27,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 100
+    },
+    {
+      "simSeconds": 27,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 100
+    },
+    {
+      "simSeconds": 27,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 101
+    },
+    {
+      "simSeconds": 27,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 101
+    },
+    {
+      "simSeconds": 27,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 102
+    },
+    {
+      "simSeconds": 27,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 102
+    },
+    {
+      "simSeconds": 27,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 103
+    },
+    {
+      "simSeconds": 28,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 103
+    },
+    {
+      "simSeconds": 28,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 104
+    },
+    {
+      "simSeconds": 28,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 104
+    },
+    {
+      "simSeconds": 28,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 104
+    },
+    {
+      "simSeconds": 28,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 105
+    },
+    {
+      "simSeconds": 28,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 105
+    },
+    {
+      "simSeconds": 28,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 106
+    },
+    {
+      "simSeconds": 28,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 106
+    },
+    {
+      "simSeconds": 28,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 107
+    },
+    {
+      "simSeconds": 28,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 107
+    },
+    {
+      "simSeconds": 28,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 107
+    },
+    {
+      "simSeconds": 28,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 108
+    },
+    {
+      "simSeconds": 29,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 108
+    },
+    {
+      "simSeconds": 29,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 109
+    },
+    {
+      "simSeconds": 29,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 109
+    },
+    {
+      "simSeconds": 29,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 110
+    },
+    {
+      "simSeconds": 29,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 110
+    },
+    {
+      "simSeconds": 29,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 110
+    },
+    {
+      "simSeconds": 29,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 111
+    },
+    {
+      "simSeconds": 29,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 111
+    },
+    {
+      "simSeconds": 29,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 112
+    },
+    {
+      "simSeconds": 29,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 112
+    },
+    {
+      "simSeconds": 29,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 113
+    },
+    {
+      "simSeconds": 29,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 113
+    },
+    {
+      "simSeconds": 30,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 113
+    },
+    {
+      "simSeconds": 30,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 114
+    },
+    {
+      "simSeconds": 30,
+      "chip": "CRITICAL",
+      "banners": ["GENERATOR LOST: HARBOR GAS UNIT −60 MW capacity"],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 1,
+      "wallS": 114
+    },
+    {
+      "simSeconds": 30,
+      "chip": "CRITICAL",
+      "banners": ["GENERATOR LOST: HARBOR GAS UNIT −60 MW capacity"],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 115
+    },
+    {
+      "simSeconds": 30,
+      "chip": "CRITICAL",
+      "banners": ["GENERATOR LOST: HARBOR GAS UNIT −60 MW capacity"],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 115
+    },
+    {
+      "simSeconds": 30,
+      "chip": "CRITICAL",
+      "banners": ["GENERATOR LOST: HARBOR GAS UNIT −60 MW capacity"],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 116
+    },
+    {
+      "simSeconds": 30,
+      "chip": "CRITICAL",
+      "banners": ["GENERATOR LOST: HARBOR GAS UNIT −60 MW capacity"],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 116
+    },
+    {
+      "simSeconds": 30,
+      "chip": "CRITICAL",
+      "banners": ["GENERATOR LOST: HARBOR GAS UNIT −60 MW capacity"],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 116
+    },
+    {
+      "simSeconds": 30,
+      "chip": "CRITICAL",
+      "banners": ["GENERATOR LOST: HARBOR GAS UNIT −60 MW capacity"],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 117
+    },
+    {
+      "simSeconds": 30,
+      "chip": "CRITICAL",
+      "banners": ["GENERATOR LOST: HARBOR GAS UNIT −60 MW capacity"],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 117
+    },
+    {
+      "simSeconds": 30,
+      "chip": "CRITICAL",
+      "banners": ["GENERATOR LOST: HARBOR GAS UNIT −60 MW capacity"],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 118
+    },
+    {
+      "simSeconds": 30,
+      "chip": "CRITICAL",
+      "banners": ["GENERATOR LOST: HARBOR GAS UNIT −60 MW capacity"],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 118
+    },
+    {
+      "simSeconds": 30,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 119
+    },
+    {
+      "simSeconds": 31,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 119
+    },
+    {
+      "simSeconds": 31,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 119
+    },
+    {
+      "simSeconds": 31,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 120
+    },
+    {
+      "simSeconds": 31,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 120
+    },
+    {
+      "simSeconds": 31,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 121
+    },
+    {
+      "simSeconds": 31,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 121
+    },
+    {
+      "simSeconds": 31,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 121
+    },
+    {
+      "simSeconds": 31,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 122
+    },
+    {
+      "simSeconds": 31,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 122
+    },
+    {
+      "simSeconds": 31,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 123
+    },
+    {
+      "simSeconds": 31,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 123
+    },
+    {
+      "simSeconds": 31,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 123
+    },
+    {
+      "simSeconds": 31,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 124
+    },
+    {
+      "simSeconds": 32,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 124
+    },
+    {
+      "simSeconds": 32,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 125
+    },
+    {
+      "simSeconds": 32,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 125
+    },
+    {
+      "simSeconds": 32,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 126
+    },
+    {
+      "simSeconds": 32,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 126
+    },
+    {
+      "simSeconds": 32,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 126
+    },
+    {
+      "simSeconds": 32,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 127
+    },
+    {
+      "simSeconds": 32,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 127
+    },
+    {
+      "simSeconds": 32,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 128
+    },
+    {
+      "simSeconds": 32,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 128
+    },
+    {
+      "simSeconds": 32,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 129
+    },
+    {
+      "simSeconds": 32,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 129
+    },
+    {
+      "simSeconds": 32,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 129
+    },
+    {
+      "simSeconds": 32,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 130
+    },
+    {
+      "simSeconds": 32,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 130
+    },
+    {
+      "simSeconds": 33,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 131
+    },
+    {
+      "simSeconds": 33,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 131
+    },
+    {
+      "simSeconds": 33,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 132
+    },
+    {
+      "simSeconds": 33,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 132
+    },
+    {
+      "simSeconds": 33,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 132
+    },
+    {
+      "simSeconds": 33,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 133
+    },
+    {
+      "simSeconds": 33,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 133
+    },
+    {
+      "simSeconds": 33,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 134
+    },
+    {
+      "simSeconds": 33,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 134
+    },
+    {
+      "simSeconds": 33,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 134
+    },
+    {
+      "simSeconds": 33,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 135
+    },
+    {
+      "simSeconds": 33,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 135
+    },
+    {
+      "simSeconds": 34,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 136
+    },
+    {
+      "simSeconds": 34,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 136
+    },
+    {
+      "simSeconds": 34,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 137
+    },
+    {
+      "simSeconds": 34,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 137
+    },
+    {
+      "simSeconds": 34,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 137
+    },
+    {
+      "simSeconds": 34,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 138
+    },
+    {
+      "simSeconds": 34,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 138
+    },
+    {
+      "simSeconds": 34,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 139
+    },
+    {
+      "simSeconds": 34,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 139
+    },
+    {
+      "simSeconds": 34,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 140
+    },
+    {
+      "simSeconds": 34,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 140
+    },
+    {
+      "simSeconds": 35,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 140
+    },
+    {
+      "simSeconds": 35,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 141
+    },
+    {
+      "simSeconds": 35,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 141
+    },
+    {
+      "simSeconds": 35,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 142
+    },
+    {
+      "simSeconds": 35,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 142
+    },
+    {
+      "simSeconds": 35,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 143
+    },
+    {
+      "simSeconds": 35,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 143
+    },
+    {
+      "simSeconds": 35,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 143
+    },
+    {
+      "simSeconds": 35,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 144
+    },
+    {
+      "simSeconds": 35,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 144
+    },
+    {
+      "simSeconds": 35,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 145
+    },
+    {
+      "simSeconds": 35,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 145
+    },
+    {
+      "simSeconds": 36,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 145
+    },
+    {
+      "simSeconds": 36,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 146
+    },
+    {
+      "simSeconds": 36,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 146
+    },
+    {
+      "simSeconds": 36,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 147
+    },
+    {
+      "simSeconds": 36,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 147
+    },
+    {
+      "simSeconds": 36,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 148
+    },
+    {
+      "simSeconds": 36,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 148
+    },
+    {
+      "simSeconds": 36,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 148
+    },
+    {
+      "simSeconds": 36,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 149
+    },
+    {
+      "simSeconds": 36,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 149
+    },
+    {
+      "simSeconds": 36,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 150
+    },
+    {
+      "simSeconds": 37,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 150
+    },
+    {
+      "simSeconds": 37,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 151
+    },
+    {
+      "simSeconds": 37,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 151
+    },
+    {
+      "simSeconds": 37,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 151
+    },
+    {
+      "simSeconds": 37,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 152
+    },
+    {
+      "simSeconds": 37,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 152
+    },
+    {
+      "simSeconds": 37,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 153
+    },
+    {
+      "simSeconds": 37,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 153
+    },
+    {
+      "simSeconds": 37,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 154
+    },
+    {
+      "simSeconds": 37,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 154
+    },
+    {
+      "simSeconds": 37,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 154
+    },
+    {
+      "simSeconds": 37,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 155
+    },
+    {
+      "simSeconds": 38,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 155
+    },
+    {
+      "simSeconds": 38,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 156
+    },
+    {
+      "simSeconds": 38,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 156
+    },
+    {
+      "simSeconds": 38,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 156
+    },
+    {
+      "simSeconds": 38,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 157
+    },
+    {
+      "simSeconds": 38,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 157
+    },
+    {
+      "simSeconds": 38,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 158
+    },
+    {
+      "simSeconds": 38,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 158
+    },
+    {
+      "simSeconds": 38,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 159
+    },
+    {
+      "simSeconds": 38,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 159
+    },
+    {
+      "simSeconds": 38,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 159
+    },
+    {
+      "simSeconds": 38,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 160
+    },
+    {
+      "simSeconds": 39,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 160
+    },
+    {
+      "simSeconds": 39,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 161
+    },
+    {
+      "simSeconds": 39,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 161
+    },
+    {
+      "simSeconds": 39,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 162
+    },
+    {
+      "simSeconds": 39,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 162
+    },
+    {
+      "simSeconds": 39,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 162
+    },
+    {
+      "simSeconds": 39,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 163
+    },
+    {
+      "simSeconds": 39,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 163
+    },
+    {
+      "simSeconds": 39,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 164
+    },
+    {
+      "simSeconds": 39,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 164
+    },
+    {
+      "simSeconds": 39,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 164
+    },
+    {
+      "simSeconds": 39,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 165
+    },
+    {
+      "simSeconds": 39,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 165
+    },
+    {
+      "simSeconds": 39,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 166
+    },
+    {
+      "simSeconds": 40,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 166
+    },
+    {
+      "simSeconds": 40,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 167
+    },
+    {
+      "simSeconds": 40,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 167
+    },
+    {
+      "simSeconds": 40,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 167
+    },
+    {
+      "simSeconds": 40,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 168
+    },
+    {
+      "simSeconds": 40,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 168
+    },
+    {
+      "simSeconds": 40,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 169
+    },
+    {
+      "simSeconds": 40,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 169
+    },
+    {
+      "simSeconds": 40,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 169
+    },
+    {
+      "simSeconds": 40,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 170
+    },
+    {
+      "simSeconds": 40,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 170
+    },
+    {
+      "simSeconds": 41,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 171
+    },
+    {
+      "simSeconds": 41,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 171
+    },
+    {
+      "simSeconds": 41,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 172
+    },
+    {
+      "simSeconds": 41,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 172
+    },
+    {
+      "simSeconds": 41,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 173
+    },
+    {
+      "simSeconds": 41,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 173
+    },
+    {
+      "simSeconds": 41,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 173
+    },
+    {
+      "simSeconds": 41,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 174
+    },
+    {
+      "simSeconds": 41,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 174
+    },
+    {
+      "simSeconds": 41,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 175
+    },
+    {
+      "simSeconds": 41,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 175
+    },
+    {
+      "simSeconds": 41,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 176
+    },
+    {
+      "simSeconds": 42,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 176
+    },
+    {
+      "simSeconds": 42,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 176
+    },
+    {
+      "simSeconds": 42,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 177
+    },
+    {
+      "simSeconds": 42,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 177
+    },
+    {
+      "simSeconds": 42,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 178
+    },
+    {
+      "simSeconds": 42,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 178
+    },
+    {
+      "simSeconds": 42,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 179
+    },
+    {
+      "simSeconds": 42,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 179
+    },
+    {
+      "simSeconds": 42,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 179
+    },
+    {
+      "simSeconds": 42,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 180
+    },
+    {
+      "simSeconds": 43,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 180
+    },
+    {
+      "simSeconds": 43,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 181
+    },
+    {
+      "simSeconds": 43,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 181
+    },
+    {
+      "simSeconds": 43,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 181
+    },
+    {
+      "simSeconds": 43,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 182
+    },
+    {
+      "simSeconds": 43,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 182
+    },
+    {
+      "simSeconds": 43,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 183
+    },
+    {
+      "simSeconds": 43,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 183
+    },
+    {
+      "simSeconds": 44,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 184
+    },
+    {
+      "simSeconds": 44,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 184
+    },
+    {
+      "simSeconds": 44,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 184
+    },
+    {
+      "simSeconds": 44,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 185
+    },
+    {
+      "simSeconds": 44,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 185
+    },
+    {
+      "simSeconds": 44,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 186
+    },
+    {
+      "simSeconds": 44,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 186
+    },
+    {
+      "simSeconds": 44,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 187
+    },
+    {
+      "simSeconds": 44,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 187
+    },
+    {
+      "simSeconds": 45,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 187
+    },
+    {
+      "simSeconds": 45,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 188
+    },
+    {
+      "simSeconds": 45,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 188
+    },
+    {
+      "simSeconds": 45,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 189
+    },
+    {
+      "simSeconds": 45,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 189
+    },
+    {
+      "simSeconds": 45,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 190
+    },
+    {
+      "simSeconds": 45,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 190
+    },
+    {
+      "simSeconds": 45,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 190
+    },
+    {
+      "simSeconds": 45,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 191
+    },
+    {
+      "simSeconds": 45,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 191
+    },
+    {
+      "simSeconds": 45,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 192
+    },
+    {
+      "simSeconds": 45,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 192
+    },
+    {
+      "simSeconds": 46,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 193
+    },
+    {
+      "simSeconds": 46,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 193
+    },
+    {
+      "simSeconds": 46,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 193
+    },
+    {
+      "simSeconds": 46,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 194
+    },
+    {
+      "simSeconds": 46,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 194
+    },
+    {
+      "simSeconds": 46,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 195
+    },
+    {
+      "simSeconds": 46,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 195
+    },
+    {
+      "simSeconds": 46,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 196
+    },
+    {
+      "simSeconds": 46,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 196
+    },
+    {
+      "simSeconds": 47,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 196
+    },
+    {
+      "simSeconds": 47,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 197
+    },
+    {
+      "simSeconds": 47,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 197
+    },
+    {
+      "simSeconds": 47,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 198
+    },
+    {
+      "simSeconds": 47,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 198
+    },
+    {
+      "simSeconds": 47,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 199
+    },
+    {
+      "simSeconds": 47,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 199
+    },
+    {
+      "simSeconds": 47,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 199
+    },
+    {
+      "simSeconds": 47,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 200
+    },
+    {
+      "simSeconds": 47,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 200
+    },
+    {
+      "simSeconds": 47,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 201
+    },
+    {
+      "simSeconds": 47,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 201
+    },
+    {
+      "simSeconds": 47,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 201
+    },
+    {
+      "simSeconds": 48,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 202
+    },
+    {
+      "simSeconds": 48,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 202
+    },
+    {
+      "simSeconds": 48,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 203
+    },
+    {
+      "simSeconds": 48,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 203
+    },
+    {
+      "simSeconds": 48,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 204
+    },
+    {
+      "simSeconds": 48,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 204
+    },
+    {
+      "simSeconds": 48,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 204
+    },
+    {
+      "simSeconds": 48,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 205
+    },
+    {
+      "simSeconds": 48,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 205
+    },
+    {
+      "simSeconds": 48,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 206
+    },
+    {
+      "simSeconds": 48,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 206
+    },
+    {
+      "simSeconds": 49,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 207
+    },
+    {
+      "simSeconds": 49,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 207
+    },
+    {
+      "simSeconds": 49,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 207
+    },
+    {
+      "simSeconds": 49,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 208
+    },
+    {
+      "simSeconds": 49,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 208
+    },
+    {
+      "simSeconds": 49,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 209
+    },
+    {
+      "simSeconds": 49,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 209
+    },
+    {
+      "simSeconds": 49,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 210
+    },
+    {
+      "simSeconds": 49,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 210
+    },
+    {
+      "simSeconds": 49,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 210
+    },
+    {
+      "simSeconds": 49,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 211
+    },
+    {
+      "simSeconds": 50,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 211
+    },
+    {
+      "simSeconds": 50,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 212
+    },
+    {
+      "simSeconds": 50,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 212
+    },
+    {
+      "simSeconds": 50,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 213
+    },
+    {
+      "simSeconds": 50,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 213
+    },
+    {
+      "simSeconds": 50,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 213
+    },
+    {
+      "simSeconds": 50,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 214
+    },
+    {
+      "simSeconds": 50,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 214
+    },
+    {
+      "simSeconds": 50,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 215
+    },
+    {
+      "simSeconds": 50,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 215
+    },
+    {
+      "simSeconds": 51,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 215
+    },
+    {
+      "simSeconds": 51,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 216
+    },
+    {
+      "simSeconds": 51,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 216
+    },
+    {
+      "simSeconds": 51,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 217
+    },
+    {
+      "simSeconds": 51,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 217
+    },
+    {
+      "simSeconds": 51,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 218
+    },
+    {
+      "simSeconds": 51,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 218
+    },
+    {
+      "simSeconds": 51,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 218
+    },
+    {
+      "simSeconds": 51,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 219
+    },
+    {
+      "simSeconds": 51,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 219
+    },
+    {
+      "simSeconds": 51,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 220
+    },
+    {
+      "simSeconds": 51,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 220
+    },
+    {
+      "simSeconds": 51,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 221
+    },
+    {
+      "simSeconds": 52,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 221
+    },
+    {
+      "simSeconds": 52,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 221
+    },
+    {
+      "simSeconds": 52,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 222
+    },
+    {
+      "simSeconds": 52,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 222
+    },
+    {
+      "simSeconds": 52,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 223
+    },
+    {
+      "simSeconds": 52,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 223
+    },
+    {
+      "simSeconds": 52,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 224
+    },
+    {
+      "simSeconds": 52,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 224
+    },
+    {
+      "simSeconds": 52,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 224
+    },
+    {
+      "simSeconds": 52,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 225
+    },
+    {
+      "simSeconds": 52,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 225
+    },
+    {
+      "simSeconds": 52,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 226
+    },
+    {
+      "simSeconds": 52,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 226
+    },
+    {
+      "simSeconds": 52,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 226
+    },
+    {
+      "simSeconds": 53,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 227
+    },
+    {
+      "simSeconds": 53,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 227
+    },
+    {
+      "simSeconds": 53,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 228
+    },
+    {
+      "simSeconds": 53,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 228
+    },
+    {
+      "simSeconds": 53,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 229
+    },
+    {
+      "simSeconds": 53,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 229
+    },
+    {
+      "simSeconds": 53,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 229
+    },
+    {
+      "simSeconds": 53,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 230
+    },
+    {
+      "simSeconds": 53,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 230
+    },
+    {
+      "simSeconds": 53,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 231
+    },
+    {
+      "simSeconds": 54,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 231
+    },
+    {
+      "simSeconds": 54,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 232
+    },
+    {
+      "simSeconds": 54,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 232
+    },
+    {
+      "simSeconds": 54,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 232
+    },
+    {
+      "simSeconds": 54,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 233
+    },
+    {
+      "simSeconds": 54,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 233
+    },
+    {
+      "simSeconds": 54,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 234
+    },
+    {
+      "simSeconds": 54,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 234
+    },
+    {
+      "simSeconds": 54,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 234
+    },
+    {
+      "simSeconds": 54,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 235
+    },
+    {
+      "simSeconds": 54,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 235
+    },
+    {
+      "simSeconds": 54,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 236
+    },
+    {
+      "simSeconds": 54,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 236
+    },
+    {
+      "simSeconds": 54,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 236
+    },
+    {
+      "simSeconds": 55,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 237
+    },
+    {
+      "simSeconds": 55,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 237
+    },
+    {
+      "simSeconds": 55,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 238
+    },
+    {
+      "simSeconds": 55,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 238
+    },
+    {
+      "simSeconds": 55,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 238
+    },
+    {
+      "simSeconds": 55,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 239
+    },
+    {
+      "simSeconds": 55,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 239
+    },
+    {
+      "simSeconds": 55,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 240
+    },
+    {
+      "simSeconds": 55,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 240
+    },
+    {
+      "simSeconds": 55,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 241
+    },
+    {
+      "simSeconds": 55,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 241
+    },
+    {
+      "simSeconds": 56,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 241
+    },
+    {
+      "simSeconds": 56,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 242
+    },
+    {
+      "simSeconds": 56,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 242
+    },
+    {
+      "simSeconds": 56,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 243
+    },
+    {
+      "simSeconds": 56,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 243
+    },
+    {
+      "simSeconds": 56,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 243
+    },
+    {
+      "simSeconds": 56,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 244
+    },
+    {
+      "simSeconds": 56,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 244
+    },
+    {
+      "simSeconds": 56,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 245
+    },
+    {
+      "simSeconds": 56,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 245
+    },
+    {
+      "simSeconds": 57,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 246
+    },
+    {
+      "simSeconds": 57,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 246
+    },
+    {
+      "simSeconds": 57,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 246
+    },
+    {
+      "simSeconds": 57,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 247
+    },
+    {
+      "simSeconds": 57,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 247
+    },
+    {
+      "simSeconds": 57,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 248
+    },
+    {
+      "simSeconds": 57,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 248
+    },
+    {
+      "simSeconds": 57,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 249
+    },
+    {
+      "simSeconds": 57,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 249
+    },
+    {
+      "simSeconds": 57,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 249
+    },
+    {
+      "simSeconds": 57,
+      "chip": "CRITICAL",
+      "banners": [],
+      "railBorder": "5px solid rgb(179, 38, 30)",
+      "vignette": 1,
+      "tripFlash": 0,
+      "wallS": 250
+    }
+  ],
+  "seenChips": ["WARNING", "CRITICAL"],
+  "seenBanners": [
+    "CRITICAL Frequency 59.48 Hz — outside 59.5–60.5.",
+    "GENERATOR LOST: HARBOR GAS UNIT −60 MW capacity"
+  ],
+  "errors": []
+}

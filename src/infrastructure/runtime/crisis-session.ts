@@ -1,7 +1,7 @@
 import { GameOutcome, KernelState, asScenarioId } from '@app-types';
 import { GRID_EVENT } from '@constants';
 import { GridGuardError } from '@core';
-import type { GridEventMap, TypedEventBus } from '@core';
+import type { GridEventMap } from '@core';
 import type { SimulationKernel } from '@kernel';
 import type { ICrisisScenario, ScenarioRegistry } from '@scenarios';
 
@@ -20,6 +20,16 @@ export interface CrisisSession {
   pause(): void;
   resume(): void;
   stop(): void;
+  /**
+   * Change how fast real time drives the simulation. 1 = normal, 1.5 = the
+   * demo loop's pace.
+   *
+   * This scales the INTERVAL between ticks, not the timestep inside them, so
+   * the physics is bit-for-bit identical — the same 1,800 ticks happen, just
+   * sooner. Scaling the timestep instead would change every integration in
+   * the frequency model and make a sped-up run a different run.
+   */
+  setSpeed(multiplier: number): void;
   readonly running: boolean;
   readonly activeScenarioId: string | null;
 }
@@ -28,8 +38,18 @@ export interface CrisisSessionDeps {
   readonly kernel: SimulationKernel<GridEventMap>;
   /** Lazy — the registry resolves scenarios only when a run starts. */
   readonly registry: () => ScenarioRegistry;
-  /** Re-runs a scenario's setup so scripted faults re-arm on restart. */
-  readonly prepareScenario?: (scenario: ICrisisScenario) => void;
+  /**
+   * Arms the scenario about to run: heals the grid, resets scenario-owned
+   * global state, and calls `scenario.setup(context)`.
+   *
+   * REQUIRED, not optional. It used to be optional, and the composition root
+   * separately called `setup()` on every scenario at registration — which
+   * accidentally armed them and hid the fact that a session built without this
+   * hook would start a scenario that had never been set up, then crash in
+   * `teardown()` on an undefined fault API. Making it required turns "a
+   * scenario is always armed before it runs" into a compile-time guarantee.
+   */
+  readonly prepareScenario: (scenario: ICrisisScenario) => void;
   readonly maxTicks?: number;
   readonly tickIntervalMs?: number;
 }
@@ -37,7 +57,10 @@ export interface CrisisSessionDeps {
 export function createCrisisSession(deps: CrisisSessionDeps): CrisisSession {
   const { kernel } = deps;
   const maxTicks = deps.maxTicks ?? DEFAULT_MAX_TICKS;
-  const tickIntervalMs = deps.tickIntervalMs ?? DEFAULT_TICK_INTERVAL_MS;
+  const baseTickIntervalMs = deps.tickIntervalMs ?? DEFAULT_TICK_INTERVAL_MS;
+  /** Real-time multiplier. Physics is unchanged; only the interval moves. */
+  let speed = 1;
+  const currentIntervalMs = (): number => Math.max(10, Math.round(baseTickIntervalMs / speed));
 
   let interval: ReturnType<typeof setInterval> | null = null;
   let active: ICrisisScenario | null = null;
@@ -69,7 +92,7 @@ export function createCrisisSession(deps: CrisisSessionDeps): CrisisSession {
     active?.onTick({ tick: clock.tick, time: clock.time, timestep: clock.timestep });
     if (!ended && clock.tick >= maxTicks) {
       ended = true;
-      (kernel.events as TypedEventBus<GridEventMap>).emit(GRID_EVENT.GameEnded, {
+      kernel.events.emit(GRID_EVENT.GameEnded, {
         outcome: GameOutcome.Held,
         score: 100,
       });
@@ -87,12 +110,12 @@ export function createCrisisSession(deps: CrisisSessionDeps): CrisisSession {
       if (scenario === undefined) {
         throw new GridGuardError(`CrisisSession: unknown scenario "${id}"`);
       }
-      deps.prepareScenario?.(scenario);
+      deps.prepareScenario(scenario);
 
       active = scenario;
       activeId = id;
       kernel.start();
-      interval = setInterval(tickOnce, tickIntervalMs);
+      interval = setInterval(tickOnce, currentIntervalMs());
     },
 
     pause(): void {
@@ -108,10 +131,22 @@ export function createCrisisSession(deps: CrisisSessionDeps): CrisisSession {
       if (kernel.state === KernelState.Paused) {
         kernel.resume();
       }
-      interval = setInterval(tickOnce, tickIntervalMs);
+      interval = setInterval(tickOnce, currentIntervalMs());
     },
 
     stop,
+
+    setSpeed(multiplier: number): void {
+      const next = Math.max(0.25, Math.min(4, multiplier));
+      if (next === speed) return;
+      speed = next;
+      // Re-arm the loop at the new cadence if one is already running. Without
+      // this the change would only take effect after the next pause/resume.
+      if (interval !== null) {
+        clearLoop();
+        interval = setInterval(tickOnce, currentIntervalMs());
+      }
+    },
 
     get running(): boolean {
       return interval !== null;

@@ -18,10 +18,13 @@
 import { AppMode, useTutorialStore } from '@state';
 import type { ReactElement } from 'react';
 
+import { CRISIS_LEVEL_STYLE, useCrisisAssessment } from '../crisis';
 import { Reveal } from '../onboarding/Reveal';
 
 import { CommandBar } from './CommandBar';
 import { ContextInspector } from './ContextInspector';
+import { DecisionConsequenceCard } from './DecisionConsequenceCard';
+import { ForecastPanel } from './ForecastPanel';
 import { GridHealthPanel } from './GridHealthPanel';
 import { LearningFeedback } from './LearningFeedback';
 import { OperatorActionsPanel } from './OperatorActionsPanel';
@@ -39,6 +42,12 @@ export function ConsoleShell({ mode }: { mode: AppMode }): ReactElement {
   // (veteran, skipped, or demo) the picker is simply there from the start.
   const showActionsPreview = preflight && teaching && !scenarioReady;
   const showScenario = preflight && !showActionsPreview;
+
+  // The rail carries the escalation as a vertical accent down the screen edge
+  // — the same measured level the command bar and the alert stack read. It is
+  // absent at NORMAL on purpose: a status light that is always on says nothing.
+  const { level } = useCrisisAssessment();
+  const crisis = CRISIS_LEVEL_STYLE[level];
 
   return (
     <div
@@ -68,6 +77,9 @@ export function ConsoleShell({ mode }: { mode: AppMode }): ReactElement {
           padding: 10,
           pointerEvents: 'none',
           minHeight: 0,
+          borderLeft:
+            crisis.railWidth > 0 ? `${String(crisis.railWidth)}px solid ${crisis.accent}` : 'none',
+          transition: 'border-color 420ms ease, border-width 420ms ease',
         }}
       >
         <Reveal id="health" from="left" style={{ flexShrink: 0 }}>
@@ -94,6 +106,9 @@ export function ConsoleShell({ mode }: { mode: AppMode }): ReactElement {
             overflowAnchor: 'none',
           }}
         >
+          {/* Only present while a scenario has published a forecast. */}
+          <ForecastPanel />
+
           <Reveal id="inspect" from="left" style={{ flexShrink: 0 }}>
             <ContextInspector />
           </Reveal>
@@ -120,6 +135,9 @@ export function ConsoleShell({ mode }: { mode: AppMode }): ReactElement {
 
       {/* Centre — intentionally empty: the city IS the interface here */}
       <div />
+
+      {/* How the last call actually turned out, 30 s after it was made. */}
+      <DecisionConsequenceCard />
 
       {/* Bottom timeline — spans both columns */}
       <Reveal id="timeline" from="bottom" style={{ gridColumn: '1 / -1', minHeight: 0 }}>

@@ -68,9 +68,17 @@ describe('event log store', () => {
     const bus = makeBus();
     const unbind = bindEventLog(bus);
 
-    bus.emit(GRID_EVENT.WeatherChanged, { kind: 'Heatwave' as never, temperature: asCelsius(41) });
-    bus.emit(GRID_EVENT.WeatherChanged, { kind: 'Heatwave' as never, temperature: asCelsius(42) });
-    bus.emit(GRID_EVENT.WeatherChanged, { kind: 'Storm' as never, temperature: asCelsius(18) });
+    const weather = (kind: string, tempC: number) =>
+      ({
+        kind: kind as never,
+        temperature: asCelsius(tempC),
+        irradiance: 0.6 as never,
+        wind: 0.3 as never,
+      }) as never;
+
+    bus.emit(GRID_EVENT.WeatherChanged, weather('Heatwave', 41));
+    bus.emit(GRID_EVENT.WeatherChanged, weather('Heatwave', 42));
+    bus.emit(GRID_EVENT.WeatherChanged, weather('Storm', 18));
 
     expect(useEventLogStore.getState().entries).toHaveLength(2);
 

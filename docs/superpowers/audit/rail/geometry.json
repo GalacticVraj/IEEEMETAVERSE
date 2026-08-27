@@ -1,0 +1,311 @@
+[
+  {
+    "viewport": "1366x768",
+    "errors": [],
+    "innerHeight": 768,
+    "scroller": {
+      "clientHeight": 399,
+      "scrollHeight": 399,
+      "hidden": 0
+    },
+    "panels": [
+      {
+        "label": "GRIDGUARD|MERIDIAN BAY OPERATIONST+00:00Af",
+        "height": 48,
+        "top": 0,
+        "bottom": 48
+      },
+      {
+        "label": "Grid Health — StandbyNo telemetry yet. Vit",
+        "height": 90,
+        "top": 58,
+        "bottom": 148
+      },
+      {
+        "label": "Select Scenario6 availableRecord HeatwaveW",
+        "height": 389,
+        "top": 168,
+        "bottom": 557
+      },
+      {
+        "label": "TIMELINEMajor events that occurred during ",
+        "height": 176,
+        "top": 592,
+        "bottom": 768
+      }
+    ],
+    "buttons": [
+      {
+        "label": "📹 Auto-Follow: ON",
+        "top": 548,
+        "visible": true
+      },
+      {
+        "label": "🎥 Overview Viewpoint",
+        "top": 548,
+        "visible": true
+      },
+      {
+        "label": "OperatorAPPRENTICE",
+        "top": 7,
+        "visible": true
+      },
+      {
+        "label": "Record HeatwaveWARNINGA record h",
+        "top": 204,
+        "visible": true
+      },
+      {
+        "label": "Coastal StormCRITICAL",
+        "top": 331,
+        "visible": true
+      },
+      {
+        "label": "Transformer Differential FaultWA",
+        "top": 371,
+        "visible": true
+      },
+      {
+        "label": "Coordinated Cyber AttackCRITICAL",
+        "top": 411,
+        "visible": true
+      },
+      {
+        "label": "Renewable Intermittency CascadeW",
+        "top": 451,
+        "visible": true
+      },
+      {
+        "label": "Cold Snap Demand SpikeCRITICAL",
+        "top": 491,
+        "visible": true
+      },
+      {
+        "label": "Start Scenario ▸",
+        "top": 512,
+        "visible": true
+      },
+      {
+        "label": "Replay tutorial",
+        "top": 544,
+        "visible": true
+      },
+      {
+        "label": "❓Guide",
+        "top": 546,
+        "visible": true
+      },
+      {
+        "label": "🔊Sound: ON",
+        "top": 546,
+        "visible": true
+      }
+    ]
+  },
+  {
+    "viewport": "1600x900",
+    "errors": [],
+    "innerHeight": 900,
+    "scroller": {
+      "clientHeight": 399,
+      "scrollHeight": 399,
+      "hidden": 0
+    },
+    "panels": [
+      {
+        "label": "GRIDGUARD|MERIDIAN BAY OPERATIONST+00:00Af",
+        "height": 48,
+        "top": 0,
+        "bottom": 48
+      },
+      {
+        "label": "Grid Health — StandbyNo telemetry yet. Vit",
+        "height": 90,
+        "top": 58,
+        "bottom": 148
+      },
+      {
+        "label": "Select Scenario6 availableRecord HeatwaveW",
+        "height": 389,
+        "top": 168,
+        "bottom": 557
+      },
+      {
+        "label": "TIMELINEMajor events that occurred during ",
+        "height": 176,
+        "top": 752,
+        "bottom": 928
+      }
+    ],
+    "buttons": [
+      {
+        "label": "📹 Auto-Follow: ON",
+        "top": 680,
+        "visible": true
+      },
+      {
+        "label": "🎥 Overview Viewpoint",
+        "top": 680,
+        "visible": true
+      },
+      {
+        "label": "OperatorAPPRENTICE",
+        "top": 7,
+        "visible": true
+      },
+      {
+        "label": "Record HeatwaveWARNINGA record h",
+        "top": 204,
+        "visible": true
+      },
+      {
+        "label": "Coastal StormCRITICAL",
+        "top": 331,
+        "visible": true
+      },
+      {
+        "label": "Transformer Differential FaultWA",
+        "top": 371,
+        "visible": true
+      },
+      {
+        "label": "Coordinated Cyber AttackCRITICAL",
+        "top": 411,
+        "visible": true
+      },
+      {
+        "label": "Renewable Intermittency CascadeW",
+        "top": 451,
+        "visible": true
+      },
+      {
+        "label": "Cold Snap Demand SpikeCRITICAL",
+        "top": 491,
+        "visible": true
+      },
+      {
+        "label": "Start Scenario ▸",
+        "top": 512,
+        "visible": true
+      },
+      {
+        "label": "Replay tutorial",
+        "top": 676,
+        "visible": true
+      },
+      {
+        "label": "❓Guide",
+        "top": 678,
+        "visible": true
+      },
+      {
+        "label": "🔊Sound: ON",
+        "top": 678,
+        "visible": true
+      }
+    ]
+  },
+  {
+    "viewport": "1920x1080",
+    "errors": [],
+    "innerHeight": 1080,
+    "scroller": {
+      "clientHeight": 281,
+      "scrollHeight": 281,
+      "hidden": 0
+    },
+    "panels": [
+      {
+        "label": "GRIDGUARD|MERIDIAN BAY OPERATIONST+00:00Af",
+        "height": 48,
+        "top": 0,
+        "bottom": 48
+      },
+      {
+        "label": "Grid Health — StandbyNo telemetry yet. Vit",
+        "height": 90,
+        "top": 58,
+        "bottom": 148
+      },
+      {
+        "label": "Operator Actions5 levers · click a name fo",
+        "height": 271,
+        "top": 168,
+        "bottom": 440
+      },
+      {
+        "label": "TIMELINEMajor events that occurred during ",
+        "height": 176,
+        "top": 932,
+        "bottom": 1108
+      }
+    ],
+    "buttons": [
+      {
+        "label": "OperatorAPPRENTICE",
+        "top": 7,
+        "visible": true
+      },
+      {
+        "label": "▸Reduce residential AC",
+        "top": 253,
+        "visible": true
+      },
+      {
+        "label": "Execute",
+        "top": 250,
+        "visible": true
+      },
+      {
+        "label": "▸Pause public EV charging",
+        "top": 290,
+        "visible": true
+      },
+      {
+        "label": "Execute",
+        "top": 287,
+        "visible": true
+      },
+      {
+        "label": "▸Dim commercial lighting",
+        "top": 327,
+        "visible": true
+      },
+      {
+        "label": "Execute",
+        "top": 324,
+        "visible": true
+      },
+      {
+        "label": "▸Controlled industrial shed",
+        "top": 364,
+        "visible": true
+      },
+      {
+        "label": "Execute",
+        "top": 361,
+        "visible": true
+      },
+      {
+        "label": "▸Emergency harbor shed",
+        "top": 401,
+        "visible": true
+      },
+      {
+        "label": "Execute",
+        "top": 398,
+        "visible": true
+      },
+      {
+        "label": "Skip tutorial",
+        "top": 839,
+        "visible": true
+      },
+      {
+        "label": "Skip ahead",
+        "top": 835,
+        "visible": true
+      }
+    ]
+  }
+]

@@ -128,6 +128,7 @@ describe('DeterministicRestorationController', () => {
       reserveMw: 0 as never,
       largestInfeedMw: 0 as never,
       lines: [],
+      restoration: [],
       zones: [
         { zone: 'DT' as any, state: 'Powered', servedLoad: 0 as any, unservedLoad: 0 as any },
       ],
@@ -173,6 +174,7 @@ describe('DeterministicRestorationController', () => {
       reserveMw: 0 as never,
       largestInfeedMw: 0 as never,
       lines: [],
+      restoration: [],
       zones: [
         { zone: 'DT' as any, state: 'Blackout', servedLoad: 0 as any, unservedLoad: 100 as any },
       ],

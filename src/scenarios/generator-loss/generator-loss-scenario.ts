@@ -1,7 +1,14 @@
 import { Severity, asGeneratorId, asLoadId, asScenarioId } from '@app-types';
 import type { TickContext } from '@core';
+import { CLEAR_ARC } from '@engine';
 
-import type { ICrisisScenario, ScenarioContext, ScenarioFaultApi, ScenarioMetadata } from '../crisis-scenario';
+import type {
+  ICrisisScenario,
+  ScenarioContext,
+  ScenarioFaultApi,
+  ScenarioMetadata,
+} from '../crisis-scenario';
+import { at } from '../shift-clock';
 
 /**
  * **Generator Loss Contingency** — simultaneous loss of large baseload + peaker.
@@ -26,8 +33,8 @@ export class GeneratorLossScenario implements ICrisisScenario {
     id: asScenarioId('generator-loss'),
     name: 'Generator Loss — N-2 Contingency',
     summary:
-      'Simultaneous loss of 550 MW of baseload generation due to a turbine '
-      + 'blade fracture, testing spinning reserve and frequency stability.',
+      'Simultaneous loss of 550 MW of baseload generation due to a turbine ' +
+      'blade fracture, testing spinning reserve and frequency stability.',
     difficulty: Severity.Critical,
   };
 
@@ -37,6 +44,9 @@ export class GeneratorLossScenario implements ICrisisScenario {
 
   public setup(context: ScenarioContext): void {
     this.faults = context.faults;
+    // Every scenario declares its own environment; the app used to run one
+    // generic weather model for all of them.
+    context.weather.setArc(CLEAR_ARC);
     this.generationLost = false;
     this.loadShed = false;
   }
@@ -45,20 +55,20 @@ export class GeneratorLossScenario implements ICrisisScenario {
     const { tick } = context;
 
     // Tick 25: Simultaneous loss of baseload + co-located peaker (N-2)
-    if (tick === 25 && !this.generationLost) {
+    if (tick === at(0, 30) && !this.generationLost) {
       this.faults.tripGenerator(asGeneratorId('G-BASE-S')); // 400 MW
       this.faults.tripGenerator(asGeneratorId('G-PEAK-S')); // 150 MW
       this.generationLost = true;
     }
 
     // Tick 65: Automatic frequency-triggered load shedding
-    if (tick === 65 && !this.loadShed) {
-      this.faults.shedLoad(asLoadId('LD-IN-HVY'), 0.50);
-      this.faults.shedLoad(asLoadId('LD-IN-LGT'), 0.40);
-      this.faults.shedLoad(asLoadId('LD-RN-A'), 0.20);
-      this.faults.shedLoad(asLoadId('LD-RN-B'), 0.20);
-      this.faults.shedLoad(asLoadId('LD-RS-A'), 0.20);
-      this.faults.shedLoad(asLoadId('LD-RS-B'), 0.20);
+    if (tick === at(1, 20) && !this.loadShed) {
+      this.faults.shedLoad(asLoadId('LD-IN-HVY'), 0.5);
+      this.faults.shedLoad(asLoadId('LD-IN-LGT'), 0.4);
+      this.faults.shedLoad(asLoadId('LD-RN-A'), 0.2);
+      this.faults.shedLoad(asLoadId('LD-RN-B'), 0.2);
+      this.faults.shedLoad(asLoadId('LD-RS-A'), 0.2);
+      this.faults.shedLoad(asLoadId('LD-RS-B'), 0.2);
       this.loadShed = true;
     }
   }

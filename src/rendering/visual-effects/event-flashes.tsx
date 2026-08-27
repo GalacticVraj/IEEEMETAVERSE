@@ -23,7 +23,7 @@ import * as THREE from 'three';
 
 import { MERIDIAN_BAY_TOPOLOGY } from '@engine/topology/meridian-bay';
 
-import { BUS_POSITIONS, BUS_ZONE } from '../layout';
+import { BUS_POSITIONS, zoneCentroids } from '../layout';
 
 /** Concurrent effects. A cascade is the worst case and never exceeds this. */
 const POOL = 10;
@@ -48,24 +48,6 @@ interface Slot {
   flavour: Flavour;
   x: number;
   z: number;
-}
-
-/** Zone centroids, averaged from the buses that belong to each zone. */
-function zoneCentroids(): Readonly<Record<string, readonly [number, number]>> {
-  const sums: Record<string, { x: number; z: number; n: number }> = {};
-  for (const [bus, position] of Object.entries(BUS_POSITIONS)) {
-    const zone = BUS_ZONE[bus];
-    if (zone === undefined) continue;
-    const entry = (sums[zone] ??= { x: 0, z: 0, n: 0 });
-    entry.x += position[0];
-    entry.z += position[1];
-    entry.n += 1;
-  }
-  const out: Record<string, readonly [number, number]> = {};
-  for (const [zone, sum] of Object.entries(sums)) {
-    out[zone] = [sum.x / sum.n, sum.z / sum.n];
-  }
-  return out;
 }
 
 /** Where on the map an event happened, or null if it has no place. */

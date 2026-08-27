@@ -17,6 +17,7 @@ import {
 
 import { AudioEngine } from './audio-engine';
 import { MusicStateController } from './music/music-state';
+import { voiceRateFor } from './voice-rate';
 
 export interface AudioDirector {
   /** Attach listeners & start audio processing on first user gesture. */
@@ -177,7 +178,10 @@ export function createAudioDirector(bus: GridEventBus, audioEngine?: AudioEngine
           lastSeenEventLogSeq = latest.seq;
 
           if (latest.focus?.kind === 'generator' && latest.severity === 'critical') {
-            engine.playSfx('grid.generatorLost');
+            // Each machine gets its own pitch, derived from its id — so a
+            // cascade sounds like several distinct units failing rather than
+            // one sample stuttering. Deterministic, so replays match.
+            engine.playSfx('grid.generatorLost', voiceRateFor(latest.focus.id));
           }
         }),
       ];

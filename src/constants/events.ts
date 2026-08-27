@@ -54,6 +54,8 @@ export const GRID_EVENT = {
   DecisionRequested: 'DecisionRequested',
   /** An operator decision was committed to the simulation. */
   DecisionCommitted: 'DecisionCommitted',
+  /** A committed decision was measured 30 s later — how it actually turned out. */
+  DecisionConsequence: 'DecisionConsequence',
 
   /** The learner model updated its estimates. */
   LearningUpdated: 'LearningUpdated',

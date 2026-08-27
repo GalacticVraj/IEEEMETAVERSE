@@ -3,6 +3,7 @@ import {
   LineTripCause,
   ZoneState,
   asHertz,
+  asLineId,
   asLoadId,
   asMegaWatts,
   asPerUnit,
@@ -29,13 +30,24 @@ import { UFLS_STAGES, createFrequencyModel } from './frequency';
 import type { FrequencyMachine, FrequencyModel } from './frequency';
 import type { ElectricalGraph } from './graph';
 import type { ILoadModel } from './loads/loads';
-import type { GeneratorStatus, GridState, LineFlow, ZoneStatus } from './model/grid';
+import type {
+  GeneratorStatus,
+  GridState,
+  LineFlow,
+  LineRestoration,
+  ZoneStatus,
+} from './model/grid';
 import { solveDcPowerFlow } from './powerflow/dc-power-flow';
 import type { PowerFlowEventMap } from './powerflow/powerflow-events';
 import type { ProtectionEngine } from './protection/protection-engine';
 import type { IRestorationController } from './restoration/restoration';
 import type { ITopologyService } from './topology/topology';
-import type { IWeatherModel } from './weather/weather';
+import type { IWeatherModel, WeatherState } from './weather/weather';
+
+/** Temperature move that counts as a new weather beat, °C. */
+const WEATHER_TEMP_EPSILON_C = 0.5;
+/** Wind/irradiance move that counts as a new weather beat, 0..1. */
+const WEATHER_RATIO_EPSILON = 0.05;
 
 /** Per-unit loading at or above which a corridor reads as overloaded. */
 const OVERLOAD_THRESHOLD_PU = 1.0;
@@ -80,6 +92,11 @@ export class GridSimulationEngine implements ISimulationEngine, SnapshotableSyst
   private context!: SystemContext;
   private state!: GridState;
   private readonly frequencyModel: FrequencyModel = createFrequencyModel();
+  /**
+   * Last environment published on the bus, for change detection. Null until
+   * the first tick, which is what makes the opening weather always publish.
+   */
+  private lastPublishedWeather: WeatherState | null = null;
 
   public constructor(
     private readonly graph: ElectricalGraph,
@@ -116,6 +133,30 @@ export class GridSimulationEngine implements ISimulationEngine, SnapshotableSyst
       const loads = this.loads;
       const zoneBuildings = (zoneId: string): string[] =>
         this.topologyService.get().zones.find((z) => z.id === zoneId)?.buildingIds ?? [];
+
+      // Operator-requested reclose of a named corridor. Format is
+      // `op-reclose|<LINE-ID>|<tick>` — pipe-delimited because the line id
+      // itself contains hyphens, and the other handlers here match by
+      // substring, which would mangle it.
+      //
+      // This is a REQUEST, not a guarantee. It resets the relay and commands
+      // the breaker shut exactly the way the automatic controller does; what
+      // happens next is the protection engine's business. Close a corridor
+      // that is still hot or still overloaded and it trips straight back out,
+      // one step nearer lockout. That consequence is the lesson, and it is
+      // emergent — nothing here scripts it.
+      if (decisionId.startsWith('op-reclose|')) {
+        const lineId = decisionId.split('|')[1];
+        if (lineId !== undefined && lineId.length > 0) {
+          const line = asLineId(lineId);
+          const breaker = this.protection.breakerFor(line);
+          if (breaker?.phase === 'Open') {
+            this.protection.resetRelay(line);
+            this.protection.commandClose(line, this.context.clock.tick);
+          }
+        }
+        return;
+      }
 
       // Standing operator actions (op-*) — the console's action catalog.
       if (decisionId.includes('op-ac-residential')) {
@@ -172,6 +213,42 @@ export class GridSimulationEngine implements ISimulationEngine, SnapshotableSyst
   public step(context: TickContext): void {
     // 1. Weather update
     const weatherState = this.weather.advance(context);
+
+    // Publish the environment when it MEANINGFULLY changes.
+    //
+    // `WeatherChanged` had two subscribers (the event log and the grid
+    // projection) and no publisher at all — so `weatherKind` sat on its
+    // initial 'Clear' for the whole run, and every scene effect gated on it,
+    // lightning included, was unreachable code. A named "Coastal Storm" could
+    // not have rendered a storm no matter what the weather model computed.
+    //
+    // Deduped to real transitions rather than emitted per tick: at 10 Hz an
+    // undeduped emit would put 1,800 weather events into a 200-entry log and
+    // push every other event out of it.
+    const previousWeather = this.lastPublishedWeather;
+    const kindChanged = previousWeather?.kind !== weatherState.kind;
+    const tempMoved =
+      previousWeather === null ||
+      Math.abs((previousWeather.temperature as number) - (weatherState.temperature as number)) >=
+        WEATHER_TEMP_EPSILON_C;
+    const windMoved =
+      previousWeather === null ||
+      Math.abs((previousWeather.wind as number) - (weatherState.wind as number)) >=
+        WEATHER_RATIO_EPSILON;
+    const irradianceMoved =
+      previousWeather === null ||
+      Math.abs((previousWeather.irradiance as number) - (weatherState.irradiance as number)) >=
+        WEATHER_RATIO_EPSILON;
+
+    if (kindChanged || tempMoved || windMoved || irradianceMoved) {
+      this.lastPublishedWeather = weatherState;
+      this.domainEvents().emit(GRID_EVENT.WeatherChanged, {
+        kind: weatherState.kind,
+        temperature: weatherState.temperature,
+        irradiance: weatherState.irradiance,
+        wind: weatherState.wind,
+      });
+    }
 
     // 2. Load model updates (target demands)
     const topology = this.topologyService.get();
@@ -248,6 +325,27 @@ export class GridSimulationEngine implements ISimulationEngine, SnapshotableSyst
     });
 
     this.cascade.propagate(lineFlows);
+
+    // Restoration picture for every corridor whose breaker is open. A tripped
+    // line is off the graph, so it is absent from `lineFlows` entirely — this
+    // is the only place the console can learn that HB1 is sitting at 94 °C and
+    // will not hold a reclose yet.
+    const restorationStatus: LineRestoration[] = [];
+    for (const breaker of this.protection.breakers()) {
+      if (breaker.phase !== 'Open') continue;
+      const thermal = this.protection.thermalFor(breaker.line);
+      if (thermal === undefined) continue;
+      restorationStatus.push({
+        line: breaker.line,
+        conductorTempC: thermal.temperatureC,
+        recloseBelowC: thermal.config.warningC,
+        // Deliberately the SAME predicate the automatic controller uses in
+        // `restoration.plan()`. Two copies of "is it cool enough" would
+        // eventually disagree, and the console would promise a reclose the
+        // engine refuses.
+        readyToReclose: thermal.temperatureC < thermal.config.warningC,
+      });
+    }
 
     // 7. Zone status & blackout calculations
     const zoneStatuses: ZoneStatus[] = [];
@@ -363,6 +461,7 @@ export class GridSimulationEngine implements ISimulationEngine, SnapshotableSyst
       reserveMw: asMegaWatts(freq.reserveMw),
       largestInfeedMw: asMegaWatts(freq.largestInfeedMw),
       lines: lineFlows,
+      restoration: restorationStatus,
       zones: zoneStatuses,
       totalGeneration: totalGen,
       totalLoad: asMegaWatts(servedDemandMw),
@@ -463,6 +562,7 @@ export class GridSimulationEngine implements ISimulationEngine, SnapshotableSyst
   }
 
   private _initializeState(): void {
+    this.lastPublishedWeather = null;
     this.state = {
       frequency: asHertz(60),
       rocof: 0,
@@ -473,6 +573,7 @@ export class GridSimulationEngine implements ISimulationEngine, SnapshotableSyst
       reserveMw: asMegaWatts(0),
       largestInfeedMw: asMegaWatts(0),
       lines: [],
+      restoration: [],
       zones: [],
       totalGeneration: asMegaWatts(0),
       totalLoad: asMegaWatts(0),

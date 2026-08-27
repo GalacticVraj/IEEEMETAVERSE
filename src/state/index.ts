@@ -15,6 +15,9 @@ import { bindRunStats } from './run-stats-store';
 import { bindGridStore } from './grid-store';
 import { bindLearningStore } from './learning-store';
 import { bindSimulationStore } from './simulation-store';
+import { bindDecisionConsequences } from './decision-consequence-store';
+import { bindGenerationForecast } from './generation-forecast-store';
+import { bindTelemetryTrust } from './telemetry-trust-store';
 
 export * from './simulation-store';
 export * from './learning-store';
@@ -25,6 +28,10 @@ export * from './app-flow-store';
 export * from './event-log-store';
 export * from './run-stats-store';
 export * from './advisor-store';
+export * from './telemetry-trust-store';
+export * from './generation-forecast-store';
+export * from './decision-consequence-store';
+export * from './career-store';
 
 /** Bind every event-driven projection to the bus. Returns a combined detach. */
 export function bindStores(bus: GridEventBus, engine?: ISimulationEngine): Unsubscribe {
@@ -33,6 +40,9 @@ export function bindStores(bus: GridEventBus, engine?: ISimulationEngine): Unsub
     bindLearningStore(bus),
     bindEventLog(bus),
     bindAdvisor(bus, { now: () => performance.now() }),
+    bindTelemetryTrust(),
+    bindGenerationForecast(),
+    bindDecisionConsequences(bus),
   ];
   if (engine !== undefined) {
     unsubscribers.push(bindGridStore(bus, engine));

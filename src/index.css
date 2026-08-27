@@ -391,6 +391,78 @@ body {
   animation: none;
 }
 
+/* ── Crisis alarm ─────────────────────────────────────────────────────
+   The peripheral alarm lamp for CRITICAL / BLACKOUT. Only opacity animates,
+   so this stays on the compositor and costs nothing per frame — the 3D city
+   next to it is the frame budget that matters.
+
+   The keyframes never reach zero: under `prefers-reduced-motion` the global
+   rule below strips the animation entirely, and what remains must still read
+   as an alarm rather than disappearing. */
+@keyframes crisisAlarmPulse {
+  0%,
+  100% {
+    opacity: 0.55;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+.crisis-vignette {
+  opacity: 0.8;
+  animation: crisisAlarmPulse 1.8s ease-in-out infinite;
+  will-change: opacity;
+}
+
+/* Frequency needle in the trip region. A small, fast tremor — an instrument
+   under strain, not a decorative wobble. Base transform is identity, so the
+   reduced-motion rule below simply leaves the needle steady. */
+@keyframes gaugeNeedleAlarm {
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+  25% {
+    transform: rotate(0.9deg);
+  }
+  75% {
+    transform: rotate(-0.9deg);
+  }
+}
+
+.gauge-needle-alarm {
+  transform-origin: 46px 44px;
+  animation: gaugeNeedleAlarm 0.16s ease-in-out infinite;
+}
+
+/* Arc flash: a generating unit just disconnected. 80 ms up (21 % of 380 ms),
+   300 ms down. Peak stops well short of opaque — this is a bloom over a
+   daylight scene, not a cut to white, and the city must stay readable through
+   it. Base opacity is 0 so the reduced-motion rule below erases it cleanly. */
+@keyframes tripFlash {
+  0% {
+    opacity: 0;
+  }
+  21% {
+    opacity: 0.55;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+.trip-flash {
+  position: absolute;
+  inset: 0;
+  z-index: 45;
+  pointer-events: none;
+  background: #ffffff;
+  opacity: 0;
+  animation: tripFlash 380ms ease-out forwards;
+  will-change: opacity;
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

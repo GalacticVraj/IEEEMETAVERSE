@@ -7,7 +7,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { bootstrap } from '../bootstrap/bootstrap';
 import type { AppRuntime } from '../bootstrap/bootstrap';
-import { SIMULATION_KERNEL } from '../di/composition-root';
+import { SCENARIO_CONTEXT, SIMULATION_KERNEL } from '../di/composition-root';
 
 import { createCrisisSession } from './crisis-session';
 
@@ -92,6 +92,13 @@ describe('crisis session', () => {
     const session = createCrisisSession({
       kernel,
       registry: () => registry,
+      // Arming is mandatory. Without it the scenario starts un-set-up and
+      // crashes in `teardown()` on an undefined fault API — which is exactly
+      // what this test caught when registration-time `setup()` was removed
+      // from the composition root.
+      prepareScenario: (scenario) => {
+        scenario.setup(runtime.container.resolve(SCENARIO_CONTEXT));
+      },
       maxTicks: 30,
     });
 

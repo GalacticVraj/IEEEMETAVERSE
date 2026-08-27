@@ -47,6 +47,7 @@ import {
   GeneratorLossScenario,
   SubstationFailureScenario,
   DemandSurgeScenario,
+  ColdSnapScenario,
   TransformerFailureScenario,
 } from '@scenarios';
 import type { ScenarioContext } from '@scenarios';
@@ -198,12 +199,23 @@ export function createCompositionRoot(config: AppConfig): Container {
     const generation = c.resolve(GENERATION_MODEL);
     const loads = c.resolve(LOAD_MODEL);
     const protection = c.resolve(PROTECTION_ENGINE);
+    const weather = c.resolve(WEATHER_MODEL);
 
     const faults = buildScenarioFaultApi({ engine, generation, loads, protection });
 
     return {
       engine,
       faults,
+      // Each scenario declares its own environment in `setup()`. One shared
+      // model instance is correct — the scenarios are mutually exclusive and
+      // `prepareScenario` re-runs `setup()` on every start, so whichever
+      // scenario is running has always just set the arc.
+      weather: {
+        setArc: (arc) => {
+          weather.setArc(arc);
+        },
+        current: () => weather.current(),
+      },
       generation: {
         isTripped: (id: Parameters<typeof generation.isTripped>[0]) => generation.isTripped(id),
         totalOutput: () => generation.totalOutput(),
@@ -238,13 +250,26 @@ export function createCompositionRoot(config: AppConfig): Container {
       new GeneratorLossScenario(),
       new SubstationFailureScenario(),
       new DemandSurgeScenario(),
+      new ColdSnapScenario(),
       new TransformerFailureScenario(),
     ];
 
+    // REGISTER only — do not `setup()` here.
+    //
+    // Setting a scenario up is ARMING it, and arming all nine at construction
+    // ran every scenario's side effects at once: the weather arc ended up
+    // whichever scenario happened to be registered last, and the cyber-attack
+    // scenario's SCADA-integrity flag was left compromised for the whole
+    // session — so a heatwave run opened with a telemetry-integrity alarm it
+    // had nothing to do with.
+    //
+    // `crisis-session.prepareScenario` calls `setup()` on the scenario that is
+    // actually about to run, immediately before every start, so nothing is
+    // lost by leaving them cold here.
     for (const scenario of scenarios) {
-      scenario.setup(scenarioContext);
       registry.register(scenario);
     }
+    void scenarioContext;
 
     return registry;
   });

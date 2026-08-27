@@ -23,10 +23,23 @@ import { useFrame } from '@react-three/fiber';
 import { useEffect, useRef } from 'react';
 import type { ReactElement } from 'react';
 
-/** Peak angular amplitude, radians. ~0.3 deg — felt, not seen. */
-const AMPLITUDE = 0.0055;
-/** Trauma decays to nothing in about this long. */
-const DECAY_PER_SECOND = 1.9;
+/**
+ * Peak angular amplitude, radians. ~0.9 deg.
+ *
+ * Raised from 0.0055 (~0.3 deg): at the old value a 400 MW unit disconnecting
+ * moved the frame by roughly a quarter of a degree, which is below the
+ * threshold at which a player registers it as a reaction at all. The brief
+ * asked for 0.08 rad — that is 4.6 deg, which on a near-top-down city view
+ * reads as a rendering fault rather than a jolt, so this lands between the
+ * two: unmistakably felt, still a camera and not an earthquake.
+ */
+const AMPLITUDE = 0.016;
+/**
+ * Trauma decays to nothing in about 1.2 s at full trauma, matching the brief.
+ * The trauma-squared curve below means most of the movement is spent in the
+ * first third of that, so it hits hard and settles rather than wobbling on.
+ */
+const DECAY_PER_SECOND = 0.85;
 /** Shake wobbles this fast. Two incommensurate rates so it never loops. */
 const RATE_X = 27.3;
 const RATE_Y = 19.1;
@@ -36,6 +49,12 @@ const TRAUMA: Record<string, number> = {
   critical: 0.85,
   warning: 0.32,
 };
+
+/**
+ * Losing a generating unit is the largest single disturbance in a run and
+ * gets the full jolt, above the shared `critical` weight a line trip carries.
+ */
+const GENERATOR_LOSS_TRAUMA = 1;
 
 export function CameraShake(): ReactElement | null {
   const traumaRef = useRef(0);
@@ -55,7 +74,10 @@ export function CameraShake(): ReactElement | null {
       if (latest.seq <= lastSeen) return;
       lastSeen = latest.seq;
 
-      const added = TRAUMA[latest.severity];
+      const added =
+        latest.focus?.kind === 'generator' && latest.severity === 'critical'
+          ? GENERATOR_LOSS_TRAUMA
+          : TRAUMA[latest.severity];
       if (added === undefined) return;
       traumaRef.current = Math.min(1, traumaRef.current + added);
     });

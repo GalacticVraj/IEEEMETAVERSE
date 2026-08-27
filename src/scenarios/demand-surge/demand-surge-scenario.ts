@@ -1,81 +1,108 @@
-import { Severity, asLoadId, asScenarioId } from '@app-types';
+import { Severity, asScenarioId } from '@app-types';
 import type { TickContext } from '@core';
+import { CLEAR_ARC } from '@engine';
+import type { WeatherArc } from '@engine';
 
-import type { ICrisisScenario, ScenarioContext, ScenarioFaultApi, ScenarioMetadata } from '../crisis-scenario';
+import type {
+  ICrisisScenario,
+  ScenarioContext,
+  ScenarioFaultApi,
+  ScenarioMetadata,
+} from '../crisis-scenario';
+import { at, lerp, ramp } from '../shift-clock';
+import { setGenerationForecast, clearGenerationForecast } from '../generation-forecast';
 
 /**
- * **Demand Surge** — a major sporting event + cold snap drives unexpected peak demand.
+ * **Renewable Intermittency Cascade** — the duck curve, lived through.
  *
- * The weather model (Cold arc, temperature ~2°C) already drives a 30% residential
- * heating load increase via the temperature multiplier. This scenario layers in an
- * unexpected crowd demand event (stadium + transport) and then cold intensification.
- * Educational focus: demand-side management, real-time pricing, voluntary curtailment.
+ * This replaces the previous "stadium event + cold snap" arc, whose only
+ * scripted beat set a boolean and did nothing (its own comment said so), and
+ * whose second beat shed load FOR the operator. Neither taught anything.
  *
- * Timeline:
- * - Ticks 0–19:   Normal grid under cold weather (weather model at ~2 °C).
- *                 Residential heating loads elevated. Grid at ~92% backbone loading.
- * - Ticks 20–49:  Stadium event and transport peak — commercial loads are NOT shed,
- *                 i.e. shed fractions zeroed to ensure maximum commercial demand.
- *                 Backbone lines approach 100% thermal rating.
- * - Tick 50:      Industrial midnight shift ramps up. Peakers dispatched fully.
- *                 Lines GS1-DT1, GN1-RN1 near thermal limit.
- * - Tick 80:      Emergency demand response — voluntary curtailment programme:
- *                 residential 15%, commercial 20%, industrial light 10%.
- * - Ticks 80–99:  Demand response gradually restores balance.
+ * Every beat here moves the environment, not an output number, because the
+ * generation model already derives Solar from `irradiance` and Wind from
+ * `wind`. Drop the irradiance and the solar farm falls off on its own, through
+ * the same dispatch and frequency physics that judge the operator afterwards.
+ *
+ * - T+0:00 · Clear sky, solar at its ceiling, wind healthy. Comfortable.
+ * - T+0:15 → T+1:00 · A cloud bank crosses the array. Irradiance falls to 35 %
+ *   of clear-sky over ninety seconds — fast enough to matter, slow enough that
+ *   an operator watching the forecast panel can act before it bites.
+ * - T+0:50 → T+1:20 · The forecast misses: wind drops to 45 % of the morning
+ *   run. Both renewables are now going the same way at once, which is exactly
+ *   the correlation that makes intermittency hard.
+ * - T+1:00 onward · The evening demand ramp arrives on the sun's way out. This
+ *   is the belly of the duck: least renewable output, most demand.
+ *
+ * The mechanic is the FORECAST. `generation-forecast` publishes what the
+ * scenario expected against what the grid actually produced, so the player can
+ * see the miss opening up in front of them — and learns why storage and
+ * reserve are bought, rather than being told.
  */
 export class DemandSurgeScenario implements ICrisisScenario {
   public readonly metadata: ScenarioMetadata = {
     id: asScenarioId('demand-surge'),
-    name: 'Demand Surge — Event + Cold Snap',
+    name: 'Renewable Intermittency Cascade',
     summary:
-      'A major stadium event combined with an unexpected cold snap drives residential '
-      + 'and commercial demand well above forecast, stressing backbone transmission.',
+      'A cloud bank crosses the solar array while the wind forecast misses low, and the ' +
+      'evening demand ramp arrives on top of both. The duck curve, at full scale.',
     difficulty: Severity.Warning,
   };
 
   private faults!: ScenarioFaultApi;
-  private industrialRamp = false;
-  private demandResponse = false;
+  private weather!: ScenarioContext['weather'];
+
+  /** Clear-sky ceiling before the cloud bank. */
+  private static readonly SOLAR_START = 0.92;
+  /** What the array is left with under heavy cloud. */
+  private static readonly SOLAR_END = 0.32;
+  /** Wind availability the forecast promised. */
+  private static readonly WIND_START = 0.55;
+  /** What actually arrives. */
+  private static readonly WIND_END = 0.25;
 
   public setup(context: ScenarioContext): void {
     this.faults = context.faults;
-    this.industrialRamp = false;
-    this.demandResponse = false;
-
-    // Ensure no pre-existing shedding carries over from default state.
-    // The cold weather model drives the temperature-induced demand increase
-    // naturally through the load model's temperature multiplier.
+    this.weather = context.weather;
     this.faults.resetShedding();
+    this.weather.setArc(this.arcAt(0));
+    // The forecast is the promise. It is published once, up front, and never
+    // moved — a forecast that quietly corrects itself to match reality is not
+    // a forecast, and would hide the entire lesson.
+    setGenerationForecast({
+      solarAtCeiling: DemandSurgeScenario.SOLAR_START,
+      windForecast: DemandSurgeScenario.WIND_START,
+      note: 'Day-ahead forecast: clear sky, steady onshore breeze.',
+    });
   }
 
   public onTick(context: TickContext): void {
-    const { tick } = context;
+    // Re-profiling the environment every tick is the point: this is a weather
+    // EVENT unfolding, not a step change. The arc is cheap to compute and the
+    // model recomputes from it immediately.
+    this.weather.setArc(this.arcAt(context.tick));
+  }
 
-    // Tick 50: Midnight industrial shift ramps — ensure industrial loads at full demand
-    // (no shedding on industrial). Also triggers partial residential shed to stress system.
-    if (tick === 50 && !this.industrialRamp) {
-      // Commercial retail stays open late (no shedding == full demand on weather model)
-      // Simulate overloaded distribution by pre-shedding the lower-priority residential
-      // zones that the operator SHOULD have shed earlier but didn't — creating stress.
-      // (No action needed: default shed=0 means full demand. The cold weather + time
-      //  of day will drive the load model to full residential + commercial.)
-      this.industrialRamp = true;
-    }
+  /** The environment at a given tick — one pure function, no hidden state. */
+  private arcAt(tick: number): WeatherArc {
+    const cloud = ramp(tick, at(0, 15), at(0, 45)); // 90 s of cloud arriving
+    const windMiss = ramp(tick, at(0, 50), at(0, 30)); // 30 s of wind falling away
 
-    // Tick 80: Emergency demand response curtailment
-    if (tick === 80 && !this.demandResponse) {
-      this.faults.shedLoad(asLoadId('LD-RN-A'), 0.15);
-      this.faults.shedLoad(asLoadId('LD-RN-B'), 0.15);
-      this.faults.shedLoad(asLoadId('LD-RS-A'), 0.15);
-      this.faults.shedLoad(asLoadId('LD-RS-B'), 0.15);
-      this.faults.shedLoad(asLoadId('LD-DT-COM'), 0.20);
-      this.faults.shedLoad(asLoadId('LD-DT-RET'), 0.20);
-      this.faults.shedLoad(asLoadId('LD-IN-LGT'), 0.10);
-      this.demandResponse = true;
-    }
+    return {
+      ...CLEAR_ARC,
+      // A mild evening — the demand ramp here is the diurnal one already in
+      // the load model, not an invented spike.
+      baseTempC: 26,
+      heatAmplitudeC: 3,
+      irradianceBase: lerp(DemandSurgeScenario.SOLAR_START, DemandSurgeScenario.SOLAR_END, cloud),
+      windBase: lerp(DemandSurgeScenario.WIND_START, DemandSurgeScenario.WIND_END, windMiss),
+      windGust: 0.08,
+    };
   }
 
   public teardown(): void {
     this.faults.resetShedding();
+    this.weather.setArc(CLEAR_ARC);
+    clearGenerationForecast();
   }
 }

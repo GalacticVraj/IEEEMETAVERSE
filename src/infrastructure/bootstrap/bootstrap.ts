@@ -8,7 +8,7 @@ import { populateGraphFromTopology } from '@engine/topology/graph-builder';
 import type { SimulationKernel } from '@kernel';
 import type { GridEventMap } from '@core';
 import { EVIDENCE_ENGINE, LEARNER_TWIN } from '@learning';
-import { SCENARIO_REGISTRY } from '@scenarios';
+import { SCENARIO_REGISTRY, clearGenerationForecast, resetTelemetryTrust } from '@scenarios';
 import { bindStores, pushEvidenceFeedback, pushRunOpener } from '@state';
 
 import { SCENARIO_CONTEXT, SIMULATION_KERNEL, createCompositionRoot } from '../di/composition-root';
@@ -95,11 +95,20 @@ export function bootstrap(config: AppConfig): AppRuntime {
       for (const line of topology.lines) {
         protection.resetRelay(line.id);
         const breaker = protection.breakerFor(line.id);
-        if (breaker !== undefined && breaker.phase === 'Open') {
+        if (breaker?.phase === 'Open') {
           protection.commandClose(line.id, 0);
         }
       }
       protection.register(graph);
+
+      // Scenario-owned GLOBAL state resets before the next scenario arms.
+      // These live outside the engine (they must compile with no DOM), so
+      // nothing else clears them — and a previous run's SCADA-integrity alarm
+      // or renewable forecast surviving into an unrelated scenario is exactly
+      // the kind of cross-contamination that is hard to spot and easy to
+      // misread as a bug in the new scenario.
+      resetTelemetryTrust();
+      clearGenerationForecast();
 
       // Re-arm the scenario's scripted faults for a fresh run.
       scenario.setup(container.resolve(SCENARIO_CONTEXT));

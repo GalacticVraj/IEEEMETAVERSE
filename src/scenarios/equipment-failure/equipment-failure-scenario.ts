@@ -1,7 +1,14 @@
 import { Severity, asLineId, asScenarioId } from '@app-types';
 import type { TickContext } from '@core';
+import { CLEAR_ARC } from '@engine';
 
-import type { ICrisisScenario, ScenarioContext, ScenarioFaultApi, ScenarioMetadata } from '../crisis-scenario';
+import type {
+  ICrisisScenario,
+  ScenarioContext,
+  ScenarioFaultApi,
+  ScenarioMetadata,
+} from '../crisis-scenario';
+import { at } from '../shift-clock';
 
 /**
  * **Equipment Failure** — a transformer differential fault on the main infeed.
@@ -20,8 +27,8 @@ export class EquipmentFailureScenario implements ICrisisScenario {
     id: asScenarioId('equipment-failure'),
     name: 'Transformer Differential Fault',
     summary:
-      'A transformer internal fault trips the DT4-HB1 main infeed, forcing power '
-      + 're-routing that thermally overloads backup paths in sequential failure.',
+      'A transformer internal fault trips the DT4-HB1 main infeed, forcing power ' +
+      're-routing that thermally overloads backup paths in sequential failure.',
     difficulty: Severity.Warning,
   };
 
@@ -32,6 +39,9 @@ export class EquipmentFailureScenario implements ICrisisScenario {
 
   public setup(context: ScenarioContext): void {
     this.faults = context.faults;
+    // Every scenario declares its own environment; the app used to run one
+    // generic weather model for all of them.
+    context.weather.setArc(CLEAR_ARC);
     this.fault1 = false;
     this.fault2 = false;
     this.fault3 = false;
@@ -41,19 +51,19 @@ export class EquipmentFailureScenario implements ICrisisScenario {
     const { tick } = context;
 
     // Tick 20: Transformer differential clears DT4-HB1
-    if (tick === 20 && !this.fault1) {
+    if (tick === at(0, 30) && !this.fault1) {
       this.faults.commandOpenLine(asLineId('DT4-HB1'));
       this.fault1 = true;
     }
 
     // Tick 40: Thermal overload trips IN1-HB1
-    if (tick === 40 && !this.fault2) {
+    if (tick === at(1, 5) && !this.fault2) {
       this.faults.commandOpenLine(asLineId('IN1-HB1'));
       this.fault2 = true;
     }
 
     // Tick 60: DT1-IN1 thermal limit breached
-    if (tick === 60 && !this.fault3) {
+    if (tick === at(1, 45) && !this.fault3) {
       this.faults.commandOpenLine(asLineId('DT1-IN1'));
       this.fault3 = true;
     }

@@ -6,18 +6,15 @@
  * DecisionCommitted on the bus — the engine maps ids to load interventions.
  * The UI performs no simulation logic.
  */
-import { asDecisionId, asSeconds } from '@app-types';
-import { GRID_EVENT } from '@constants';
 import type { FrequencyMachine } from '@engine/frequency';
 import { MERIDIAN_BAY_TOPOLOGY } from '@engine/topology/meridian-bay';
 import { useAppFlowStore, useGridStore, useSimulationStore } from '@state';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import type { ReactElement } from 'react';
-
-import type { AppRuntime } from '@infra';
 
 import { useRuntime } from '../../runtime-context';
 
+import { commitDecision } from './commit-decision';
 import { summariseLever } from './lever-projection';
 import type { LeverSummary } from './lever-projection';
 import { simClock } from './learning-copy';
@@ -58,63 +55,138 @@ function useProjection(reliefMw: number): LeverSummary | null {
   }, [generators, frequency, totalGeneration, totalLoad, reliefMw]);
 }
 
-/** Emit a DecisionCommitted with REAL tick + telemetry, and journal it. */
-function commitDecision(
-  runtime: AppRuntime,
-  decisionId: string,
-  optionIndex: number,
-  label: string,
-): void {
-  const { tick, simTime, maxLineLoading } = useSimulationStore.getState();
-  (runtime.kernel.events as { emit(n: string, p: unknown): void }).emit(
-    GRID_EVENT.DecisionCommitted,
-    {
-      decisionId: asDecisionId(decisionId),
-      optionIndex,
-      simTime: asSeconds(simTime),
-    },
+/**
+ * The countdown ring beside a director prompt.
+ *
+ * Driven by SIMULATION ticks, not by a wall clock. Pause is a real, bound
+ * control in this console (Space), and a `setInterval` countdown would keep
+ * burning the operator's window while the physics stood still — punishing the
+ * player for using a feature the game gave them.
+ */
+function DecisionCountdown({
+  remaining,
+  total,
+}: {
+  remaining: number;
+  total: number;
+}): ReactElement {
+  const fraction = total <= 0 ? 0 : Math.max(0, Math.min(1, remaining / total));
+  const seconds = Math.max(0, Math.ceil(remaining / 10));
+  const RADIUS = 13;
+  const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
+  const urgent = fraction < 0.34;
+  const color = urgent ? '#B3261E' : fraction < 0.67 ? '#B4531F' : '#22637E';
+
+  return (
+    <span
+      style={{ position: 'relative', width: 32, height: 32, flexShrink: 0 }}
+      title={`${String(seconds)} s to answer before the default is taken`}
+    >
+      <svg width="32" height="32" viewBox="0 0 32 32" aria-hidden>
+        <circle cx="16" cy="16" r={RADIUS} fill="none" stroke="#E2E6E1" strokeWidth="3" />
+        <circle
+          cx="16"
+          cy="16"
+          r={RADIUS}
+          fill="none"
+          stroke={color}
+          strokeWidth="3"
+          strokeLinecap="round"
+          strokeDasharray={CIRCUMFERENCE}
+          strokeDashoffset={CIRCUMFERENCE * (1 - fraction)}
+          // Starts at 12 o'clock and drains clockwise, like every other timer
+          // anyone has ever read.
+          transform="rotate(-90 16 16)"
+          style={{ transition: 'stroke-dashoffset 120ms linear, stroke 300ms ease' }}
+        />
+      </svg>
+      <span
+        className="console-value"
+        style={{
+          position: 'absolute',
+          inset: 0,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          fontSize: 10,
+          fontWeight: 700,
+          color,
+        }}
+      >
+        {seconds}
+      </span>
+    </span>
   );
-  useAppFlowStore.getState().logDecision({
-    tick,
-    action: { type: decisionId, label },
-    zoneId: 'grid',
-    zoneIncomeTier: null,
-    alternativesConsidered: [
-      {
-        action: { type: 'no-action', label: 'Do nothing' },
-        projectedMaxLineLoading: maxLineLoading,
-      },
-    ],
-  });
+}
+
+interface ActiveDecision {
+  readonly decisionId: string;
+  readonly prompt: string;
+  readonly options: readonly string[];
+  readonly requestedAtTick: number;
+  readonly windowTicks: number;
+  readonly defaultOptionIndex: number;
 }
 
 function DirectorPrompt(): ReactElement | null {
   const runtime = useRuntime();
-  const activeDecision = useSimulationStore(
-    (s) =>
-      s.activeDecision as {
-        decisionId: string;
-        prompt: string;
-        options: readonly string[];
-      } | null,
-  );
+  const activeDecision = useSimulationStore((s) => s.activeDecision as ActiveDecision | null);
+  const tick = useSimulationStore((s) => s.tick);
+  // Guards the auto-default against firing twice while the commit round-trips
+  // through the bus and back into this projection.
+  const autoFired = useRef<string | null>(null);
+
+  const elapsed = activeDecision === null ? 0 : tick - activeDecision.requestedAtTick;
+  const remaining = activeDecision === null ? 0 : activeDecision.windowTicks - elapsed;
+
+  // Missed window: the grid does not wait for an operator, so the declared
+  // default is taken and the run records that it was taken FOR them.
+  useEffect(() => {
+    if (activeDecision === null) return;
+    if (remaining > 0) return;
+    if (autoFired.current === activeDecision.decisionId) return;
+    autoFired.current = activeDecision.decisionId;
+
+    const index = activeDecision.defaultOptionIndex;
+    const label = activeDecision.options[index] ?? 'No action';
+    commitDecision(
+      runtime,
+      activeDecision.decisionId,
+      index,
+      `Missed window — auto-default: ${label}`,
+    );
+  }, [activeDecision, remaining, runtime]);
 
   if (activeDecision === null) return null;
+
+  const expired = remaining <= 0;
 
   return (
     <div
       style={{
-        border: '1px solid #B4531F',
+        border: `1px solid ${expired ? '#B3261E' : '#B4531F'}`,
         borderRadius: 2,
         padding: '8px 10px',
-        background: 'rgba(180, 83, 31, 0.06)',
+        background: expired ? 'rgba(179, 38, 30, 0.07)' : 'rgba(180, 83, 31, 0.06)',
       }}
     >
-      <div className="console-section-title" style={{ color: '#B4531F', marginBottom: 4 }}>
-        Decision Required
-      </div>
-      <div style={{ fontSize: 11.5, lineHeight: 1.45, color: '#1C2530', marginBottom: 6 }}>
-        {activeDecision.prompt}
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'flex-start',
+          justifyContent: 'space-between',
+          gap: 8,
+        }}
+      >
+        <div style={{ minWidth: 0 }}>
+          <div className="console-section-title" style={{ color: '#B4531F', marginBottom: 4 }}>
+            {expired ? 'Missed Window' : 'Decision Required'}
+          </div>
+          <div style={{ fontSize: 11.5, lineHeight: 1.45, color: '#1C2530', marginBottom: 6 }}>
+            {activeDecision.prompt}
+          </div>
+        </div>
+        {!expired && <DecisionCountdown remaining={remaining} total={activeDecision.windowTicks} />}
       </div>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
         {activeDecision.options.map((option, index) => (
@@ -122,12 +194,19 @@ function DirectorPrompt(): ReactElement | null {
             key={option}
             className="console-btn"
             style={{ textAlign: 'left', fontSize: 11.5 }}
+            disabled={expired}
             onClick={() => commitDecision(runtime, activeDecision.decisionId, index, option)}
           >
             {option}
           </button>
         ))}
       </div>
+      {!expired && (
+        <div style={{ fontSize: 10, color: '#8B97A3', marginTop: 5, lineHeight: 1.4 }}>
+          If you do not answer, the grid takes “
+          {activeDecision.options[activeDecision.defaultOptionIndex] ?? 'no action'}” for you.
+        </div>
+      )}
     </div>
   );
 }

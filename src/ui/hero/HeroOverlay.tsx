@@ -5,14 +5,55 @@
  * The live 3D scene in slow orbit IS the hero — the overlay stays out of
  * its way.
  */
+import { useEffect, useState } from 'react';
 import type { ReactElement } from 'react';
-import { useAppFlowStore } from '../../state/app-flow-store';
+import { CRISIS_CARDS, useAppFlowStore } from '../../state/app-flow-store';
 import { useRuntime } from '../../runtime-context';
 import { startDemo } from '../prefs/demo-driver';
+import { LeaderboardPanel } from '../leaderboard/LeaderboardPanel';
+import { principleAt } from './operating-principles';
+
+/**
+ * The scenario "Jump In" starts. Picked by declared difficulty rather than
+ * hardcoded to a title, so adding a harder scenario changes this by itself.
+ */
+const HARDEST_SCENARIO_ID =
+  CRISIS_CARDS.find((card) => card.difficulty === 'Critical')?.id ?? CRISIS_CARDS[0]?.id ?? 'storm';
+
+/** How long each operating principle holds the screen, ms. */
+const PRINCIPLE_ROTATE_MS = 9000;
 
 export function HeroOverlay(): ReactElement {
   const beginShift = useAppFlowStore((s) => s.beginShift);
+  const selectCrisis = useAppFlowStore((s) => s.selectCrisis);
   const runtime = useRuntime();
+  const [showBoard, setShowBoard] = useState(false);
+  const [principleIndex, setPrincipleIndex] = useState(0);
+
+  const principle = principleAt(principleIndex);
+  const hardestLabel =
+    CRISIS_CARDS.find((card) => card.id === HARDEST_SCENARIO_ID)?.label ?? 'Crisis';
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setPrincipleIndex((index) => index + 1);
+    }, PRINCIPLE_ROTATE_MS);
+    return () => {
+      clearInterval(timer);
+    };
+  }, []);
+
+  /**
+   * Straight into a scenario, skipping the walkthrough.
+   *
+   * `selectCrisis` both picks the scenario and moves the app to ActiveCrisis,
+   * so the session start has to be driven here — the tutorial path normally
+   * does it from the scenario picker.
+   */
+  const jumpIn = (scenarioId: string): void => {
+    selectCrisis(scenarioId);
+    runtime.session.start(scenarioId);
+  };
 
   return (
     <div
@@ -59,25 +100,94 @@ export function HeroOverlay(): ReactElement {
             EV charging, shedding industry — has a visible, physical consequence in the live
             simulation below.
           </p>
-          <div style={{ display: 'flex', gap: 10, justifyContent: 'center', marginTop: 20 }}>
+          {/* Two ways in. "Start Training" teaches the console first; "Jump
+              In" hands a returning player (or a judge with three minutes) the
+              hardest scenario immediately. Both run the same simulation. */}
+          <div
+            style={{
+              display: 'flex',
+              gap: 10,
+              justifyContent: 'center',
+              marginTop: 20,
+              flexWrap: 'wrap',
+            }}
+          >
             <button
               className="console-btn-primary"
-              style={{ fontSize: 14, padding: '10px 32px' }}
+              style={{ fontSize: 14, padding: '10px 28px' }}
               onClick={beginShift}
             >
-              Begin Shift
+              Start Training
             </button>
             <button
               className="console-btn"
               style={{ fontSize: 14, padding: '10px 24px' }}
+              onClick={() => {
+                jumpIn(HARDEST_SCENARIO_ID);
+              }}
+              title={`Skip the walkthrough and start ${hardestLabel} immediately`}
+            >
+              Jump In — {hardestLabel}
+            </button>
+          </div>
+
+          <div
+            style={{
+              display: 'flex',
+              gap: 10,
+              justifyContent: 'center',
+              marginTop: 10,
+              flexWrap: 'wrap',
+            }}
+          >
+            <button
+              className="console-btn"
+              style={{ fontSize: 12, padding: '6px 16px', minHeight: 28 }}
               onClick={() => startDemo(runtime)}
               title="Hands-free walkthrough of the full learning loop — every event is real"
             >
               ▶ Competition Demo
             </button>
+            <button
+              className="console-btn"
+              style={{ fontSize: 12, padding: '6px 16px', minHeight: 28 }}
+              onClick={() => {
+                setShowBoard(true);
+              }}
+              title="Operating standards for Meridian Bay, and your measured best on each scenario"
+            >
+              Standards & Your Best
+            </button>
           </div>
         </div>
+
+        {/* Rotating operating principle. Stated as doctrine, never as a quote
+            attributed to anyone — see `operating-principles.ts`. */}
+        <div
+          key={principleIndex}
+          className="animate-fade-in"
+          style={{ maxWidth: 560, marginTop: 18, padding: '0 8px' }}
+        >
+          <div
+            className="console-section-title"
+            style={{ fontSize: 9.5, marginBottom: 4, color: '#8B97A3' }}
+          >
+            Operating principle
+          </div>
+          <p style={{ fontSize: 12.5, lineHeight: 1.55, color: '#5A6774' }}>{principle.text}</p>
+          <p style={{ fontSize: 10, lineHeight: 1.5, color: '#8B97A3', marginTop: 4 }}>
+            In this build: {principle.demonstratedBy}
+          </p>
+        </div>
       </div>
+
+      {showBoard && (
+        <LeaderboardPanel
+          onClose={() => {
+            setShowBoard(false);
+          }}
+        />
+      )}
 
       {/* Bottom attribution */}
       <div className="pb-5 text-center" style={{ fontSize: 11, color: '#8B97A3' }}>

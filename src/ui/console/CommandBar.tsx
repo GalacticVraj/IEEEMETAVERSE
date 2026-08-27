@@ -1,54 +1,40 @@
 /**
  * CommandBar — top operations header: identity, scenario, sim clock, grid
- * stability chip, playback control. All values from projections; the stability
- * label is a pure DISPLAY mapping of live telemetry (no logic feeds back).
+ * stability chip, playback control. All values from projections.
+ *
+ * The bar's own colour is now part of the instrument. It reads the ONE crisis
+ * ladder (`ui/crisis/crisis-level`) that the alert stack and the alarm lamp
+ * also read, so the header, the banners and the vignette can never disagree
+ * about how much trouble the grid is in — they are three renderings of a
+ * single measured assessment. The bar's previous private `stabilityOf` was
+ * that same judgement made a second time, and it has been deleted rather than
+ * left to drift.
+ *
+ * Colour stays daylight through WARNING and CRITICAL: the paper tints, it does
+ * not invert. The one level that goes genuinely dark is BLACKOUT, because by
+ * then the districts this bar reports on are dark too.
  */
 import {
   AppMode,
   CRISIS_CARDS,
   useAppFlowStore,
   useGridStore,
+  nextRank,
+  rankOf,
+  useCareerStore,
   useRunStatsStore,
   useSimulationStore,
 } from '@state';
+import { useState } from 'react';
 import type { ReactElement } from 'react';
 
 import { useRuntime } from '../../runtime-context';
 import { Tooltip } from '../common/Tooltip';
+import { CRISIS_LEVEL_STYLE, useCrisisAssessment } from '../crisis';
+import type { CrisisLevelStyle } from '../crisis';
+
+import { HomesPowered } from './HomesPowered';
 import { dayPhase, simClock } from './learning-copy';
-
-type Stability = 'NORMAL' | 'ELEVATED' | 'EMERGENCY' | 'BLACKOUT';
-
-const STABILITY_STYLE: Record<Stability, { color: string; bg: string }> = {
-  NORMAL: { color: '#217A56', bg: 'rgba(33, 122, 86, 0.10)' },
-  ELEVATED: { color: '#9A6B15', bg: 'rgba(154, 107, 21, 0.10)' },
-  EMERGENCY: { color: '#B4531F', bg: 'rgba(180, 83, 31, 0.12)' },
-  BLACKOUT: { color: '#B3261E', bg: 'rgba(179, 38, 30, 0.12)' },
-};
-
-const STABILITY_TOOLTIP: Record<Stability, string> = {
-  NORMAL:
-    'Grid operating within safe limits. Corridor loading is below 80% and frequency is nominal at 60.00 Hz.',
-  ELEVATED:
-    'Corridor loading exceeds 80% or supply deficit exceeds 40 MW. Monitor corridors closely for trip risks.',
-  EMERGENCY:
-    'Critical overload! Line tripped or corridor at 100%. Execute operator actions immediately to avoid cascade blackout.',
-  BLACKOUT:
-    'One or more city districts have lost power. Reconnect transmission lines to restore power to affected homes.',
-};
-
-/** Pure display mapping — reads telemetry, renders a label. */
-function stabilityOf(
-  maxLoading: number,
-  trippedCount: number,
-  darkZones: number,
-  deficitMw: number,
-): Stability {
-  if (darkZones > 0) return 'BLACKOUT';
-  if (trippedCount > 0 || maxLoading >= 1.0 || deficitMw >= 150) return 'EMERGENCY';
-  if (maxLoading >= 0.8 || deficitMw >= 40) return 'ELEVATED';
-  return 'NORMAL';
-}
 
 function ShieldIcon(): ReactElement {
   return (
@@ -75,7 +61,7 @@ function ShieldIcon(): ReactElement {
  * the after-action Resilience score is built from, surfaced live so the player
  * can see the stake before the debrief tells them about it.
  */
-function DistrictScore(): ReactElement | null {
+function DistrictScore({ style }: { style: CrisisLevelStyle }): ReactElement | null {
   const zones = useGridStore((s) => s.zones);
   const everDark = useRunStatsStore((s) => s.zonesEverDark);
 
@@ -83,7 +69,7 @@ function DistrictScore(): ReactElement | null {
   if (total === 0) return null;
   const lost = everDark.length;
   const held = Math.max(0, total - lost);
-  const color = lost === 0 ? '#217A56' : lost >= total / 2 ? '#B3261E' : '#B4531F';
+  const color = lost === 0 ? style.accent : lost >= total / 2 ? '#F1544B' : '#B4531F';
 
   return (
     <Tooltip
@@ -99,9 +85,9 @@ function DistrictScore(): ReactElement | null {
           gap: 5,
           fontSize: 11,
           fontWeight: 700,
-          color,
-          background: 'rgba(28, 37, 48, 0.04)',
-          border: '1px solid #E2E6E1',
+          color: lost === 0 && style.label === 'BLACKOUT' ? style.barInk : color,
+          background: style.barWell,
+          border: `1px solid ${style.barWellBorder}`,
           borderRadius: 6,
           padding: '4px 10px',
           whiteSpace: 'nowrap',
@@ -111,8 +97,108 @@ function DistrictScore(): ReactElement | null {
         <span>
           {held}/{total}
         </span>
-        <span style={{ fontSize: 9.5, color: '#5A6774', letterSpacing: '0.06em' }}>HELD</span>
+        <span style={{ fontSize: 9.5, color: style.barInkMuted, letterSpacing: '0.06em' }}>
+          HELD
+        </span>
       </span>
+    </Tooltip>
+  );
+}
+
+/**
+ * Who is on shift, and what they have earned.
+ *
+ * Rank is derived from the career total rather than stored, so it can never
+ * disagree with the score behind it. Clicking the name lets the operator set
+ * it — a competition demo wants the judge's own name on the console, and
+ * asking for it in a modal before anyone has played would be worse.
+ */
+function OperatorIdentity({ style }: { style: CrisisLevelStyle }): ReactElement {
+  const name = useCareerStore((s) => s.operatorName);
+  const totalScore = useCareerStore((s) => s.totalScore);
+  const totalRuns = useCareerStore((s) => s.totalRuns);
+  const setOperatorName = useCareerStore((s) => s.setOperatorName);
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState(name);
+
+  const rank = rankOf(totalScore);
+  const next = nextRank(totalScore);
+
+  const commit = (): void => {
+    setOperatorName(draft);
+    setEditing(false);
+  };
+
+  if (editing) {
+    return (
+      <input
+        className="console-value"
+        autoFocus
+        value={draft}
+        maxLength={24}
+        onChange={(e) => {
+          setDraft(e.target.value);
+        }}
+        onBlur={commit}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter') commit();
+          if (e.key === 'Escape') {
+            setDraft(name);
+            setEditing(false);
+          }
+        }}
+        aria-label="Operator name"
+        style={{
+          fontSize: 11,
+          fontWeight: 700,
+          width: 130,
+          padding: '4px 8px',
+          borderRadius: 6,
+          border: `1px solid ${style.accent}`,
+          background: style.barWell,
+          color: style.barInk,
+        }}
+      />
+    );
+  }
+
+  return (
+    <Tooltip
+      title={`${rank} · ${String(totalScore)} career points`}
+      content={
+        next === null
+          ? `${String(totalRuns)} shift(s) on record. You have reached the top of the ladder.`
+          : `${String(totalRuns)} shift(s) on record. ${String(next.remaining)} more points to make ${next.rank}. Click to change your name.`
+      }
+      position="bottom"
+    >
+      <button
+        onClick={() => {
+          setDraft(name);
+          setEditing(true);
+        }}
+        className="console-value"
+        style={{
+          display: 'inline-flex',
+          alignItems: 'baseline',
+          gap: 6,
+          fontSize: 11,
+          fontWeight: 700,
+          color: style.barInk,
+          background: style.barWell,
+          border: `1px solid ${style.barWellBorder}`,
+          borderRadius: 6,
+          padding: '4px 10px',
+          whiteSpace: 'nowrap',
+          cursor: 'pointer',
+          font: 'inherit',
+        }}
+      >
+        <span>{name}</span>
+        <span style={{ fontSize: 9.5, color: style.barInkMuted, letterSpacing: '0.05em' }}>
+          {rank.toUpperCase()}
+        </span>
+      </button>
     </Tooltip>
   );
 }
@@ -123,17 +209,13 @@ export function CommandBar(): ReactElement {
   const selectedCrisis = useAppFlowStore((s) => s.selectedCrisis);
   const resolveCrisis = useAppFlowStore((s) => s.resolveCrisis);
   const tick = useGridStore((s) => s.tick);
-  const trippedCount = useGridStore((s) => s.trippedCount);
   const zones = useGridStore((s) => s.zones);
-  const totalLoad = useGridStore((s) => s.totalLoad);
-  const totalGeneration = useGridStore((s) => s.totalGeneration);
-  const maxLineLoading = useSimulationStore((s) => s.maxLineLoading);
   const lifecycle = useSimulationStore((s) => s.lifecycle);
 
+  const { level, reason } = useCrisisAssessment();
+  const style = CRISIS_LEVEL_STYLE[level];
+
   const darkZones = zones.filter((z) => z.state === 'Blackout').length;
-  const deficitMw = Math.max(0, totalLoad - totalGeneration);
-  const stability = stabilityOf(maxLineLoading, trippedCount, darkZones, deficitMw);
-  const style = STABILITY_STYLE[stability];
   const active = mode === AppMode.ActiveCrisis;
   const paused = lifecycle === 'Paused';
   const scenarioName = CRISIS_CARDS.find((c) => c.id === selectedCrisis)?.label ?? null;
@@ -155,8 +237,12 @@ export function CommandBar(): ReactElement {
         borderLeft: 'none',
         borderRight: 'none',
         borderTop: 'none',
+        borderBottom: `1px solid ${style.barBorder}`,
         height: '48px',
-        background: 'rgba(250, 250, 247, 0.96)',
+        background: style.bar,
+        // Slow enough to read as the room changing, fast enough that the
+        // escalation and its banner land together.
+        transition: 'background 420ms ease, border-color 420ms ease',
       }}
     >
       {/* Identity + scenario */}
@@ -178,19 +264,24 @@ export function CommandBar(): ReactElement {
           </div>
           <span
             className="console-value"
-            style={{ fontSize: 13, fontWeight: 700, letterSpacing: '0.06em', color: '#1C2530' }}
+            style={{
+              fontSize: 13,
+              fontWeight: 700,
+              letterSpacing: '0.06em',
+              color: style.barInk,
+            }}
           >
             GRIDGUARD
           </span>
         </div>
-        <span style={{ color: '#D3D7D2', fontWeight: 300 }}>|</span>
+        <span style={{ color: style.barDivider, fontWeight: 300 }}>|</span>
         {/* The standing objective. The hero screen states the role once and
             then you leave it behind; nothing in the console used to say what
             the job actually was. One line, always visible, never a modal. */}
         <span
           style={{
             fontSize: 11.5,
-            color: '#5A6774',
+            color: style.barInkMuted,
             fontWeight: 500,
             whiteSpace: 'nowrap',
             overflow: 'hidden',
@@ -199,7 +290,9 @@ export function CommandBar(): ReactElement {
         >
           {active ? (
             <>
-              <span style={{ color: '#1C2530', fontWeight: 600 }}>You are the grid operator</span>
+              <span style={{ color: style.barInk, fontWeight: 600 }}>
+                You are the grid operator
+              </span>
               {' — keep every district powered to T+03:00'}
             </>
           ) : (
@@ -208,8 +301,20 @@ export function CommandBar(): ReactElement {
         </span>
         {scenarioName !== null && (
           <>
-            <span style={{ color: '#D3D7D2', fontWeight: 300 }}>|</span>
-            <span style={{ fontSize: 12, color: '#22637E', fontWeight: 600, whiteSpace: 'nowrap' }}>
+            <span style={{ color: style.barDivider, fontWeight: 300 }}>|</span>
+            <span
+              style={{
+                fontSize: 12,
+                color: style.barLink,
+                fontWeight: 600,
+                whiteSpace: 'nowrap',
+                // Shrinks and ellipsises rather than pushing the clock into
+                // the identity chip on a narrow window.
+                minWidth: 0,
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+              }}
+            >
               {scenarioName}
             </span>
           </>
@@ -227,7 +332,7 @@ export function CommandBar(): ReactElement {
             display: 'flex',
             alignItems: 'center',
             gap: 12,
-            background: 'rgba(28, 37, 48, 0.04)',
+            background: style.barWell,
             padding: '4px 12px',
             borderRadius: 6,
             cursor: 'help',
@@ -235,37 +340,57 @@ export function CommandBar(): ReactElement {
         >
           <span
             className="console-value"
-            style={{ fontSize: 14, fontWeight: 700, color: '#1C2530' }}
+            style={{ fontSize: 14, fontWeight: 700, color: style.barInk }}
           >
             {simClock(tick)}
           </span>
-          <span style={{ fontSize: 11, color: '#5A6774', fontWeight: 500 }}>{dayPhase(tick)}</span>
+          <span style={{ fontSize: 11, color: style.barInkMuted, fontWeight: 500 }}>
+            {dayPhase(tick)}
+          </span>
         </div>
       </Tooltip>
 
       {/* Status + controls */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-        {active && <DistrictScore />}
+        {active && <HomesPowered style={style} />}
+        <OperatorIdentity style={style} />
+        {active && <DistrictScore style={style} />}
         <Tooltip
-          title={`Grid State: ${stability}`}
-          content={STABILITY_TOOLTIP[stability]}
+          title={`Grid state: ${style.label}`}
+          // The static line teaches what the level MEANS; the live line says
+          // which reading earned it right now. A player who reads both learns
+          // the instrument, not just the colour. Passed as nodes because the
+          // tooltip renders with `white-space: normal` and would eat "\n".
+          content={
+            <>
+              <div>{style.meaning}</div>
+              <div style={{ marginTop: 5, color: '#FAFAF7', fontWeight: 600 }}>
+                Right now: {reason}
+              </div>
+            </>
+          }
           position="bottom"
         >
           <span
             className="console-value"
             style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 6,
               fontSize: 11,
               fontWeight: 700,
-              color: style.color,
-              background: style.bg,
-              border: `1px solid ${style.color}`,
+              color: style.accent,
+              background: style.barWell,
+              border: `1px solid ${style.accent}`,
               borderRadius: 6,
               padding: '4px 12px',
               letterSpacing: '0.06em',
               cursor: 'help',
+              transition: 'color 420ms ease, border-color 420ms ease',
             }}
           >
-            ● {active ? stability : 'STANDBY'}
+            <span className="status-led" style={{ background: style.accent }} aria-hidden />
+            {active || mode === AppMode.AfterAction ? style.label : 'STANDBY'}
           </span>
         </Tooltip>
         {active && (

@@ -5,10 +5,13 @@
  * afternoon: the weather model published `WeatherChanged`, the event log wrote
  * a line about it, and the scene never heard. This is the scene hearing.
  *
- * No rain particles. A sprite field dense enough to read as rain in a top-down
- * city view costs more than it returns, and a half-committed one reads as
- * dirt on the lens. Two hard light pulses and a horizon pop announce a storm
- * far more clearly, and cost one light.
+ * This module owns the LIGHT only — two hard pulses and a horizon pop, which
+ * announce a storm for the cost of a single directional light. The rain that
+ * was once declined here now lives in `rain.tsx`, built densely enough to
+ * read rather than half-committed, which was the actual objection.
+ *
+ * Strike RATE scales with measured corridor stress, so the sky gets more
+ * violent as the grid approaches its limits — see `gapTicks`.
  *
  * Timing is derived from the SIMULATION TICK, not from wall-clock or
  * `Math.random()`. That keeps strikes deterministic — the same seed replays
@@ -41,9 +44,20 @@ function hash01(n: number): number {
   return x - Math.floor(x);
 }
 
-/** Ticks to wait after strike `index` before the next one. */
-function gapTicks(index: number): number {
-  return BASE_INTERVAL_TICKS + Math.floor(hash01(index + 1) * JITTER_TICKS);
+/**
+ * Ticks to wait after strike `index` before the next one.
+ *
+ * `stress` is the worst corridor loading right now, 0..1. The strike rate
+ * closes up as the grid is pushed harder — at full stress the gap is 45 % of
+ * its calm value. That is a presentation choice with a traceable cause, not a
+ * physical claim: lightning does not know about line loading, but the storm
+ * SCENE getting more violent as the corridors approach their limits is the
+ * scene reporting the grid's condition, which is this renderer's whole job.
+ */
+function gapTicks(index: number, stress: number): number {
+  const base = BASE_INTERVAL_TICKS + Math.floor(hash01(index + 1) * JITTER_TICKS);
+  const urgency = 1 - 0.55 * Math.min(1, Math.max(0, stress));
+  return Math.max(8, Math.round(base * urgency));
 }
 
 /**
@@ -70,7 +84,11 @@ export function StormEffects(): ReactElement {
     const light = flashRef.current;
     if (light === null) return;
 
-    const { weatherKind, tick } = useGridStore.getState();
+    const { weatherKind, tick, lines } = useGridStore.getState();
+    // Worst corridor loading right now — the same measured quantity the crisis
+    // ladder and the corridor colours read.
+    let stress = 0;
+    for (const line of lines) stress = Math.max(stress, line.loading);
 
     if (weatherKind !== 'Storm') {
       light.intensity = 0;
@@ -93,10 +111,10 @@ export function StormEffects(): ReactElement {
 
     // First frame of a storm: arm the schedule relative to now.
     if (nextStrikeTickRef.current < 0) {
-      nextStrikeTickRef.current = tick + gapTicks(strikeIndexRef.current);
+      nextStrikeTickRef.current = tick + gapTicks(strikeIndexRef.current, stress);
     } else if (tick >= nextStrikeTickRef.current) {
       strikeIndexRef.current += 1;
-      nextStrikeTickRef.current = tick + gapTicks(strikeIndexRef.current);
+      nextStrikeTickRef.current = tick + gapTicks(strikeIndexRef.current, stress);
       ageRef.current = 0;
     }
 

@@ -15,6 +15,7 @@ export type {
   Zone,
   GridTopology,
   LineFlow,
+  LineRestoration,
   ZoneStatus,
   GridState,
   GeneratorStatus,

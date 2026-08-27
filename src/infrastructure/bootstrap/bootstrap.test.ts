@@ -17,6 +17,7 @@ const EXPECTED_SCENARIO_IDS = [
   'generator-loss',
   'substation-failure',
   'demand-surge',
+  'cold-snap',
   'transformer-failure',
 ] as const;
 
@@ -39,7 +40,7 @@ describe('bootstrap', () => {
     runtime.shutdown();
   });
 
-  it('registers all 8 scenarios in the registry', () => {
+  it('registers all 9 scenarios in the registry', () => {
     const runtime = bootstrap(PROFILES.development);
     const registry = runtime.container.resolve(SCENARIO_REGISTRY);
 

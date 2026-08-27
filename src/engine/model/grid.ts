@@ -95,6 +95,29 @@ export interface LineFlow {
   readonly state: LineState;
 }
 
+/**
+ * Live restoration picture for a corridor whose breaker is currently OPEN.
+ *
+ * A tripped line is removed from the electrical graph, so it does not appear
+ * in `lines` at all — the power flow has nothing to say about a conductor that
+ * is carrying nothing. This is where the operator learns what would happen if
+ * they tried to put it back, and it is computed HERE, in the engine, because
+ * "may this close?" is a protection question and not a UI one.
+ */
+export interface LineRestoration {
+  readonly line: LineId;
+  /** Conductor temperature right now, °C. */
+  readonly conductorTempC: number;
+  /** The automatic controller recloses on its own below this, °C. */
+  readonly recloseBelowC: number;
+  /**
+   * True when the conductor has cooled enough that a reclose is expected to
+   * hold. False means a close would very likely trip straight back out — which
+   * the operator is still allowed to try, and to learn from.
+   */
+  readonly readyToReclose: boolean;
+}
+
 export interface ZoneStatus {
   readonly zone: ZoneId;
   readonly state: ZoneState;
@@ -126,6 +149,8 @@ export interface GridState {
   /** Output of the largest single online in-feed, MW. */
   readonly largestInfeedMw: MegaWatts;
   readonly lines: readonly LineFlow[];
+  /** One entry per corridor currently open. Empty when the network is intact. */
+  readonly restoration: readonly LineRestoration[];
   readonly zones: readonly ZoneStatus[];
   readonly totalGeneration: MegaWatts;
   readonly totalLoad: MegaWatts;

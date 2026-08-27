@@ -20,9 +20,13 @@ import {
   TransmissionLines,
 } from './rendering/grid-scene';
 import { BusLabels } from './rendering/bus-labels';
+import { ZoneLabels } from './rendering/zone-labels';
 import { CameraShake } from './rendering/camera/camera-shake';
 import { EventFlashes } from './rendering/visual-effects/event-flashes';
 import { StormEffects } from './rendering/visual-effects/storm';
+import { RainEffects } from './rendering/visual-effects/rain';
+import { OutageMarkers } from './rendering/visual-effects/outage';
+import { DemandHeatmap } from './rendering/visual-effects/demand-heatmap';
 import { CameraDirector } from './rendering/camera/CameraDirector';
 import { CameraHud } from './rendering/camera/CameraHud';
 import { useCameraStore } from './rendering/camera/camera-store';
@@ -32,9 +36,11 @@ import { SelectionChip } from './rendering/selection-chip';
 import { TimeOfDayRig } from './rendering/TimeOfDayRig';
 import { AdvisorCard } from './ui/advisor/AdvisorCard';
 import { ConsoleShell } from './ui/console';
+import { CrisisBanners, CrisisVignette, TripFlash } from './ui/crisis';
 import { HeroOverlay } from './ui/hero/HeroOverlay';
 import { TutorialManager } from './ui/onboarding';
 import { QuickControls } from './ui/prefs/QuickControls';
+import { DemoWatermark } from './ui/prefs/DemoWatermark';
 import { OnboardingTour } from './ui/onboarding/OnboardingTour';
 import { AfterActionScreen } from './ui/after-action/AfterActionScreen';
 import { useUiStore } from './state/ui-store';
@@ -104,6 +110,11 @@ export function App({ config }: AppProps): ReactElement {
         <GeneratorMarkers />
         <BusLabels />
 
+        {/* District plates — the inverse of the bus chips: names on the wide
+            shot, out of the way once the camera closes in. Clicking one
+            selects the whole district. */}
+        <ZoneLabels />
+
         {/* City dressing (always visible) */}
         <CityLayout />
         <Atmosphere />
@@ -114,6 +125,18 @@ export function App({ config }: AppProps): ReactElement {
 
         {/* Lightning, but only while the weather model reports a Storm. */}
         <StormEffects />
+
+        {/* A district that has lost supply gets a haze, a ground footprint and
+            one rising caption — the part `DimGroup`'s unlit buildings cannot
+            say from a wide shot. Driven by ZoneStatus.state, nothing else. */}
+        {/* Driven rain, only while the weather model reports a Storm. */}
+        <RainEffects />
+
+        <OutageMarkers />
+
+        {/* Thermal demand per district — only while the weather model reports
+            a genuinely cold ambient. The cold-snap scenario's mechanic. */}
+        <DemandHeatmap />
 
         {/* The selected asset labels itself where it stands — the answer
             starts at the object, the depth continues in the left rail. */}
@@ -151,6 +174,21 @@ export function App({ config }: AppProps): ReactElement {
 
       {/* Mission-control console — hidden until the intro lands at home */}
       {isConsole && !introActive && <ConsoleShell mode={mode} />}
+
+      {/* Escalation surfaces. Both read the same measured crisis ladder the
+          command bar does: the alarm lamp is on only while the grid is
+          genuinely critical or dark, and a banner fires only on an upward
+          step, quoting the reading that caused it. */}
+      {isActiveCrisis && !introActive && <CrisisVignette />}
+      {isConsole && !introActive && <CrisisBanners />}
+
+      {/* Unattended presentation runs label themselves — nobody should mistake
+          an automated loop for a played run. */}
+      <DemoWatermark />
+
+      {/* Arc flash on a lost generating unit. Sits above the banners: it is
+          380 ms long and it is the cue that makes the player look up. */}
+      {isActiveCrisis && !introActive && <TripFlash />}
 
       {/* In-play advisor: one evidence-grounded message at a time */}
       {isActiveCrisis && !introActive && <AdvisorCard />}

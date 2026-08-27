@@ -58,12 +58,52 @@ export const ZONE_COLOR: Readonly<Record<string, string>> = {
 
 /** Which zone each bus belongs to (for colouring). */
 export const BUS_ZONE: Readonly<Record<string, string>> = {
-  DT1: 'DT', DT2: 'DT', DT3: 'DT', DT4: 'DT', DT5: 'DT',
-  IN1: 'IN', IN2: 'IN', IN3: 'IN',
-  RN1: 'RN', RN2: 'RN', RN3: 'RN',
-  RS1: 'RS', RS2: 'RS', RS3: 'RS',
-  AP1: 'AP', AP2: 'AP',
-  HB1: 'HB', HB2: 'HB',
+  DT1: 'DT',
+  DT2: 'DT',
+  DT3: 'DT',
+  DT4: 'DT',
+  DT5: 'DT',
+  IN1: 'IN',
+  IN2: 'IN',
+  IN3: 'IN',
+  RN1: 'RN',
+  RN2: 'RN',
+  RN3: 'RN',
+  RS1: 'RS',
+  RS2: 'RS',
+  RS3: 'RS',
+  AP1: 'AP',
+  AP2: 'AP',
+  HB1: 'HB',
+  HB2: 'HB',
   GN1: 'RN',
   GS1: 'IN',
 };
+
+/**
+ * Zone centroids, averaged from the buses that belong to each zone.
+ *
+ * Lives here rather than inside any one effect because several consumers need
+ * "where is this district": the event flashes, the outage markers, and the
+ * camera's zone framing. A private copy had already appeared in
+ * `visual-effects/event-flashes`; a second would have been the one that drifted.
+ *
+ * Pure and static — derived entirely from the tables above, so callers memoise
+ * one result for the lifetime of the app.
+ */
+export function zoneCentroids(): Readonly<Record<string, readonly [number, number]>> {
+  const sums: Record<string, { x: number; z: number; n: number }> = {};
+  for (const [bus, position] of Object.entries(BUS_POSITIONS)) {
+    const zone = BUS_ZONE[bus];
+    if (zone === undefined) continue;
+    const entry = (sums[zone] ??= { x: 0, z: 0, n: 0 });
+    entry.x += position[0];
+    entry.z += position[1];
+    entry.n += 1;
+  }
+  const out: Record<string, readonly [number, number]> = {};
+  for (const [zone, sum] of Object.entries(sums)) {
+    out[zone] = [sum.x / sum.n, sum.z / sum.n];
+  }
+  return out;
+}

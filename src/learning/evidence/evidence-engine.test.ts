@@ -34,7 +34,11 @@ const makeHarness = () => {
 };
 
 const tick = (bus: GridEventBus, n: number): void => {
-  bus.emit(GRID_EVENT.SimulationTick, { tick: n, simTime: asSeconds(n / 10), timestep: asSeconds(0.1) });
+  bus.emit(GRID_EVENT.SimulationTick, {
+    tick: n,
+    simTime: asSeconds(n / 10),
+    timestep: asSeconds(0.1),
+  });
 };
 
 describe('concept catalog', () => {
@@ -111,6 +115,9 @@ describe('evidence engine', () => {
       decisionId: asDecisionId('dec-overload-50'),
       prompt: 'Choose:',
       options: ['a', 'b'],
+      requestedAtTick: 50,
+      windowTicks: 300,
+      defaultOptionIndex: 1,
     });
     tick(bus, 80);
     bus.emit(GRID_EVENT.DecisionCommitted, {

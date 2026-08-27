@@ -25,12 +25,38 @@ export const ZONE_INFO: Record<string, ZoneInfo> = {
   HB: { name: 'Harbor', role: 'Port industry + water treatment plant (critical)' },
 };
 
-/** ≈800 households served per MW of residential demand. A labeled ESTIMATE. */
+/**
+ * ≈800 households served per MW of residential demand. A labeled ESTIMATE.
+ *
+ * Physically grounded rather than picked: a household averaging ~1.25 kW
+ * continuous puts ~800 of them on a megawatt, which is also what Meridian
+ * Bay's 220,000 homes against its residential block implies.
+ */
 const HOUSEHOLDS_PER_MW = 800;
+
+/** Households in Meridian Bay. The denominator for every "homes" figure. */
+export const MERIDIAN_BAY_HOUSEHOLDS = 220_000;
 
 /** Rough households affected by an unserved-MW figure. Always present as "≈". */
 export function estimateHouseholdsAffected(unservedMw: number): number {
-  return Math.round(unservedMw * HOUSEHOLDS_PER_MW);
+  return Math.min(MERIDIAN_BAY_HOUSEHOLDS, Math.round(unservedMw * HOUSEHOLDS_PER_MW));
+}
+
+/**
+ * Households still powered, given the unserved demand right now.
+ *
+ * Deliberately the exact complement of `estimateHouseholdsAffected`, so the
+ * two figures always sum to the city. The brief proposed a separate formula —
+ * `(1 - unservedMw / totalLoadMw) * 220000` — which would have disagreed with
+ * the estimator already used by the health panel and the after-action report:
+ * on 50 MW unserved, that formula says ~10,000 homes lost while the panel
+ * beside it says ~40,000. Two numbers for the same fact, on the same screen.
+ *
+ * It also divides by TOTAL demand, which includes industry and commerce, so it
+ * would have counted a shed steel mill as tens of thousands of dark houses.
+ */
+export function estimateHouseholdsPowered(unservedMw: number): number {
+  return MERIDIAN_BAY_HOUSEHOLDS - estimateHouseholdsAffected(unservedMw);
 }
 
 export function zoneDisplayName(zoneId: string): string {

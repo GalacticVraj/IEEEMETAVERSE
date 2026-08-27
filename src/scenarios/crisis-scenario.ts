@@ -1,6 +1,12 @@
 import type { GeneratorId, LineId, LoadId, ScenarioId, Severity } from '@app-types';
 import type { TickContext } from '@core';
-import type { IGenerationModel, ILoadModel, ISimulationEngine, ProtectionEngine } from '@engine';
+import type {
+  IGenerationModel,
+  ILoadModel,
+  ISimulationEngine,
+  IWeatherModel,
+  ProtectionEngine,
+} from '@engine';
 
 export interface ScenarioMetadata {
   readonly id: ScenarioId;
@@ -30,6 +36,20 @@ export interface ScenarioContext {
   readonly engine: ISimulationEngine;
   /** Direct subsystem fault injection API. */
   readonly faults: ScenarioFaultApi;
+  /**
+   * The environment this scenario runs in.
+   *
+   * Every scenario MUST declare its arc in `setup()`. Until this existed the
+   * app registered one generic weather model for all of them, so the heatwave
+   * had no heat and the storm had no wind — the arcs were written and tested
+   * but never reached a running scenario.
+   *
+   * `setArc` may also be called from `onTick` to script a weather EVENT (cloud
+   * cover crossing the solar farm, wind dying). That drives real generation
+   * physics rather than faking an output number: the generation model already
+   * derives Solar from `irradiance` and Wind from `wind`.
+   */
+  readonly weather: Pick<IWeatherModel, 'setArc' | 'current'>;
   /** Exposed subsystem models (read-only queries). */
   readonly generation: Pick<IGenerationModel, 'isTripped' | 'totalOutput' | 'getGeneratorOutput'>;
   readonly loads: Pick<ILoadModel, 'getShedFraction' | 'totalDemand' | 'getLoadDemand'>;

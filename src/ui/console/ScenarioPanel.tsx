@@ -2,6 +2,16 @@
  * ScenarioPanel — crisis selection. Cards mirror REAL registered scenarios;
  * starting one starts the actual crisis session (kernel ticking + scenario
  * scripting), then flips the app flow to ActiveCrisis.
+ *
+ * Laid out for the SMALLEST supported viewport, not the largest. When the
+ * picker went from three scenarios to six it grew to 929px inside a 148px
+ * scroller at 1366×768 — putting "Start Scenario" 791px below an invisible
+ * fold, so the player could not begin a run at all. Two rules keep it honest:
+ *
+ *   1. Only the SELECTED card shows its description. Six paragraphs nobody has
+ *      chosen between yet is not information, it is a wall.
+ *   2. The start button lives OUTSIDE the scrolling list, so it is reachable
+ *      no matter how many scenarios exist.
  */
 import { CRISIS_CARDS, useAppFlowStore, useEventLogStore } from '@state';
 import { useState } from 'react';
@@ -9,30 +19,14 @@ import type { ReactElement } from 'react';
 
 import { useRuntime } from '../../runtime-context';
 import { Tooltip } from '../common/Tooltip';
-import { PanelHeader } from './PanelHeader';
-
-function CompassIcon(): ReactElement {
-  return (
-    <svg
-      width="15"
-      height="15"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2.2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <circle cx="12" cy="12" r="10" />
-      <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76" />
-    </svg>
-  );
-}
 
 const DIFFICULTY_COLOR: Record<string, string> = {
   Warning: '#9A6B15',
   Critical: '#B3261E',
 };
+
+/** Cap on the card list. Beyond this it scrolls; the button never moves. */
+const LIST_MAX_HEIGHT = 300;
 
 export function ScenarioPanel(): ReactElement {
   const runtime = useRuntime();
@@ -50,98 +44,98 @@ export function ScenarioPanel(): ReactElement {
   return (
     <div
       className="console-panel animate-slide-in-left"
-      style={{ padding: '12px 14px', display: 'flex', flexDirection: 'column', gap: 10 }}
+      style={{ padding: '10px 12px', display: 'flex', flexDirection: 'column', gap: 8 }}
     >
-      <PanelHeader
-        title="SELECT SCENARIO"
-        subtitle="Mission summary and crisis selection"
-        icon={<CompassIcon />}
-      />
-
-      {/* Next expected action banner */}
-      <div
-        style={{
-          background: 'rgba(34, 99, 126, 0.08)',
-          borderLeft: '3px solid #22637E',
-          padding: '6px 10px',
-          borderRadius: 4,
-          fontSize: 11,
-          fontWeight: 600,
-          color: '#22637E',
-          display: 'flex',
-          alignItems: 'center',
-          gap: 6,
-        }}
-      >
-        <span>👈</span>
-        <span>STEP 1: Select a scenario to launch shift</span>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+        <span className="console-section-title">Select Scenario</span>
+        <span style={{ fontSize: 9.5, color: '#8B97A3' }}>{CRISIS_CARDS.length} available</span>
       </div>
 
-      {CRISIS_CARDS.map((card) => {
-        const isSelected = card.id === selected;
-        return (
-          <Tooltip
-            key={card.id}
-            title={`Select ${card.label}`}
-            content={`Sets up ${card.label} (${card.difficulty} difficulty). Click to select, then click Start Scenario to begin.`}
-            position="right"
-          >
+      <div
+        className="console-rail-scroll"
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 6,
+          maxHeight: LIST_MAX_HEIGHT,
+          overflowY: 'auto',
+          overflowAnchor: 'none',
+        }}
+      >
+        {CRISIS_CARDS.map((card) => {
+          const isSelected = card.id === selected;
+          return (
             <button
+              key={card.id}
               data-scenario={card.id}
-              onClick={() => setSelected(card.id)}
+              onClick={() => {
+                setSelected(card.id);
+              }}
+              aria-pressed={isSelected}
               style={{
                 width: '100%',
                 textAlign: 'left',
                 background: isSelected ? 'rgba(34, 99, 126, 0.06)' : '#FFFFFF',
                 border: `1.5px solid ${isSelected ? '#22637E' : '#D3D7D2'}`,
                 borderRadius: 6,
-                padding: '10px 12px',
+                padding: '7px 10px',
                 cursor: 'pointer',
-                transition: 'all 150ms ease',
-                boxShadow: isSelected
-                  ? '0 2px 8px rgba(34, 99, 126, 0.12)'
-                  : '0 1px 2px rgba(28, 37, 48, 0.04)',
+                transition: 'border-color 150ms ease, background 150ms ease',
+                font: 'inherit',
               }}
             >
               <div
-                style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}
+                style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'baseline',
+                  gap: 8,
+                }}
               >
-                <span style={{ fontSize: 12.5, fontWeight: 700, color: '#1C2530' }}>
+                <span
+                  style={{
+                    fontSize: 12,
+                    fontWeight: 700,
+                    color: '#1C2530',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap',
+                  }}
+                >
                   {card.label}
                 </span>
                 <span
                   className="console-value"
                   style={{
-                    fontSize: 10,
+                    fontSize: 9.5,
                     fontWeight: 700,
                     color: DIFFICULTY_COLOR[card.difficulty] ?? '#5A6774',
                     letterSpacing: '0.04em',
+                    flexShrink: 0,
                   }}
                 >
                   {card.difficulty.toUpperCase()}
                 </span>
               </div>
-              <div style={{ fontSize: 11, color: '#5A6774', marginTop: 4, lineHeight: 1.45 }}>
-                {card.description}
-              </div>
-              {card.recommended === true && (
+
+              {/* Only the chosen scenario explains itself. */}
+              {isSelected && (
+                <div style={{ fontSize: 11, color: '#5A6774', marginTop: 4, lineHeight: 1.45 }}>
+                  {card.description}
+                </div>
+              )}
+              {isSelected && card.recommended === true && (
                 <div
                   className="console-value"
-                  style={{
-                    fontSize: 10,
-                    color: '#22637E',
-                    marginTop: 6,
-                    fontWeight: 600,
-                    letterSpacing: '0.04em',
-                  }}
+                  style={{ fontSize: 9.5, color: '#22637E', marginTop: 5, fontWeight: 700 }}
                 >
-                  ★ RECOMMENDED FIRST RUN
+                  RECOMMENDED FIRST RUN
                 </div>
               )}
             </button>
-          </Tooltip>
-        );
-      })}
+          );
+        })}
+      </div>
 
       <Tooltip
         title="Start Mission Run"
@@ -150,7 +144,7 @@ export function ScenarioPanel(): ReactElement {
       >
         <button
           className="console-btn-primary"
-          style={{ width: '100%', marginTop: 2, minHeight: 36 }}
+          style={{ width: '100%', minHeight: 34 }}
           onClick={start}
           disabled={selected === null}
         >

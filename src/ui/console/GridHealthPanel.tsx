@@ -16,11 +16,9 @@ import { useGridStore, useSimulationStore, useTutorialStore } from '@state';
 import { useState } from 'react';
 import type { ReactElement } from 'react';
 
-import { NOMINAL_FREQUENCY } from '@constants';
-
 import { HEALTH_MEANINGS, estimateHouseholdsAffected } from './learning-copy';
-
-const NOMINAL_HZ = NOMINAL_FREQUENCY as number;
+import { FrequencyGauge } from './FrequencyGauge';
+import { TelemetryTrustNotice, UnverifiedTag } from './UnverifiedTag';
 
 interface Vital {
   readonly label: string;
@@ -94,12 +92,37 @@ function Cell({ vital }: { vital: Vital }): ReactElement {
   );
 }
 
+/**
+ * Pre-flight state: no run has produced any telemetry yet.
+ *
+ * Before this existed the panel rendered its full instrument cluster against
+ * an empty projection — eleven readings of "0 MW", a frequency gauge parked at
+ * nominal, and 311px of rail consumed to say nothing. At 1366×768 that pushed
+ * the scenario picker's own "Start Scenario" button below the fold, which is
+ * how a player could find themselves unable to begin a run at all.
+ *
+ * A grid that has not been switched on should say so, in one line.
+ */
+function StandbyCard(): ReactElement {
+  return (
+    <div className="console-panel" style={{ padding: '10px 14px' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+        <span className="status-led" style={{ background: '#5F6B76' }} aria-hidden />
+        <span className="console-section-title">Grid Health — Standby</span>
+      </div>
+      <div style={{ fontSize: 11, color: '#5A6774', marginTop: 4, lineHeight: 1.45 }}>
+        No telemetry yet. Vitals, the frequency gauge and the operator levers all arm the moment
+        your shift starts.
+      </div>
+    </div>
+  );
+}
+
 export function GridHealthPanel(): ReactElement {
+  const hasTelemetry = useGridStore((s) => s.zones.length > 0);
   const totalLoad = useGridStore((s) => s.totalLoad);
   const totalGeneration = useGridStore((s) => s.totalGeneration);
   const renewableGeneration = useGridStore((s) => s.renewableGeneration);
-  const frequency = useGridStore((s) => s.frequency);
-  const rocof = useGridStore((s) => s.rocof);
   const security = useGridStore((s) => s.security);
   const reserveMw = useGridStore((s) => s.reserveMw);
   const largestInfeedMw = useGridStore((s) => s.largestInfeedMw);
@@ -112,13 +135,9 @@ export function GridHealthPanel(): ReactElement {
   const [override, setOverride] = useState<boolean | null>(null);
   const showMeanings = override ?? teaching;
 
-  // Frequency is the instrument an operator reads first. Deviation, not the
-  // absolute number, is what tells them how much trouble they are in.
-  const deviationHz = Math.abs(frequency - NOMINAL_HZ);
-  const freqTone = deviationHz >= 0.5 ? '#B3261E' : deviationHz >= 0.2 ? '#9A6B15' : undefined;
-  // RoCoF only means anything while it is actually moving the number.
-  const rocofTone =
-    Math.abs(rocof) >= 0.5 ? '#B3261E' : Math.abs(rocof) >= 0.15 ? '#9A6B15' : undefined;
+  // Frequency and RoCoF now live in `FrequencyGauge`, which owns their colour
+  // thresholds too — the numbers were being toned in two places, and the rail
+  // could not afford to carry them twice.
   const securityTone =
     security === 'Insecure' ? '#B3261E' : security === 'AtRisk' ? '#9A6B15' : '#217A56';
 
@@ -138,6 +157,9 @@ export function GridHealthPanel(): ReactElement {
           ? '#9A6B15'
           : '#217A56';
 
+  // Hooks above, branch below — the standby card must not change hook order.
+  if (!hasTelemetry) return <StandbyCard />;
+
   const vitals: readonly Vital[] = [
     { label: 'Demand', value: `${Math.round(totalLoad)} MW`, meaning: HEALTH_MEANINGS.demand },
     {
@@ -151,18 +173,9 @@ export function GridHealthPanel(): ReactElement {
       meaning: HEALTH_MEANINGS.balance,
       tone: balanceTone,
     },
-    {
-      label: 'Frequency',
-      value: `${frequency.toFixed(2)} Hz`,
-      meaning: HEALTH_MEANINGS.frequency,
-      tone: freqTone,
-    },
-    {
-      label: 'RoCoF',
-      value: `${rocof >= 0 ? '+' : '−'}${Math.abs(rocof).toFixed(2)} Hz/s`,
-      meaning: HEALTH_MEANINGS.rocof,
-      tone: rocofTone,
-    },
+    // Frequency and RoCoF are NOT rows any more — the gauge above shows both,
+    // and carrying them twice cost ~40px of a rail that has been overflowed
+    // before. Their teaching copy moves onto the gauge's tooltip.
     {
       label: 'System inertia',
       value: `${Math.round(inertiaMwS).toLocaleString()} MW·s`,
@@ -222,7 +235,10 @@ export function GridHealthPanel(): ReactElement {
           marginBottom: 4,
         }}
       >
-        <span className="console-section-title">Grid Health</span>
+        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+          <span className="console-section-title">Grid Health</span>
+          <UnverifiedTag />
+        </span>
         <button
           className="console-btn"
           style={{ padding: '1px 7px', fontSize: 10, lineHeight: 1.5 }}
@@ -232,6 +248,18 @@ export function GridHealthPanel(): ReactElement {
         >
           {showMeanings ? '−' : '?'}
         </button>
+      </div>
+
+      {/* During a SCADA intrusion the numbers below are still the grid's real
+          measurements — the console just cannot prove they arrived unaltered. */}
+      <TelemetryTrustNotice />
+
+      {/* Frequency gets an instrument rather than a row. It is the one
+          quantity that decides the next thirty seconds, and deviation is far
+          easier to read as an angle than as a decimal. The numeric row below
+          stays — an operator still needs the exact figure. */}
+      <div style={{ padding: '2px 0 8px', borderBottom: '1px solid #E7E9E6', marginBottom: 4 }}>
+        <FrequencyGauge />
       </div>
 
       {showMeanings ? (

@@ -119,6 +119,9 @@ describe('GridSimulationEngine', () => {
       relays: vi.fn().mockReturnValue([]),
       breakers: vi.fn().mockReturnValue([]),
       thermals: vi.fn().mockReturnValue([]),
+      resetRelay: vi.fn(),
+      commandOpen: vi.fn(),
+      commandClose: vi.fn(),
     };
 
     const cascade = {
@@ -368,5 +371,177 @@ describe('GridSimulationEngine', () => {
     // it, so the load actually connected to the grid must be lower.
     expect(state.totalLoad as number).toBeLessThan(50);
     expect(state.totalLoad as number).toBeCloseTo(50 * (1 - state.uflsShedFraction), 5);
+  });
+
+  // -------------------------------------------------------------------------
+  // Restoration — the console cannot ask about a corridor it cannot see
+  // -------------------------------------------------------------------------
+
+  const openBreakerAt = (temperatureC: number, warningC = 75) => {
+    const protectionPatch = {
+      breakers: vi.fn().mockReturnValue([{ line: asLineId('l1'), phase: 'Open' }]),
+      thermalFor: vi.fn().mockReturnValue({ temperatureC, config: { warningC } }),
+    };
+    return protectionPatch;
+  };
+
+  // -------------------------------------------------------------------------
+  // Weather publication — the scene cannot react to what is never announced
+  // -------------------------------------------------------------------------
+
+  it('publishes the environment on the bus', () => {
+    // `WeatherChanged` had TWO subscribers and no publisher, so `weatherKind`
+    // sat on its initial 'Clear' for entire runs and every scene effect gated
+    // on it — lightning included — was unreachable. A named "Coastal Storm"
+    // could not render a storm no matter what the weather model computed.
+    const { engine, weather } = setupMockEngine(makeGraph());
+    weather.advance.mockReturnValue({
+      kind: 'Storm',
+      temperature: asCelsius(18),
+      irradiance: asRatio(0.15),
+      wind: asRatio(0.9),
+    });
+
+    const ctx = makeMockContext();
+    engine.init(ctx);
+    engine.step({ tick: 1, time: 1 as any, timestep: 0.1 as any });
+
+    expect(ctx.emitSpy).toHaveBeenCalledWith(
+      GRID_EVENT.WeatherChanged,
+      expect.objectContaining({ kind: 'Storm', wind: 0.9, irradiance: 0.15 }),
+    );
+  });
+
+  it('dedupes weather to real changes rather than emitting every tick', () => {
+    // At 10 Hz an undeduped emit would put 1,800 weather events into a
+    // 200-entry ring log and push every other event out of it.
+    const { engine, weather } = setupMockEngine(makeGraph());
+    weather.advance.mockReturnValue({
+      kind: 'Clear',
+      temperature: asCelsius(25),
+      irradiance: asRatio(0.7),
+      wind: asRatio(0.3),
+    });
+
+    const ctx = makeMockContext();
+    engine.init(ctx);
+    for (let tick = 1; tick <= 40; tick += 1) {
+      engine.step({ tick, time: tick as any, timestep: 0.1 as any });
+    }
+
+    const weatherEmits = ctx.emitSpy.mock.calls.filter(
+      ([name]) => name === GRID_EVENT.WeatherChanged,
+    );
+    expect(weatherEmits).toHaveLength(1);
+  });
+
+  it('publishes again once the environment has actually moved', () => {
+    const { engine, weather } = setupMockEngine(makeGraph());
+    const clear = {
+      kind: 'Clear',
+      temperature: asCelsius(25),
+      irradiance: asRatio(0.7),
+      wind: asRatio(0.3),
+    };
+    weather.advance.mockReturnValue(clear);
+
+    const ctx = makeMockContext();
+    engine.init(ctx);
+    engine.step({ tick: 1, time: 1 as any, timestep: 0.1 as any });
+
+    // A cloud bank crossing the array is exactly the kind of change the
+    // forecast panel and the solar farm both need to hear about.
+    weather.advance.mockReturnValue({ ...clear, irradiance: asRatio(0.32) });
+    engine.step({ tick: 2, time: 2 as any, timestep: 0.1 as any });
+
+    const weatherEmits = ctx.emitSpy.mock.calls.filter(
+      ([name]) => name === GRID_EVENT.WeatherChanged,
+    );
+    expect(weatherEmits).toHaveLength(2);
+  });
+
+  it('projects reclose readiness for every OPEN corridor', () => {
+    // A tripped line is removed from the graph, so it never appears in the
+    // power flow and never appears in `lines`. Without this projection the
+    // console has no way to know a corridor exists, let alone how hot it is.
+    const { engine, protection } = setupMockEngine(makeGraph());
+    Object.assign(protection, openBreakerAt(94));
+    engine.init(makeMockContext());
+    engine.step({ tick: 1, time: 1 as any, timestep: 0.1 as any });
+
+    const [entry] = engine.getState().restoration;
+    expect(entry).toBeDefined();
+    expect(entry?.line).toBe(asLineId('l1'));
+    expect(entry?.conductorTempC).toBe(94);
+    expect(entry?.recloseBelowC).toBe(75);
+    expect(entry?.readyToReclose).toBe(false);
+  });
+
+  it('reports a cooled corridor as ready, using the automatic controller threshold', () => {
+    const { engine, protection } = setupMockEngine(makeGraph());
+    Object.assign(protection, openBreakerAt(60));
+    engine.init(makeMockContext());
+    engine.step({ tick: 1, time: 1 as any, timestep: 0.1 as any });
+
+    expect(engine.getState().restoration[0]?.readyToReclose).toBe(true);
+  });
+
+  it('leaves the restoration list empty while every breaker is closed', () => {
+    const { engine } = setupMockEngine(makeGraph());
+    engine.init(makeMockContext());
+    engine.step({ tick: 1, time: 1 as any, timestep: 0.1 as any });
+
+    expect(engine.getState().restoration).toEqual([]);
+  });
+
+  it('honours an operator reclose request on an open corridor', () => {
+    // The line id contains hyphens in the real topology, which is exactly why
+    // the decision id is pipe-delimited — the other handlers here match by
+    // substring and would shred it.
+    const { engine, protection } = setupMockEngine(makeGraph());
+    protection.breakerFor = vi.fn().mockReturnValue({ phase: 'Open' });
+    const ctx = makeMockContext();
+    engine.init(ctx);
+
+    ctx.events.emit(GRID_EVENT.DecisionCommitted, {
+      decisionId: 'op-reclose|DT4-HB1|420',
+      optionIndex: 0,
+      simTime: 42 as any,
+    } as any);
+
+    expect(protection.resetRelay).toHaveBeenCalledWith(asLineId('DT4-HB1'));
+    expect(protection.commandClose).toHaveBeenCalledWith(asLineId('DT4-HB1'), 1);
+  });
+
+  it('ignores a reclose request for a corridor that is already closed', () => {
+    const { engine, protection } = setupMockEngine(makeGraph());
+    protection.breakerFor = vi.fn().mockReturnValue({ phase: 'Closed' });
+    const ctx = makeMockContext();
+    engine.init(ctx);
+
+    ctx.events.emit(GRID_EVENT.DecisionCommitted, {
+      decisionId: 'op-reclose|l1|10',
+      optionIndex: 0,
+      simTime: 1 as any,
+    } as any);
+
+    expect(protection.commandClose).not.toHaveBeenCalled();
+  });
+
+  it('does not let a reclose request fall through into the load-shed handlers', () => {
+    // `op-reclose|...` must not be mistaken for one of the `op-*` shed levers
+    // by the substring matching the other branches use.
+    const { engine, loads, protection } = setupMockEngine(makeGraph());
+    protection.breakerFor = vi.fn().mockReturnValue({ phase: 'Open' });
+    const ctx = makeMockContext();
+    engine.init(ctx);
+
+    ctx.events.emit(GRID_EVENT.DecisionCommitted, {
+      decisionId: 'op-reclose|l1|10',
+      optionIndex: 0,
+      simTime: 1 as any,
+    } as any);
+
+    expect(loads.shedLoad).not.toHaveBeenCalled();
   });
 });
